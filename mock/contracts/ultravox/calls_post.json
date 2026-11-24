@@ -1,0 +1,30 @@
+{
+ "method": "POST",
+ "path": "/api/calls",
+ "auth_header": "X-API-Key",
+ "request_fields": {
+  "systemPrompt": "string",
+  "voice": "string, cannot be combined with externalVoice",
+  "selectedTools": "array",
+  "medium": "object, at most one protocol key",
+  "firstSpeakerSettings": "exactly one of user or agent; agent has uninterruptible, text, prompt, delay",
+  "maxDuration": "string like 3600s, pattern ^-?(?:0|[1-9][0-9]{0,11})(?:\\.[0-9]{1,9})?s$",
+  "recordingEnabled": "boolean",
+  "externalVoice": "exactly one provider key"
+ },
+ "telnyx_medium_example": {
+  "medium": {
+   "telnyx": {}
+  }
+ },
+ "max_duration_pattern": "^-?(?:0|[1-9][0-9]{0,11})(?:\\.[0-9]{1,9})?s$",
+ "response_status": 201,
+ "response_fields": [
+  "callId",
+  "joinUrl"
+ ],
+ "response_example": {
+  "callId": "11111111-2222-3333-4444-555555555555",
+  "joinUrl": "wss://example.test/join/abc"
+ }
+}

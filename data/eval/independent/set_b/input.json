@@ -1,0 +1,1393 @@
+{
+ "set": "B",
+ "utterances": [
+  {
+   "id": "B-U001",
+   "channel": "voice",
+   "language": "fr",
+   "industry": "accounting",
+   "agent_line": "Bonjour, ici Ava.",
+   "caller_utterance": "Êtes-vous un robot ?"
+  },
+  {
+   "id": "B-U002",
+   "channel": "text",
+   "language": "en",
+   "industry": "staffing",
+   "agent_line": "Halberd: new candidates this week.",
+   "caller_utterance": "unsub"
+  },
+  {
+   "id": "B-U003",
+   "channel": "text",
+   "language": "en",
+   "industry": "auto dealer",
+   "agent_line": "Hi, a quick service reminder.",
+   "caller_utterance": "driving, 1 line pls"
+  },
+  {
+   "id": "B-U004",
+   "channel": "voice",
+   "language": "en",
+   "industry": "accounting",
+   "agent_line": "Hello, Ava here, an AI assistant at Gantry and Loom Accounting. We're offering free tax reviews. Do you have a minute?",
+   "caller_utterance": "Hmm. That is exactly the thing I was googling last night, funny."
+  },
+  {
+   "id": "B-U005",
+   "channel": "voice",
+   "language": "en",
+   "industry": "accounting",
+   "agent_line": "May I keep sending you our monthly updates?",
+   "caller_utterance": "Withdraw my consent for marketing. Confirm in writing."
+  },
+  {
+   "id": "B-U006",
+   "channel": "voice",
+   "language": "en",
+   "industry": "freight",
+   "agent_line": "Can I send you our terms?",
+   "caller_utterance": "Send me something in writing and I'll consider it."
+  },
+  {
+   "id": "B-U007",
+   "channel": "voice",
+   "language": "en",
+   "industry": "freight",
+   "agent_line": "Hi, Ava here, an AI assistant for Northvane Freight. Are you moving pallets out of state this quarter?",
+   "caller_utterance": "[silence]"
+  },
+  {
+   "id": "B-U008",
+   "channel": "voice",
+   "language": "en",
+   "industry": "accounting",
+   "agent_line": "(call connects)",
+   "caller_utterance": "Please listen carefully as our menu options have changed."
+  },
+  {
+   "id": "B-U009",
+   "channel": "voice",
+   "language": "en",
+   "industry": "auto dealer",
+   "agent_line": "(call connects)",
+   "caller_utterance": "Hi, this is Marcus with Delta Motors service, I'm unavailable, leave a message."
+  },
+  {
+   "id": "B-U010",
+   "channel": "voice",
+   "language": "en",
+   "industry": "staffing",
+   "agent_line": "Hi, this is Ava, an AI assistant for Halberd Staffing. Are you hiring this season?",
+   "caller_utterance": "Early next week, after the board meeting."
+  },
+  {
+   "id": "B-U011",
+   "channel": "text",
+   "language": "en",
+   "industry": "auto dealer",
+   "agent_line": "Hi, am I speaking to Joel?",
+   "caller_utterance": "wrong num sorry"
+  },
+  {
+   "id": "B-U012",
+   "channel": "voice",
+   "language": "en",
+   "industry": "veterinary",
+   "agent_line": "(call connects)",
+   "caller_utterance": "You have reached the voice mailbox of Dr. Alvarez. If this is an emergency, hang up and call emergency services."
+  },
+  {
+   "id": "B-U013",
+   "channel": "voice",
+   "language": "en",
+   "industry": "staffing",
+   "agent_line": "Hi, this is Ava, an AI assistant for Halberd Staffing. Are you hiring this season?",
+   "caller_utterance": "Quick, quick, what's the ask?"
+  },
+  {
+   "id": "B-U014",
+   "channel": "voice",
+   "language": "en",
+   "industry": "veterinary",
+   "agent_line": "Hello, Ava here, an AI assistant at Wrenfield Veterinary, calling about your pet's checkup. Is this a good time?",
+   "caller_utterance": "Is there a person I can speak to? I'm not comfortable with this."
+  },
+  {
+   "id": "B-U015",
+   "channel": "voice",
+   "language": "en",
+   "industry": "accounting",
+   "agent_line": "Hello, Ava here, an AI assistant at Gantry and Loom Accounting. We're offering free tax reviews. Do you have a minute?",
+   "caller_utterance": "I'm good. Really, I'm good."
+  },
+  {
+   "id": "B-U016",
+   "channel": "voice",
+   "language": "en",
+   "industry": "accounting",
+   "agent_line": "Our fee is a flat rate for the year.",
+   "caller_utterance": "Not bad. If the numbers hold up I'm in."
+  },
+  {
+   "id": "B-U017",
+   "channel": "voice",
+   "language": "en",
+   "industry": "veterinary",
+   "agent_line": "Hello, Ava here, an AI assistant at Wrenfield Veterinary, calling about your pet's checkup. Is this a good time?",
+   "caller_utterance": "Ping me on WhatsApp later, this isn't a good time."
+  },
+  {
+   "id": "B-U018",
+   "channel": "text",
+   "language": "en",
+   "industry": "veterinary",
+   "agent_line": "Hi, a quick note about Bella.",
+   "caller_utterance": "?"
+  },
+  {
+   "id": "B-U019",
+   "channel": "text",
+   "language": "en",
+   "industry": "restaurant software",
+   "agent_line": "Do you have time for a demo?",
+   "caller_utterance": "can u call 2moro"
+  },
+  {
+   "id": "B-U020",
+   "channel": "text",
+   "language": "en",
+   "industry": "restaurant software",
+   "agent_line": "Quick follow up on your demo request.",
+   "caller_utterance": "dnc me pls"
+  },
+  {
+   "id": "B-U021",
+   "channel": "voice",
+   "language": "en",
+   "industry": "veterinary",
+   "agent_line": "Hello, is this Dr. Patel?",
+   "caller_utterance": "You're through to a different Dr. Patel than the one you want."
+  },
+  {
+   "id": "B-U022",
+   "channel": "voice",
+   "language": "en",
+   "industry": "freight",
+   "agent_line": "Hi, Ava here, an AI assistant for Northvane Freight. Are you moving pallets out of state this quarter?",
+   "caller_utterance": "Remove this number from your system."
+  },
+  {
+   "id": "B-U023",
+   "channel": "voice",
+   "language": "en",
+   "industry": "accounting",
+   "agent_line": "We offer a thirty day trial.",
+   "caller_utterance": "Thirty days free? Where do I sign?"
+  },
+  {
+   "id": "B-U024",
+   "channel": "voice",
+   "language": "en",
+   "industry": "auto dealer",
+   "agent_line": "Hi, this is Ava, an AI assistant from Fenmoor Auto. Your car is due for service. Is now alright?",
+   "caller_utterance": "You're the fifth call today! FIFTH!"
+  },
+  {
+   "id": "B-U025",
+   "channel": "text",
+   "language": "en",
+   "industry": "restaurant software",
+   "agent_line": "Hi, would you like a demo?",
+   "caller_utterance": "dont call me again"
+  },
+  {
+   "id": "B-U026",
+   "channel": "voice",
+   "language": "en",
+   "industry": "auto dealer",
+   "agent_line": "Hi, this is Ava, an AI assistant from Fenmoor Auto. Your car is due for service. Is now alright?",
+   "caller_utterance": "Oh brilliant, another call. Absolutely thrilled."
+  },
+  {
+   "id": "B-U027",
+   "channel": "voice",
+   "language": "en",
+   "industry": "staffing",
+   "agent_line": "Hi, this is Ava, an AI assistant for Halberd Staffing. Are you hiring this season?",
+   "caller_utterance": "Budget's frozen until Q3."
+  },
+  {
+   "id": "B-U028",
+   "channel": "voice",
+   "language": "en",
+   "industry": "auto dealer",
+   "agent_line": "Hi, this is Ava, an AI assistant from Fenmoor Auto. Your car is due for service. Is now alright?",
+   "caller_utterance": "Last warning. One more call and I'm reporting you."
+  },
+  {
+   "id": "B-U029",
+   "channel": "voice",
+   "language": "en",
+   "industry": "veterinary",
+   "agent_line": "Hello, Ava here, an AI assistant at Wrenfield Veterinary, calling about your pet's checkup. Is this a good time?",
+   "caller_utterance": "I'd rather not be recorded. Are you recording?"
+  },
+  {
+   "id": "B-U030",
+   "channel": "voice",
+   "language": "en",
+   "industry": "freight",
+   "agent_line": "Northvane Freight, Ava here, an AI assistant.",
+   "caller_utterance": "Connect me to the dispatcher, line 2."
+  },
+  {
+   "id": "B-U031",
+   "channel": "voice",
+   "language": "en",
+   "industry": "auto dealer",
+   "agent_line": "Hi, this is Ava, an AI assistant from Fenmoor Auto. Your car is due for service. Is now alright?",
+   "caller_utterance": "Don't ring me again, ta."
+  },
+  {
+   "id": "B-U032",
+   "channel": "voice",
+   "language": "en",
+   "industry": "freight",
+   "agent_line": "Hi, Ava here, an AI assistant for Northvane Freight. Are you moving pallets out of state this quarter?",
+   "caller_utterance": "We are, actually. Eleven pallets to Ohio every other week. What are your rates like?"
+  },
+  {
+   "id": "B-U033",
+   "channel": "voice",
+   "language": "en",
+   "industry": "restaurant software",
+   "agent_line": "Tablewright, this is Ava.",
+   "caller_utterance": "Operator."
+  },
+  {
+   "id": "B-U034",
+   "channel": "voice",
+   "language": "en",
+   "industry": "freight",
+   "agent_line": "(call connects)",
+   "caller_utterance": "The number you have dialed is not available. Please try again later."
+  },
+  {
+   "id": "B-U035",
+   "channel": "voice",
+   "language": "en",
+   "industry": "auto dealer",
+   "agent_line": "(call connects)",
+   "caller_utterance": "For sales, press one. For service, press two. For parts, press three."
+  },
+  {
+   "id": "B-U036",
+   "channel": "voice",
+   "language": "en",
+   "industry": "accounting",
+   "agent_line": "Hello, Ava here, an AI assistant at Gantry and Loom Accounting. We're offering free tax reviews. Do you have a minute?",
+   "caller_utterance": "Hello? Is anyone there?"
+  },
+  {
+   "id": "B-U037",
+   "channel": "voice",
+   "language": "en",
+   "industry": "accounting",
+   "agent_line": "Hello, this is Ava.",
+   "caller_utterance": "You're an AI, aren't you."
+  },
+  {
+   "id": "B-U038",
+   "channel": "voice",
+   "language": "en",
+   "industry": "restaurant software",
+   "agent_line": "(call connects)",
+   "caller_utterance": "[beep]"
+  },
+  {
+   "id": "B-U039",
+   "channel": "text",
+   "language": "en",
+   "industry": "auto dealer",
+   "agent_line": "Welcome to Fenmoor chat.",
+   "caller_utterance": "is this chat logged?"
+  },
+  {
+   "id": "B-U040",
+   "channel": "voice",
+   "language": "en",
+   "industry": "freight",
+   "agent_line": "(call connects)",
+   "caller_utterance": "To reach the dispatch desk, say dispatch."
+  },
+  {
+   "id": "B-U041",
+   "channel": "text",
+   "language": "en",
+   "industry": "freight",
+   "agent_line": "Northvane: rate card attached.",
+   "caller_utterance": "No more SMS."
+  },
+  {
+   "id": "B-U042",
+   "channel": "voice",
+   "language": "en",
+   "industry": "accounting",
+   "agent_line": "Hello, Ava here, an AI assistant at Gantry and Loom Accounting. We're offering free tax reviews. Do you have a minute?",
+   "caller_utterance": "Meh. Sounds like every other pitch I've heard."
+  },
+  {
+   "id": "B-U043",
+   "channel": "voice",
+   "language": "en",
+   "industry": "veterinary",
+   "agent_line": "(call connects)",
+   "caller_utterance": "Sorry, the mailbox belonging to 555 0150 has not been set up yet."
+  },
+  {
+   "id": "B-U044",
+   "channel": "voice",
+   "language": "en",
+   "industry": "veterinary",
+   "agent_line": "Hello, Ava here, an AI assistant at Wrenfield Veterinary, calling about your pet's checkup. Is this a good time?",
+   "caller_utterance": "What kind of company calls at 7 in the morning, idiots."
+  },
+  {
+   "id": "B-U045",
+   "channel": "voice",
+   "language": "en",
+   "industry": "restaurant software",
+   "agent_line": "Hello, is this the manager of the harbor cafe?",
+   "caller_utterance": "Hmm, I think you want my brother. He's at 555 0163."
+  },
+  {
+   "id": "B-U046",
+   "channel": "voice",
+   "language": "en",
+   "industry": "staffing",
+   "agent_line": "Hi, this is Ava, an AI assistant for Halberd Staffing. Are you hiring this season?",
+   "caller_utterance": "Yes, yes, I get it, now please put me on the do not call."
+  },
+  {
+   "id": "B-U047",
+   "channel": "voice",
+   "language": "en",
+   "industry": "restaurant software",
+   "agent_line": "Good afternoon, this is Ava, an AI assistant for Tablewright. We offer a free demo of our tablet ordering. Got a moment?",
+   "caller_utterance": "Hmm, wait, what company?"
+  },
+  {
+   "id": "B-U048",
+   "channel": "voice",
+   "language": "en",
+   "industry": "restaurant software",
+   "agent_line": "Good afternoon, this is Ava, an AI assistant for Tablewright. We offer a free demo of our tablet ordering. Got a moment?",
+   "caller_utterance": "We're all set, thanks."
+  },
+  {
+   "id": "B-U049",
+   "channel": "voice",
+   "language": "en",
+   "industry": "staffing",
+   "agent_line": "Would you like to see candidates?",
+   "caller_utterance": "I can't stop thinking about last year's no-shows, it killed my appetite for agencies."
+  },
+  {
+   "id": "B-U050",
+   "channel": "voice",
+   "language": "hi",
+   "industry": "auto dealer",
+   "agent_line": "Hello, Fenmoor Auto, Ava here.",
+   "caller_utterance": "Aap robot ho kya?"
+  },
+  {
+   "id": "B-U051",
+   "channel": "voice",
+   "language": "en",
+   "industry": "freight",
+   "agent_line": "Hi, got a minute?",
+   "caller_utterance": "Is this a machine? Say yes or no."
+  },
+  {
+   "id": "B-U052",
+   "channel": "voice",
+   "language": "en",
+   "industry": "staffing",
+   "agent_line": "Hi, this is Ava, an AI assistant for Halberd Staffing. Are you hiring this season?",
+   "caller_utterance": "I want to be added to your internal do not call list."
+  },
+  {
+   "id": "B-U053",
+   "channel": "voice",
+   "language": "en",
+   "industry": "restaurant software",
+   "agent_line": "Good afternoon, this is Ava, an AI assistant for Tablewright. We offer a free demo of our tablet ordering. Got a moment?",
+   "caller_utterance": "Your robot voice is giving me a headache."
+  },
+  {
+   "id": "B-U054",
+   "channel": "voice",
+   "language": "en",
+   "industry": "veterinary",
+   "agent_line": "Bella is due for her vaccines. Want to schedule?",
+   "caller_utterance": "Oh thank goodness you called, I forgot. Saturday?"
+  },
+  {
+   "id": "B-U055",
+   "channel": "voice",
+   "language": "en",
+   "industry": "auto dealer",
+   "agent_line": "Hi, this is Ava, an AI assistant from Fenmoor Auto. Your car is due for service. Is now alright?",
+   "caller_utterance": "Right, yeah, can I do it during lunch?"
+  },
+  {
+   "id": "B-U056",
+   "channel": "voice",
+   "language": "en",
+   "industry": "accounting",
+   "agent_line": "Hello, Ava here, an AI assistant at Gantry and Loom Accounting. We're offering free tax reviews. Do you have a minute?",
+   "caller_utterance": "We use QuickBooks and our guy handles it. No need."
+  },
+  {
+   "id": "B-U057",
+   "channel": "voice",
+   "language": "en",
+   "industry": "restaurant software",
+   "agent_line": "Good afternoon, this is Ava, an AI assistant for Tablewright. We offer a free demo of our tablet ordering. Got a moment?",
+   "caller_utterance": "What do you do with the audio from this call?"
+  },
+  {
+   "id": "B-U058",
+   "channel": "voice",
+   "language": "en",
+   "industry": "staffing",
+   "agent_line": "Hi, is this Mr. Qureshi's office?",
+   "caller_utterance": "Rashid? Never heard of him."
+  },
+  {
+   "id": "B-U059",
+   "channel": "voice",
+   "language": "en",
+   "industry": "freight",
+   "agent_line": "Our rate beats most carriers.",
+   "caller_utterance": "Your competitor offered it free."
+  },
+  {
+   "id": "B-U060",
+   "channel": "voice",
+   "language": "en",
+   "industry": "staffing",
+   "agent_line": "(call connects)",
+   "caller_utterance": "You have reached the Hartwell Group. Our office hours are 9 to 5. For after hours support, press 4."
+  },
+  {
+   "id": "B-U061",
+   "channel": "voice",
+   "language": "en",
+   "industry": "restaurant software",
+   "agent_line": "Good afternoon, this is Ava, an AI assistant for Tablewright. We offer a free demo of our tablet ordering. Got a moment?",
+   "caller_utterance": "Can you call my cell, it's 555 0121, this is the landline."
+  },
+  {
+   "id": "B-U062",
+   "channel": "text",
+   "language": "en",
+   "industry": "auto dealer",
+   "agent_line": "Want to book a service?",
+   "caller_utterance": "no thx, got a guy"
+  },
+  {
+   "id": "B-U063",
+   "channel": "voice",
+   "language": "en",
+   "industry": "restaurant software",
+   "agent_line": "Good afternoon, this is Ava, an AI assistant for Tablewright. We offer a free demo of our tablet ordering. Got a moment?",
+   "caller_utterance": "I will find out who you are and sue."
+  },
+  {
+   "id": "B-U064",
+   "channel": "text",
+   "language": "en",
+   "industry": "auto dealer",
+   "agent_line": "Fenmoor: your service is due. Reply BOOK.",
+   "caller_utterance": "STOP"
+  },
+  {
+   "id": "B-U065",
+   "channel": "voice",
+   "language": "en",
+   "industry": "auto dealer",
+   "agent_line": "Hi, this is Ava, an AI assistant from Fenmoor Auto. Your car is due for service. Is now alright?",
+   "caller_utterance": "Sorry, I didn't catch that, the line's bad."
+  },
+  {
+   "id": "B-U066",
+   "channel": "voice",
+   "language": "en",
+   "industry": "staffing",
+   "agent_line": "(call connects)",
+   "caller_utterance": "Hi, you've reached Priya. Leave a message and I'll get back to you."
+  },
+  {
+   "id": "B-U067",
+   "channel": "voice",
+   "language": "en",
+   "industry": "veterinary",
+   "agent_line": "Hello, Ava here, an AI assistant at Wrenfield Veterinary, calling about your pet's checkup. Is this a good time?",
+   "caller_utterance": "I've got a patient waiting, what do you want?"
+  },
+  {
+   "id": "B-U068",
+   "channel": "voice",
+   "language": "en",
+   "industry": "restaurant software",
+   "agent_line": "Good afternoon, this is Ava, an AI assistant for Tablewright. We offer a free demo of our tablet ordering. Got a moment?",
+   "caller_utterance": "Mhm."
+  },
+  {
+   "id": "B-U069",
+   "channel": "voice",
+   "language": "en",
+   "industry": "staffing",
+   "agent_line": "Hi, this is Ava, an AI assistant for Halberd Staffing. Are you hiring this season?",
+   "caller_utterance": "Ugh. No. Go away."
+  },
+  {
+   "id": "B-U070",
+   "channel": "voice",
+   "language": "en",
+   "industry": "auto dealer",
+   "agent_line": "Hi, this is Ava, an AI assistant from Fenmoor Auto. Your car is due for service. Is now alright?",
+   "caller_utterance": "Is there a human on this line or am I wasting time with a bot?"
+  },
+  {
+   "id": "B-U071",
+   "channel": "voice",
+   "language": "en",
+   "industry": "freight",
+   "agent_line": "Hi, Ava here, an AI assistant for Northvane Freight. Are you moving pallets out of state this quarter?",
+   "caller_utterance": "Sounds interesting, but please don't contact me again."
+  },
+  {
+   "id": "B-U072",
+   "channel": "voice",
+   "language": "en",
+   "industry": "staffing",
+   "agent_line": "Hi, this is Ava, an AI assistant for Halberd Staffing. Are you hiring this season?",
+   "caller_utterance": "We need six drivers by October. Who've you got?"
+  },
+  {
+   "id": "B-U073",
+   "channel": "voice",
+   "language": "en",
+   "industry": "staffing",
+   "agent_line": "Hi, this is Ava, an AI assistant for Halberd Staffing. Are you hiring this season?",
+   "caller_utterance": "I need to talk to someone who can actually make decisions."
+  },
+  {
+   "id": "B-U074",
+   "channel": "voice",
+   "language": "en",
+   "industry": "auto dealer",
+   "agent_line": "I can take you off the service reminder list if you like.",
+   "caller_utterance": "Please don't, I'd forget otherwise. Keep them coming, and book me in for next week."
+  },
+  {
+   "id": "B-U075",
+   "channel": "voice",
+   "language": "en",
+   "industry": "auto dealer",
+   "agent_line": "Hi, this is Ava, an AI assistant from Fenmoor Auto. Your car is due for service. Is now alright?",
+   "caller_utterance": "[a child shouts, the caller says something about a bus]"
+  },
+  {
+   "id": "B-U076",
+   "channel": "voice",
+   "language": "en",
+   "industry": "auto dealer",
+   "agent_line": "It's a fixed price service.",
+   "caller_utterance": "Perhaps, but it's rather dear for what it is."
+  },
+  {
+   "id": "B-U077",
+   "channel": "voice",
+   "language": "en",
+   "industry": "veterinary",
+   "agent_line": "Hello, is this the owner of Bella the beagle?",
+   "caller_utterance": "This number belongs to a laundromat."
+  },
+  {
+   "id": "B-U078",
+   "channel": "voice",
+   "language": "en",
+   "industry": "restaurant software",
+   "agent_line": "Good afternoon, this is Ava, an AI assistant for Tablewright. We offer a free demo of our tablet ordering. Got a moment?",
+   "caller_utterance": "Ten seconds. Go."
+  },
+  {
+   "id": "B-U079",
+   "channel": "voice",
+   "language": "en",
+   "industry": "staffing",
+   "agent_line": "(call connects)",
+   "caller_utterance": "Enter the four digit code on your invoice, then press pound."
+  },
+  {
+   "id": "B-U080",
+   "channel": "text",
+   "language": "en",
+   "industry": "accounting",
+   "agent_line": "Gantry and Loom, Ava here.",
+   "caller_utterance": "human pls"
+  },
+  {
+   "id": "B-U081",
+   "channel": "voice",
+   "language": "en",
+   "industry": "freight",
+   "agent_line": "Hi, Ava here, an AI assistant for Northvane Freight. Are you moving pallets out of state this quarter?",
+   "caller_utterance": "We looked at this in January and passed."
+  },
+  {
+   "id": "B-U082",
+   "channel": "voice",
+   "language": "en",
+   "industry": "veterinary",
+   "agent_line": "The full wellness plan is a monthly fee.",
+   "caller_utterance": "That's a lot for a clinic our size."
+  },
+  {
+   "id": "B-U083",
+   "channel": "voice",
+   "language": "en",
+   "industry": "staffing",
+   "agent_line": "I can follow up with you.",
+   "caller_utterance": "I'll be free after four, what's your number so I can call you?"
+  },
+  {
+   "id": "B-U084",
+   "channel": "voice",
+   "language": "pt",
+   "industry": "staffing",
+   "agent_line": "Hi, this is Ava, an AI assistant for Halberd Staffing. Are you hiring this season?",
+   "caller_utterance": "Não me ligue mais, por favor."
+  },
+  {
+   "id": "B-U085",
+   "channel": "voice",
+   "language": "en",
+   "industry": "veterinary",
+   "agent_line": "Hello, Ava here, an AI assistant at Wrenfield Veterinary, calling about your pet's checkup. Is this a good time?",
+   "caller_utterance": "Sorry, are you an actual person?"
+  },
+  {
+   "id": "B-U086",
+   "channel": "voice",
+   "language": "en",
+   "industry": "freight",
+   "agent_line": "Hi, Ava here, an AI assistant for Northvane Freight. Are you moving pallets out of state this quarter?",
+   "caller_utterance": "Delete my number."
+  },
+  {
+   "id": "B-U087",
+   "channel": "text",
+   "language": "en",
+   "industry": "restaurant software",
+   "agent_line": "Hi, can I tell you about Tablewright?",
+   "caller_utterance": "bot?"
+  },
+  {
+   "id": "B-U088",
+   "channel": "voice",
+   "language": "en",
+   "industry": "veterinary",
+   "agent_line": "Hello, Ava here, an AI assistant at Wrenfield Veterinary, calling about your pet's checkup. Is this a good time?",
+   "caller_utterance": "No more calls to the shop, it's the owner's personal line."
+  },
+  {
+   "id": "B-U089",
+   "channel": "voice",
+   "language": "en",
+   "industry": "accounting",
+   "agent_line": "(call connects)",
+   "caller_utterance": "Your call has been forwarded to an automatic voice message system. 555 0134 is not available. At the tone, please record your message."
+  },
+  {
+   "id": "B-U090",
+   "channel": "voice",
+   "language": "en",
+   "industry": "accounting",
+   "agent_line": "Hello, Ava here, an AI assistant at Gantry and Loom Accounting. We're offering free tax reviews. Do you have a minute?",
+   "caller_utterance": "Are we on a recorded line?"
+  },
+  {
+   "id": "B-U091",
+   "channel": "voice",
+   "language": "en",
+   "industry": "freight",
+   "agent_line": "Hi, Ava here, an AI assistant for Northvane Freight. Are you moving pallets out of state this quarter?",
+   "caller_utterance": "Hold on, I'm unloading a truck. Fast."
+  },
+  {
+   "id": "B-U092",
+   "channel": "text",
+   "language": "en",
+   "industry": "restaurant software",
+   "agent_line": "Tablewright: your demo is booked.",
+   "caller_utterance": "Stop. Thx."
+  },
+  {
+   "id": "B-U093",
+   "channel": "text",
+   "language": "en",
+   "industry": "freight",
+   "agent_line": "Hi, quick question about shipping.",
+   "caller_utterance": "fuck off"
+  },
+  {
+   "id": "B-U094",
+   "channel": "voice",
+   "language": "en",
+   "industry": "freight",
+   "agent_line": "Hi, is this the dispatcher at the Gray depot?",
+   "caller_utterance": "Who? This is the bakery, and nobody here knows that name."
+  },
+  {
+   "id": "B-U095",
+   "channel": "text",
+   "language": "en",
+   "industry": "veterinary",
+   "agent_line": "Wrenfield: Saturday reminder for Bella.",
+   "caller_utterance": "Stop sending me the Saturday reminders but keep the billing ones."
+  },
+  {
+   "id": "B-U096",
+   "channel": "voice",
+   "language": "es",
+   "industry": "auto dealer",
+   "agent_line": "Hola, ¿hablo con Carlos Medina?",
+   "caller_utterance": "No, equivocado. Aquí no vive ningún Carlos."
+  },
+  {
+   "id": "B-U097",
+   "channel": "voice",
+   "language": "en",
+   "industry": "restaurant software",
+   "agent_line": "Good afternoon, this is Ava, an AI assistant for Tablewright. We offer a free demo of our tablet ordering. Got a moment?",
+   "caller_utterance": "I only have a minute before the lunch rush hits."
+  },
+  {
+   "id": "B-U098",
+   "channel": "text",
+   "language": "en",
+   "industry": "veterinary",
+   "agent_line": "Wrenfield: Bella's checkup is Monday.",
+   "caller_utterance": "pls stop the texts"
+  },
+  {
+   "id": "B-U099",
+   "channel": "voice",
+   "language": "en",
+   "industry": "veterinary",
+   "agent_line": "Hello, Ava here, an AI assistant at Wrenfield Veterinary, calling about your pet's checkup. Is this a good time?",
+   "caller_utterance": "Not now, honestly the whole month is dead."
+  },
+  {
+   "id": "B-U100",
+   "channel": "voice",
+   "language": "en",
+   "industry": "veterinary",
+   "agent_line": "(call connects)",
+   "caller_utterance": "Welcome to Harbor Veterinary. Press 1 for emergencies, 2 for appointments, 9 to repeat this menu."
+  },
+  {
+   "id": "B-U101",
+   "channel": "voice",
+   "language": "en",
+   "industry": "restaurant software",
+   "agent_line": "Good afternoon, this is Ava, an AI assistant for Tablewright. We offer a free demo of our tablet ordering. Got a moment?",
+   "caller_utterance": "Last company like you ripped us off. Why should I trust you?"
+  },
+  {
+   "id": "B-U102",
+   "channel": "voice",
+   "language": "en",
+   "industry": "auto dealer",
+   "agent_line": "Hi, this is Ava, an AI assistant from Fenmoor Auto. Your car is due for service. Is now alright?",
+   "caller_utterance": "Get me your supervisor."
+  },
+  {
+   "id": "B-U103",
+   "channel": "voice",
+   "language": "en",
+   "industry": "accounting",
+   "agent_line": "Hello, Ava here, an AI assistant at Gantry and Loom Accounting. We're offering free tax reviews. Do you have a minute?",
+   "caller_utterance": "Short answer, yes or no, are you selling?"
+  },
+  {
+   "id": "B-U104",
+   "channel": "voice",
+   "language": "en",
+   "industry": "freight",
+   "agent_line": "Hi, Ava here, an AI assistant for Northvane Freight. Are you moving pallets out of state this quarter?",
+   "caller_utterance": "Tomorrow's better, today's a write off."
+  },
+  {
+   "id": "B-U105",
+   "channel": "text",
+   "language": "en",
+   "industry": "staffing",
+   "agent_line": "Reply YES for the candidate list.",
+   "caller_utterance": "lol"
+  },
+  {
+   "id": "B-U106",
+   "channel": "text",
+   "language": "en",
+   "industry": "freight",
+   "agent_line": "Northvane: your pickup is tomorrow.",
+   "caller_utterance": "END"
+  },
+  {
+   "id": "B-U107",
+   "channel": "voice",
+   "language": "en",
+   "industry": "staffing",
+   "agent_line": "Hi, this is Ava, an AI assistant for Halberd Staffing. Are you hiring this season?",
+   "caller_utterance": "Sir, we are already having one agency for this only."
+  },
+  {
+   "id": "B-U108",
+   "channel": "voice",
+   "language": "en",
+   "industry": "staffing",
+   "agent_line": "Can I send you the proposal?",
+   "caller_utterance": "Send it over, I'll read it tonight."
+  },
+  {
+   "id": "B-U109",
+   "channel": "voice",
+   "language": "en",
+   "industry": "auto dealer",
+   "agent_line": "Hi, this is Ava, an AI assistant from Fenmoor Auto. Your car is due for service. Is now alright?",
+   "caller_utterance": "You can call but don't send me any more texts or emails."
+  },
+  {
+   "id": "B-U110",
+   "channel": "voice",
+   "language": "en",
+   "industry": "accounting",
+   "agent_line": "Hello, Ava here, an AI assistant at Gantry and Loom Accounting. We're offering free tax reviews. Do you have a minute?",
+   "caller_utterance": "Can this be an email? I'm walking into court."
+  },
+  {
+   "id": "B-U111",
+   "channel": "voice",
+   "language": "hi",
+   "industry": "auto dealer",
+   "agent_line": "Hi, this is Ava, an AI assistant from Fenmoor Auto. Your car is due for service. Is now alright?",
+   "caller_utterance": "Mat call karo, I said no already."
+  },
+  {
+   "id": "B-U112",
+   "channel": "text",
+   "language": "en",
+   "industry": "accounting",
+   "agent_line": "Gantry and Loom: reminder, your review is Friday.",
+   "caller_utterance": "STOPALL"
+  },
+  {
+   "id": "B-U113",
+   "channel": "voice",
+   "language": "en",
+   "industry": "freight",
+   "agent_line": "Hi, Ava here, an AI assistant for Northvane Freight. Are you moving pallets out of state this quarter?",
+   "caller_utterance": "Call in about twenty minutes, I'll be off the forklift."
+  },
+  {
+   "id": "B-U114",
+   "channel": "voice",
+   "language": "en",
+   "industry": "freight",
+   "agent_line": "May I speak with Rashid Qureshi?",
+   "caller_utterance": "Nope, you've got the wrong guy."
+  },
+  {
+   "id": "B-U115",
+   "channel": "voice",
+   "language": "en",
+   "industry": "restaurant software",
+   "agent_line": "Good afternoon, this is Ava, an AI assistant for Tablewright. We offer a free demo of our tablet ordering. Got a moment?",
+   "caller_utterance": "Go on then, show me. The old till is a nightmare."
+  },
+  {
+   "id": "B-U116",
+   "channel": "voice",
+   "language": "en",
+   "industry": "veterinary",
+   "agent_line": "Hello, Ava here, an AI assistant at Wrenfield Veterinary, calling about your pet's checkup. Is this a good time?",
+   "caller_utterance": "We're registered on the DNC. Why are you calling?"
+  },
+  {
+   "id": "B-U117",
+   "channel": "voice",
+   "language": "en",
+   "industry": "accounting",
+   "agent_line": "Hello, Ava here, an AI assistant at Gantry and Loom Accounting. We're offering free tax reviews. Do you have a minute?",
+   "caller_utterance": "Look, I'm not angry, just don't phone me anymore. Take care."
+  },
+  {
+   "id": "B-U118",
+   "channel": "voice",
+   "language": "en",
+   "industry": "veterinary",
+   "agent_line": "Wrenfield Veterinary, Ava speaking.",
+   "caller_utterance": "Can I be transferred to Dr. Lin's office directly?"
+  },
+  {
+   "id": "B-U119",
+   "channel": "voice",
+   "language": "en",
+   "industry": "restaurant software",
+   "agent_line": "Good afternoon, this is Ava, an AI assistant for Tablewright. We offer a free demo of our tablet ordering. Got a moment?",
+   "caller_utterance": "I'm all ears. Pitch me."
+  },
+  {
+   "id": "B-U120",
+   "channel": "text",
+   "language": "en",
+   "industry": "freight",
+   "agent_line": "Reply for the rate card.",
+   "caller_utterance": "ok send link"
+  },
+  {
+   "id": "B-U121",
+   "channel": "voice",
+   "language": "en",
+   "industry": "restaurant software",
+   "agent_line": "Shall I book the demo?",
+   "caller_utterance": "Yes please, book it."
+  },
+  {
+   "id": "B-U122",
+   "channel": "voice",
+   "language": "en",
+   "industry": "staffing",
+   "agent_line": "Hi, this is Ava, an AI assistant for Halberd Staffing. Are you hiring this season?",
+   "caller_utterance": "Before we go on, I need to know whether you're recording and storing this."
+  },
+  {
+   "id": "B-U123",
+   "channel": "voice",
+   "language": "en",
+   "industry": "restaurant software",
+   "agent_line": "Good afternoon, this is Ava, an AI assistant for Tablewright. We offer a free demo of our tablet ordering. Got a moment?",
+   "caller_utterance": "Please sir do not call this number from now on."
+  },
+  {
+   "id": "B-U124",
+   "channel": "voice",
+   "language": "en",
+   "industry": "accounting",
+   "agent_line": "Would you like to go over your return?",
+   "caller_utterance": "My accountant needs to be on the call, can we find a time?"
+  },
+  {
+   "id": "B-U125",
+   "channel": "voice",
+   "language": "en",
+   "industry": "restaurant software",
+   "agent_line": "Can we set up a call?",
+   "caller_utterance": "I can't commit to anything without my partner signing off."
+  },
+  {
+   "id": "B-U126",
+   "channel": "voice",
+   "language": "en",
+   "industry": "freight",
+   "agent_line": "Would a Tuesday walkthrough of the warehouse work?",
+   "caller_utterance": "Tuesday's fine. Bring the pricing sheet."
+  },
+  {
+   "id": "B-U127",
+   "channel": "voice",
+   "language": "fr",
+   "industry": "accounting",
+   "agent_line": "Hello, Ava here, an AI assistant at Gantry and Loom Accounting. We're offering free tax reviews. Do you have a minute?",
+   "caller_utterance": "Ne me rappelez pas, merci."
+  },
+  {
+   "id": "B-U128",
+   "channel": "voice",
+   "language": "en",
+   "industry": "accounting",
+   "agent_line": "Hi, may I speak to Elena Marsh?",
+   "caller_utterance": "She moved to Canada, I got this number last year."
+  },
+  {
+   "id": "B-U129",
+   "channel": "voice",
+   "language": "en",
+   "industry": "accounting",
+   "agent_line": "Hello, Ava here, an AI assistant at Gantry and Loom Accounting. We're offering free tax reviews. Do you have a minute?",
+   "caller_utterance": "Cease and desist. No further calls."
+  },
+  {
+   "id": "B-U130",
+   "channel": "voice",
+   "language": "en",
+   "industry": "accounting",
+   "agent_line": "Hello, Ava here, an AI assistant at Gantry and Loom Accounting. We're offering free tax reviews. Do you have a minute?",
+   "caller_utterance": "Don't waste my breath, you spam merchants."
+  },
+  {
+   "id": "B-U131",
+   "channel": "voice",
+   "language": "en",
+   "industry": "accounting",
+   "agent_line": "Hello, Ava here, an AI assistant at Gantry and Loom Accounting. We're offering free tax reviews. Do you have a minute?",
+   "caller_utterance": "Forward me to sales, I'm tired of the questions."
+  },
+  {
+   "id": "B-U132",
+   "channel": "voice",
+   "language": "en",
+   "industry": "restaurant software",
+   "agent_line": "Good afternoon, this is Ava, an AI assistant for Tablewright. We offer a free demo of our tablet ordering. Got a moment?",
+   "caller_utterance": "I do not consent to text messages from you."
+  },
+  {
+   "id": "B-U133",
+   "channel": "voice",
+   "language": "en",
+   "industry": "staffing",
+   "agent_line": "Hi, is this a good time?",
+   "caller_utterance": "Uh, are you, like, automated?"
+  },
+  {
+   "id": "B-U134",
+   "channel": "voice",
+   "language": "en",
+   "industry": "accounting",
+   "agent_line": "Hello, Ava here, an AI assistant at Gantry and Loom Accounting. We're offering free tax reviews. Do you have a minute?",
+   "caller_utterance": "Try again Friday morning, first thing."
+  },
+  {
+   "id": "B-U135",
+   "channel": "text",
+   "language": "en",
+   "industry": "accounting",
+   "agent_line": "Want a free tax review?",
+   "caller_utterance": "yeah go on, how long does it take lol"
+  },
+  {
+   "id": "B-U136",
+   "channel": "voice",
+   "language": "en",
+   "industry": "staffing",
+   "agent_line": "Hi, this is Ava, an AI assistant for Halberd Staffing. Are you hiring this season?",
+   "caller_utterance": "I'm not the one who decides these things."
+  },
+  {
+   "id": "B-U137",
+   "channel": "voice",
+   "language": "en",
+   "industry": "auto dealer",
+   "agent_line": "Hi, this is Ava, an AI assistant from Fenmoor Auto. Your car is due for service. Is now alright?",
+   "caller_utterance": "Ring me after the school run, say ten past nine."
+  }
+ ],
+ "scripts": [
+  {
+   "id": "B-S01",
+   "channel": "voice",
+   "industry": "accounting",
+   "language": "en",
+   "caller_turns": [
+    "Hello?",
+    "Cease and desist. No further calls to this number, please.",
+    "Is that clear?"
+   ]
+  },
+  {
+   "id": "B-S02",
+   "channel": "voice",
+   "industry": "auto dealer",
+   "language": "en",
+   "caller_turns": [
+    "Yeah?",
+    "Bakery. Nobody here by that name.",
+    "Please don't call here again, ta."
+   ]
+  },
+  {
+   "id": "B-S03",
+   "channel": "voice",
+   "industry": "restaurant software",
+   "language": "en",
+   "caller_turns": [
+    "Hello.",
+    "You can call me but no more emails or texts.",
+    "Anyway, what's the offer?",
+    "Not for us, thanks."
+   ]
+  },
+  {
+   "id": "B-S04",
+   "channel": "voice",
+   "industry": "restaurant software",
+   "language": "hi",
+   "caller_turns": [
+    "Hello, haan?",
+    "Sir, please do not call this number from now on.",
+    "Mat call karo."
+   ]
+  },
+  {
+   "id": "B-S05",
+   "channel": "voice",
+   "industry": "auto dealer",
+   "language": "fr",
+   "caller_turns": [
+    "Allô ?",
+    "Je ne suis pas intéressé. Ne me rappelez plus, merci.",
+    "Au revoir."
+   ]
+  },
+  {
+   "id": "B-S06",
+   "channel": "voice",
+   "industry": "veterinary",
+   "language": "en",
+   "caller_turns": [
+    "Hmm?",
+    "Sorry, bad line, what?",
+    "[silence]",
+    "Mm."
+   ]
+  },
+  {
+   "id": "B-S07",
+   "channel": "text",
+   "industry": "staffing",
+   "language": "en",
+   "caller_turns": [
+    "yes ok",
+    "what does it cost",
+    "stop texting me",
+    "STOP"
+   ]
+  },
+  {
+   "id": "B-S08",
+   "channel": "voice",
+   "industry": "veterinary",
+   "language": "en",
+   "caller_turns": [
+    "Hello.",
+    "Can I be put through to Dr. Lin's office directly?",
+    "Yes please."
+   ]
+  },
+  {
+   "id": "B-S09",
+   "channel": "voice",
+   "industry": "restaurant software",
+   "language": "en",
+   "caller_turns": [
+    "Hello?",
+    "Ring my cell instead, it's 555 0121, I'm on the shop landline.",
+    "After four."
+   ]
+  },
+  {
+   "id": "B-S10",
+   "channel": "voice",
+   "industry": "staffing",
+   "language": "pt",
+   "caller_turns": [
+    "Alô?",
+    "Número errado, aqui não mora nenhum Rui.",
+    "Não ligue mais."
+   ]
+  },
+  {
+   "id": "B-S11",
+   "channel": "voice",
+   "industry": "accounting",
+   "language": "en",
+   "caller_turns": [
+    "Hello, yes.",
+    "Not bad. If the numbers hold up I'm in.",
+    "But I'd need my partner to sign off, can we set a time with both of us?",
+    "Next Wednesday at ten.",
+    "Great."
+   ]
+  },
+  {
+   "id": "B-S12",
+   "channel": "text",
+   "industry": "staffing",
+   "language": "en",
+   "caller_turns": [
+    "we need 6 drivers by oct",
+    "wat r ur rates",
+    "ok book a call for thurs 2pm",
+    "thx bye"
+   ]
+  },
+  {
+   "id": "B-S13",
+   "channel": "voice",
+   "industry": "auto dealer",
+   "language": "en",
+   "caller_turns": [
+    "The person you are calling is unavailable. At the tone, please record your message. When you have finished recording, you may hang up.",
+    "[beep]"
+   ]
+  },
+  {
+   "id": "B-S14",
+   "channel": "voice",
+   "industry": "veterinary",
+   "language": "en",
+   "caller_turns": [
+    "Hello.",
+    "Oh, thank goodness, I forgot about Bella's shots.",
+    "Saturday morning, if you have it.",
+    "Actually, wait, what's it cost?",
+    "Ugh, that's a lot. Let me think and call you."
+   ]
+  },
+  {
+   "id": "B-S15",
+   "channel": "voice",
+   "industry": "staffing",
+   "language": "en",
+   "caller_turns": [
+    "Who is this?",
+    "Your supervisor. I want a person.",
+    "Now please.",
+    "Thank you."
+   ]
+  },
+  {
+   "id": "B-S16",
+   "channel": "voice",
+   "industry": "freight",
+   "language": "en",
+   "caller_turns": [
+    "Welcome to Harbor Tire and Freight. For sales, press one. For service, press two. For parts, press three.",
+    "If you know your party's extension, dial it now.",
+    "Please hold."
+   ]
+  },
+  {
+   "id": "B-S17",
+   "channel": "text",
+   "industry": "restaurant software",
+   "language": "en",
+   "caller_turns": [
+    "whos this",
+    "ok lol",
+    "wait is this a bot",
+    "ok fine. what u offering",
+    "sounds good send link",
+    "thx"
+   ]
+  },
+  {
+   "id": "B-S18",
+   "channel": "voice",
+   "industry": "auto dealer",
+   "language": "en",
+   "caller_turns": [
+    "Oh brilliant, another call. Thrilled.",
+    "Go on then, impress me.",
+    "Yeah, no. Hard pass.",
+    "Cheers."
+   ]
+  },
+  {
+   "id": "B-S19",
+   "channel": "voice",
+   "industry": "accounting",
+   "language": "en",
+   "caller_turns": [
+    "Mailbox is full. Goodbye."
+   ]
+  },
+  {
+   "id": "B-S20",
+   "channel": "text",
+   "industry": "auto dealer",
+   "language": "en",
+   "caller_turns": [
+    "cant talk now",
+    "call me 2moro 10am",
+    "thx"
+   ]
+  },
+  {
+   "id": "B-S21",
+   "channel": "voice",
+   "industry": "veterinary",
+   "language": "en",
+   "caller_turns": [
+    "Ugh, what.",
+    "Is this a machine? I hate machines.",
+    "Right. Delete my number from your system."
+   ]
+  },
+  {
+   "id": "B-S22",
+   "channel": "voice",
+   "industry": "freight",
+   "language": "en",
+   "caller_turns": [
+    "Ten seconds, go.",
+    "Can't now, I'm loading, call tomorrow before ten.",
+    "Bye."
+   ]
+  },
+  {
+   "id": "B-S23",
+   "channel": "voice",
+   "industry": "freight",
+   "language": "en",
+   "caller_turns": [
+    "Yep, Gantry Yard speaking.",
+    "Eleven pallets, Ohio, every other week.",
+    "What's your rate per pallet?",
+    "Fine. Tuesday walkthrough, nine thirty.",
+    "Dana Whitcombe, ops manager.",
+    "Cheers."
+   ]
+  },
+  {
+   "id": "B-S24",
+   "channel": "voice",
+   "industry": "accounting",
+   "language": "en",
+   "caller_turns": [
+    "Hello? Who's calling?",
+    "I'm sorry dear, my hearing isn't good, can you say that again?",
+    "A computer? Goodness. Well, what do you want?",
+    "I don't think so, my nephew does all this for me.",
+    "Goodbye then."
+   ]
+  },
+  {
+   "id": "B-S25",
+   "channel": "voice",
+   "industry": "accounting",
+   "language": "en",
+   "caller_turns": [
+    "Are we on a recorded line? I'd rather not be recorded.",
+    "I'd like it noted that I do not consent to a recording.",
+    "Then I'll end the call."
+   ]
+  }
+ ]
+}

@@ -1,0 +1,5 @@
+# Recipe: build a Vapi voice adapter (not built, not tested)
+
+Vapi's phone setup was not read in enough detail while building Ringlark, so no endpoint is claimed here. Paste this into Claude Code:
+
+> Read apps/api/src/ringlark/adapters/base.py, adapters/ultravox.py and adapters/telnyx.py. Look up the current Vapi API documentation yourself and tell me the source link. Write an adapter `vapi` that implements the same voice interface, registered as Tier C until it is tested. Write tests against a local mock that you write from the documentation, including webhook signature checks if Vapi signs webhooks. Every real call must go through `guard_write`. Read the key from `VAPI_API_KEY` (add it to config.py and .env.example). Check the base URL with the existing `safe_base_url` guard. Keep the AI disclosure and the per call tool token. Mark everything you could not confirm as UNVERIFIED in docs/FACTS-AND-SOURCES.md. Do not call the real service.

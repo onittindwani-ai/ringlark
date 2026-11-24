@@ -1,0 +1,5 @@
+Vendor: Twenty CRM. Read 2026-11-23 with a page fetch (public docs, no account).
+Page: https://docs.twenty.com/developers/api-and-webhooks/api
+The page says there is no static API reference for Twenty: each workspace generates its API from its own schema (Settings, Developers, API after a key is created).
+So there is no machine readable spec to test against. Only the documented auth header (Authorization: Bearer <key>) and the paths /graphql and /rest are checked (auth.json).
+Field names for people, phones and notes are UNVERIFIED until run against a workspace.

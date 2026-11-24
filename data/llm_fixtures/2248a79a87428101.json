@@ -1,0 +1,7 @@
+{
+  "text": "{\"say\": \"Sorry about that, I'll take this number off our list. Have a good day.\", \"tool_calls\": [{\"tool\": \"end_call\", \"slot\": null, \"person_name\": null, \"reason\": null, \"disposition\": \"wrong_number\", \"note\": \"\", \"digit\": null, \"kind\": null}]}",
+  "input_tokens": 150,
+  "output_tokens": 40,
+  "model": "claude-sonnet-5-5",
+  "prompt_preview": "[task:agent_turn]\nWrite the agent's next turn for the call that follows.\n\nReply with only JSON matching this schema:\n{\"$defs\": {\"ToolCall\": {\"additionalProperti"
+}

@@ -1,0 +1,1390 @@
+{
+ "set": "A",
+ "utterances": [
+  {
+   "id": "A-U001",
+   "channel": "text",
+   "language": "en",
+   "industry": "real estate",
+   "agent_line": "Hi, would you like a valuation?",
+   "caller_utterance": "Remove me from your calling list."
+  },
+  {
+   "id": "A-U002",
+   "channel": "voice",
+   "language": "en",
+   "industry": "hvac",
+   "agent_line": "Great, I'll text you the confirmation.",
+   "caller_utterance": "Don't text me anymore, calls are fine."
+  },
+  {
+   "id": "A-U003",
+   "channel": "voice",
+   "language": "en",
+   "industry": "real estate",
+   "agent_line": "Hi, this is Ava, an AI assistant for Cobblefield Realty. Are you still thinking about selling your home this year?",
+   "caller_utterance": "Let me check my calendar and I'll call you back."
+  },
+  {
+   "id": "A-U004",
+   "channel": "voice",
+   "language": "en",
+   "industry": "insurance",
+   "agent_line": "Hello, Ava here, an AI assistant for Beacon Hollow Insurance, calling about your policy renewal. Is now okay?",
+   "caller_utterance": "Is this call being recorded?"
+  },
+  {
+   "id": "A-U005",
+   "channel": "voice",
+   "language": "en",
+   "industry": "dental",
+   "agent_line": "(call connects)",
+   "caller_utterance": "Sorry I missed you, leave your name and number and I will call you back."
+  },
+  {
+   "id": "A-U006",
+   "channel": "voice",
+   "language": "en",
+   "industry": "real estate",
+   "agent_line": "I can help you with a valuation.",
+   "caller_utterance": "Is this ChatGPT or something?"
+  },
+  {
+   "id": "A-U007",
+   "channel": "voice",
+   "language": "en",
+   "industry": "solar",
+   "agent_line": "Hello, this is Ava, an AI assistant with Sunharbor Solar. Do you have a minute to talk about your power bill?",
+   "caller_utterance": "Great, another robot. What a waste of my time."
+  },
+  {
+   "id": "A-U008",
+   "channel": "voice",
+   "language": "en",
+   "industry": "gym",
+   "agent_line": "Hi, it's Ava, an AI assistant at Ironleaf Fitness. We're giving out free week passes. Want to hear more?",
+   "caller_utterance": "Can't talk long, the kids are screaming. What do you need?"
+  },
+  {
+   "id": "A-U009",
+   "channel": "voice",
+   "language": "en",
+   "industry": "dental",
+   "agent_line": "Thanks for picking up, I'm Ava.",
+   "caller_utterance": "Are you a recording?"
+  },
+  {
+   "id": "A-U010",
+   "channel": "voice",
+   "language": "en",
+   "industry": "insurance",
+   "agent_line": "(call connects)",
+   "caller_utterance": "Please enter your extension, or press zero for the operator."
+  },
+  {
+   "id": "A-U011",
+   "channel": "voice",
+   "language": "es",
+   "industry": "dental",
+   "agent_line": "(call connects)",
+   "caller_utterance": "Para español, oprima dos. For English, press one."
+  },
+  {
+   "id": "A-U012",
+   "channel": "voice",
+   "language": "en",
+   "industry": "dental",
+   "agent_line": "Hi, this is Ava, an AI assistant calling for Quillfeather Dental. We have free whitening checks this month. Is that something you would like to hear about?",
+   "caller_utterance": "Do you record these calls? I don't consent to that."
+  },
+  {
+   "id": "A-U013",
+   "channel": "text",
+   "language": "en",
+   "industry": "hvac",
+   "agent_line": "Reply YES for a free tune up.",
+   "caller_utterance": "k"
+  },
+  {
+   "id": "A-U014",
+   "channel": "voice",
+   "language": "en",
+   "industry": "insurance",
+   "agent_line": "(call connects)",
+   "caller_utterance": "Welcome to Maple Row Insurance. Say claims, billing, or new policy."
+  },
+  {
+   "id": "A-U015",
+   "channel": "voice",
+   "language": "en",
+   "industry": "gym",
+   "agent_line": "Hi, is this a good time?",
+   "caller_utterance": "Don't call back."
+  },
+  {
+   "id": "A-U016",
+   "channel": "voice",
+   "language": "en",
+   "industry": "roofing",
+   "agent_line": "We could send a crew to take a look.",
+   "caller_utterance": "Stop by, sure, anytime after 5 on weekdays."
+  },
+  {
+   "id": "A-U017",
+   "channel": "voice",
+   "language": "en",
+   "industry": "insurance",
+   "agent_line": "Hello, Ava here, an AI assistant for Beacon Hollow Insurance, calling about your policy renewal. Is now okay?",
+   "caller_utterance": "Listen buddy, I have had it up to here with sales calls."
+  },
+  {
+   "id": "A-U018",
+   "channel": "voice",
+   "language": "en",
+   "industry": "solar",
+   "agent_line": "Hello, this is Ava, an AI assistant with Sunharbor Solar. Do you have a minute to talk about your power bill?",
+   "caller_utterance": "Connect me to the owner, I only talk to the owner."
+  },
+  {
+   "id": "A-U019",
+   "channel": "voice",
+   "language": "en",
+   "industry": "hvac",
+   "agent_line": "How about next week?",
+   "caller_utterance": "Next week is chaos, and honestly the whole thing feels like a hassle."
+  },
+  {
+   "id": "A-U020",
+   "channel": "voice",
+   "language": "en",
+   "industry": "insurance",
+   "agent_line": "Hello, Ava here, an AI assistant for Beacon Hollow Insurance, calling about your policy renewal. Is now okay?",
+   "caller_utterance": "I never agreed to be texted, delete my consent record."
+  },
+  {
+   "id": "A-U021",
+   "channel": "voice",
+   "language": "en",
+   "industry": "dental",
+   "agent_line": "It only takes a minute.",
+   "caller_utterance": "I don't trust cold calls. How did you even get my number?"
+  },
+  {
+   "id": "A-U022",
+   "channel": "voice",
+   "language": "en",
+   "industry": "insurance",
+   "agent_line": "Hello, Ava here, an AI assistant for Beacon Hollow Insurance, calling about your policy renewal. Is now okay?",
+   "caller_utterance": "Call me back in the morning, but not before nine."
+  },
+  {
+   "id": "A-U023",
+   "channel": "voice",
+   "language": "en",
+   "industry": "dental",
+   "agent_line": "Hi, this is Ava, an AI assistant calling for Quillfeather Dental. We have free whitening checks this month. Is that something you would like to hear about?",
+   "caller_utterance": "You people never quit. This is harassment."
+  },
+  {
+   "id": "A-U024",
+   "channel": "voice",
+   "language": "en",
+   "industry": "hvac",
+   "agent_line": "I'm calling about your furnace.",
+   "caller_utterance": "Hang on, are you human? Honest answer."
+  },
+  {
+   "id": "A-U025",
+   "channel": "voice",
+   "language": "fr",
+   "industry": "insurance",
+   "agent_line": "Hello, Ava here, an AI assistant for Beacon Hollow Insurance, calling about your policy renewal. Is now okay?",
+   "caller_utterance": "Ne m'appelez plus, s'il vous plaît."
+  },
+  {
+   "id": "A-U026",
+   "channel": "voice",
+   "language": "en",
+   "industry": "gym",
+   "agent_line": "Hi, it's Ava, an AI assistant at Ironleaf Fitness. We're giving out free week passes. Want to hear more?",
+   "caller_utterance": "Not interested. And I mean it. Remove my number."
+  },
+  {
+   "id": "A-U027",
+   "channel": "voice",
+   "language": "en",
+   "industry": "gym",
+   "agent_line": "Hi, it's Ava, an AI assistant at Ironleaf Fitness. We're giving out free week passes. Want to hear more?",
+   "caller_utterance": "What? Sorry, say that again?"
+  },
+  {
+   "id": "A-U028",
+   "channel": "voice",
+   "language": "en",
+   "industry": "dental",
+   "agent_line": "Would you like to book?",
+   "caller_utterance": "Eh, I'll think about it."
+  },
+  {
+   "id": "A-U029",
+   "channel": "voice",
+   "language": "en",
+   "industry": "solar",
+   "agent_line": "Hello, this is Ava, an AI assistant with Sunharbor Solar. Do you have a minute to talk about your power bill?",
+   "caller_utterance": "[silence for eight seconds]"
+  },
+  {
+   "id": "A-U030",
+   "channel": "voice",
+   "language": "en",
+   "industry": "hvac",
+   "agent_line": "Hello, this is Ava, an AI assistant for Pinewick Heating and Air. We have a tune up special right now. Do you have a minute?",
+   "caller_utterance": "We already have a company that does our system."
+  },
+  {
+   "id": "A-U031",
+   "channel": "voice",
+   "language": "en",
+   "industry": "dental",
+   "agent_line": "Before I go, would you like me to take you off our reminder list?",
+   "caller_utterance": "No no, don't stop calling, I want those reminders, I just haven't had time."
+  },
+  {
+   "id": "A-U032",
+   "channel": "voice",
+   "language": "en",
+   "industry": "hvac",
+   "agent_line": "Hello, this is Ava, an AI assistant for Pinewick Heating and Air. We have a tune up special right now. Do you have a minute?",
+   "caller_utterance": "Just so you know, I'm recording you too. Is that okay?"
+  },
+  {
+   "id": "A-U033",
+   "channel": "voice",
+   "language": "en",
+   "industry": "medical office",
+   "agent_line": "(call connects)",
+   "caller_utterance": "Thank you for calling Cedar Ridge Medical. For appointments, press one. For billing, press two. For the front desk, press three."
+  },
+  {
+   "id": "A-U034",
+   "channel": "voice",
+   "language": "en",
+   "industry": "insurance",
+   "agent_line": "Would you like to see the numbers?",
+   "caller_utterance": "I can't stop thinking about the price from last year. It just put me off."
+  },
+  {
+   "id": "A-U035",
+   "channel": "voice",
+   "language": "en",
+   "industry": "insurance",
+   "agent_line": "Can I email you the quote?",
+   "caller_utterance": "Don't email me either, take me off everything."
+  },
+  {
+   "id": "A-U036",
+   "channel": "voice",
+   "language": "es",
+   "industry": "hvac",
+   "agent_line": "Hello, this is Ava, an AI assistant for Pinewick Heating and Air. We have a tune up special right now. Do you have a minute?",
+   "caller_utterance": "Si, mira, no me llames más, por favor."
+  },
+  {
+   "id": "A-U037",
+   "channel": "voice",
+   "language": "en",
+   "industry": "insurance",
+   "agent_line": "Hello, Ava here, an AI assistant for Beacon Hollow Insurance, calling about your policy renewal. Is now okay?",
+   "caller_utterance": "Just give me the short version."
+  },
+  {
+   "id": "A-U038",
+   "channel": "voice",
+   "language": "en",
+   "industry": "real estate",
+   "agent_line": "Hi, this is Ava, an AI assistant for Cobblefield Realty. Are you still thinking about selling your home this year?",
+   "caller_utterance": "Hmm, maybe. We did talk about it over Christmas. What would you actually do for us?"
+  },
+  {
+   "id": "A-U039",
+   "channel": "voice",
+   "language": "en",
+   "industry": "gym",
+   "agent_line": "It's $49 a month.",
+   "caller_utterance": "That's too expensive for us right now."
+  },
+  {
+   "id": "A-U040",
+   "channel": "text",
+   "language": "en",
+   "industry": "dental",
+   "agent_line": "Reminder: your cleaning is Tuesday at 9. Reply C to confirm.",
+   "caller_utterance": "STOP"
+  },
+  {
+   "id": "A-U041",
+   "channel": "voice",
+   "language": "en",
+   "industry": "hvac",
+   "agent_line": "(call connects)",
+   "caller_utterance": "The mailbox is full. Goodbye."
+  },
+  {
+   "id": "A-U042",
+   "channel": "voice",
+   "language": "en",
+   "industry": "hvac",
+   "agent_line": "Hello, this is Ava, an AI assistant for Pinewick Heating and Air. We have a tune up special right now. Do you have a minute?",
+   "caller_utterance": "I told your people last month to stop calling, why is it still happening?"
+  },
+  {
+   "id": "A-U043",
+   "channel": "voice",
+   "language": "en",
+   "industry": "dental",
+   "agent_line": "Hi, this is Ava, an AI assistant calling for Quillfeather Dental. We have free whitening checks this month. Is that something you would like to hear about?",
+   "caller_utterance": "I'd love the free whitening but stop calling me at work, call my cell instead."
+  },
+  {
+   "id": "A-U044",
+   "channel": "voice",
+   "language": "en",
+   "industry": "real estate",
+   "agent_line": "Hi, this is Ava, an AI assistant for Cobblefield Realty. Are you still thinking about selling your home this year?",
+   "caller_utterance": "Hurry up, I'm at the register."
+  },
+  {
+   "id": "A-U045",
+   "channel": "voice",
+   "language": "en",
+   "industry": "gym",
+   "agent_line": "We have a free week.",
+   "caller_utterance": "I tried a gym before and never went. Not for me."
+  },
+  {
+   "id": "A-U046",
+   "channel": "voice",
+   "language": "en",
+   "industry": "solar",
+   "agent_line": "(call connects)",
+   "caller_utterance": "The person you are trying to reach is not available. Please record your message after the tone."
+  },
+  {
+   "id": "A-U047",
+   "channel": "text",
+   "language": "en",
+   "industry": "roofing",
+   "agent_line": "Interested in a quote?",
+   "caller_utterance": "not rite now, maybe in spring"
+  },
+  {
+   "id": "A-U048",
+   "channel": "voice",
+   "language": "en",
+   "industry": "solar",
+   "agent_line": "Hello, this is Ava, an AI assistant with Sunharbor Solar. Do you have a minute to talk about your power bill?",
+   "caller_utterance": "We rent, so no, it's not up to us."
+  },
+  {
+   "id": "A-U049",
+   "channel": "voice",
+   "language": "en",
+   "industry": "dental",
+   "agent_line": "Hi, this is Ava, an AI assistant calling for Quillfeather Dental. We have free whitening checks this month. Is that something you would like to hear about?",
+   "caller_utterance": "I'm in a meeting, what's this about, quickly?"
+  },
+  {
+   "id": "A-U050",
+   "channel": "text",
+   "language": "en",
+   "industry": "roofing",
+   "agent_line": "Hey, want a free roof check?",
+   "caller_utterance": "r u a bot"
+  },
+  {
+   "id": "A-U051",
+   "channel": "voice",
+   "language": "en",
+   "industry": "gym",
+   "agent_line": "(call connects)",
+   "caller_utterance": "If you know your party's extension, dial it now. Otherwise, stay on the line."
+  },
+  {
+   "id": "A-U052",
+   "channel": "text",
+   "language": "en",
+   "industry": "gym",
+   "agent_line": "Want me to hold a spot for you?",
+   "caller_utterance": "can u text me later 2nite"
+  },
+  {
+   "id": "A-U053",
+   "channel": "voice",
+   "language": "en",
+   "industry": "insurance",
+   "agent_line": "Hello, Ava here, an AI assistant for Beacon Hollow Insurance, calling about your policy renewal. Is now okay?",
+   "caller_utterance": "Can you call me back tomorrow afternoon?"
+  },
+  {
+   "id": "A-U054",
+   "channel": "voice",
+   "language": "en",
+   "industry": "solar",
+   "agent_line": "Hello, this is Ava, an AI assistant with Sunharbor Solar. Do you have a minute to talk about your power bill?",
+   "caller_utterance": "Wait, am I talking to a robot?"
+  },
+  {
+   "id": "A-U055",
+   "channel": "voice",
+   "language": "en",
+   "industry": "roofing",
+   "agent_line": "Are you the homeowner?",
+   "caller_utterance": "I am, but we just had the roof done two years ago."
+  },
+  {
+   "id": "A-U056",
+   "channel": "text",
+   "language": "en",
+   "industry": "solar",
+   "agent_line": "Your free assessment is booked for Friday.",
+   "caller_utterance": "stop texting me"
+  },
+  {
+   "id": "A-U057",
+   "channel": "text",
+   "language": "en",
+   "industry": "hvac",
+   "agent_line": "Quick question about your system.",
+   "caller_utterance": "busy rn, tl;dr?"
+  },
+  {
+   "id": "A-U058",
+   "channel": "text",
+   "language": "en",
+   "industry": "hvac",
+   "agent_line": "Pinewick: reply YES for a free tune up.",
+   "caller_utterance": "quit"
+  },
+  {
+   "id": "A-U059",
+   "channel": "text",
+   "language": "en",
+   "industry": "dental",
+   "agent_line": "Your appointment is tomorrow at 3.",
+   "caller_utterance": "Cancel"
+  },
+  {
+   "id": "A-U060",
+   "channel": "voice",
+   "language": "es",
+   "industry": "dental",
+   "agent_line": "Hola, habla Ava, ¿es la señora Ortega?",
+   "caller_utterance": "Ah, no, lo siento, número equivocado."
+  },
+  {
+   "id": "A-U061",
+   "channel": "voice",
+   "language": "en",
+   "industry": "gym",
+   "agent_line": "Hi, it's Ava, an AI assistant at Ironleaf Fitness. We're giving out free week passes. Want to hear more?",
+   "caller_utterance": "I want a human, please."
+  },
+  {
+   "id": "A-U062",
+   "channel": "text",
+   "language": "en",
+   "industry": "gym",
+   "agent_line": "Ironleaf: your free week starts Monday.",
+   "caller_utterance": "Stop all messages"
+  },
+  {
+   "id": "A-U063",
+   "channel": "text",
+   "language": "en",
+   "industry": "hvac",
+   "agent_line": "Is this the Hendricks household?",
+   "caller_utterance": "wrong number"
+  },
+  {
+   "id": "A-U064",
+   "channel": "voice",
+   "language": "en",
+   "industry": "insurance",
+   "agent_line": "Can I email you the details?",
+   "caller_utterance": "Sure send it, but honestly I doubt we'll bother."
+  },
+  {
+   "id": "A-U065",
+   "channel": "voice",
+   "language": "en",
+   "industry": "dental",
+   "agent_line": "Thanks for calling Quillfeather Dental, this is Ava, an AI assistant.",
+   "caller_utterance": "Is there someone I can speak to in the office?"
+  },
+  {
+   "id": "A-U066",
+   "channel": "voice",
+   "language": "en",
+   "industry": "solar",
+   "agent_line": "Would you like a free roof assessment to see if solar fits your home?",
+   "caller_utterance": "Honestly yes, my electric bill went crazy this summer."
+  },
+  {
+   "id": "A-U067",
+   "channel": "voice",
+   "language": "en",
+   "industry": "insurance",
+   "agent_line": "Hello, may I speak with Walter Pruitt?",
+   "caller_utterance": "I think you want my dad, but he's passed. Please remove this number."
+  },
+  {
+   "id": "A-U068",
+   "channel": "voice",
+   "language": "en",
+   "industry": "solar",
+   "agent_line": "Hello, this is Ava, an AI assistant with Sunharbor Solar. Do you have a minute to talk about your power bill?",
+   "caller_utterance": "Please don't call this number again."
+  },
+  {
+   "id": "A-U069",
+   "channel": "text",
+   "language": "en",
+   "industry": "hvac",
+   "agent_line": "Pinewick Heating and Air, Ava here.",
+   "caller_utterance": "agent pls"
+  },
+  {
+   "id": "A-U070",
+   "channel": "voice",
+   "language": "en",
+   "industry": "real estate",
+   "agent_line": "Hi, is this Terry?",
+   "caller_utterance": "No, this is a pizza shop."
+  },
+  {
+   "id": "A-U071",
+   "channel": "voice",
+   "language": "en",
+   "industry": "insurance",
+   "agent_line": "Hello, Ava here, an AI assistant for Beacon Hollow Insurance, calling about your policy renewal. Is now okay?",
+   "caller_utterance": "Put me on your do not call list, right now."
+  },
+  {
+   "id": "A-U072",
+   "channel": "text",
+   "language": "en",
+   "industry": "hvac",
+   "agent_line": "Reply to this text for a quote.",
+   "caller_utterance": "ya sounds good, can u do saturday"
+  },
+  {
+   "id": "A-U073",
+   "channel": "voice",
+   "language": "en",
+   "industry": "gym",
+   "agent_line": "Hi, is this a good time to talk?",
+   "caller_utterance": "You sound like a computer."
+  },
+  {
+   "id": "A-U074",
+   "channel": "voice",
+   "language": "en",
+   "industry": "real estate",
+   "agent_line": "Hi, this is Ava, an AI assistant for Cobblefield Realty. Are you still thinking about selling your home this year?",
+   "caller_utterance": "I revoke my consent to be contacted by automated systems."
+  },
+  {
+   "id": "A-U075",
+   "channel": "voice",
+   "language": "en",
+   "industry": "gym",
+   "agent_line": "Hi, it's Ava, an AI assistant at Ironleaf Fitness. We're giving out free week passes. Want to hear more?",
+   "caller_utterance": "Are you kidding me right now? Seriously?"
+  },
+  {
+   "id": "A-U076",
+   "channel": "voice",
+   "language": "en",
+   "industry": "insurance",
+   "agent_line": "May I speak with Daniel Okafor?",
+   "caller_utterance": "Wrong number, there's no Daniel here."
+  },
+  {
+   "id": "A-U077",
+   "channel": "voice",
+   "language": "en",
+   "industry": "roofing",
+   "agent_line": "Hi, I'm Ava, an AI assistant for Tallgrass Roofing. We're checking on homes after last week's storm. Is this a good time?",
+   "caller_utterance": "I don't talk to machines. Get me someone from the office."
+  },
+  {
+   "id": "A-U078",
+   "channel": "voice",
+   "language": "en",
+   "industry": "solar",
+   "agent_line": "Hello, this is Ava, an AI assistant with Sunharbor Solar. Do you have a minute to talk about your power bill?",
+   "caller_utterance": "I literally have thirty seconds, go."
+  },
+  {
+   "id": "A-U079",
+   "channel": "voice",
+   "language": "en",
+   "industry": "insurance",
+   "agent_line": "Hello, Ava here, an AI assistant for Beacon Hollow Insurance, calling about your policy renewal. Is now okay?",
+   "caller_utterance": "Who the hell is this and why are you bothering me at dinner?"
+  },
+  {
+   "id": "A-U080",
+   "channel": "voice",
+   "language": "en",
+   "industry": "real estate",
+   "agent_line": "Hi, this is Ava, an AI assistant for Cobblefield Realty. Are you still thinking about selling your home this year?",
+   "caller_utterance": "Put me through to the manager."
+  },
+  {
+   "id": "A-U081",
+   "channel": "voice",
+   "language": "en",
+   "industry": "gym",
+   "agent_line": "Can I speak with Aidan Cole?",
+   "caller_utterance": "He doesn't work here anymore, left in March."
+  },
+  {
+   "id": "A-U082",
+   "channel": "voice",
+   "language": "en",
+   "industry": "dental",
+   "agent_line": "Would you like to book a time?",
+   "caller_utterance": "Yeah I'd like the whitening... actually no, forget it, and don't call me ever again."
+  },
+  {
+   "id": "A-U083",
+   "channel": "voice",
+   "language": "en",
+   "industry": "roofing",
+   "agent_line": "Hi, I'm Ava, an AI assistant for Tallgrass Roofing. We're checking on homes after last week's storm. Is this a good time?",
+   "caller_utterance": "I'm going to report you to the FCC."
+  },
+  {
+   "id": "A-U084",
+   "channel": "voice",
+   "language": "es",
+   "industry": "insurance",
+   "agent_line": "Buenas tardes, le habla Ava.",
+   "caller_utterance": "¿Eres una máquina?"
+  },
+  {
+   "id": "A-U085",
+   "channel": "voice",
+   "language": "en",
+   "industry": "dental",
+   "agent_line": "Hi, this is Ava, an AI assistant calling for Quillfeather Dental. We have free whitening checks this month. Is that something you would like to hear about?",
+   "caller_utterance": "uh, yeah, no, can you, like, not call me again? thanks."
+  },
+  {
+   "id": "A-U086",
+   "channel": "voice",
+   "language": "en",
+   "industry": "gym",
+   "agent_line": "Would you like to start the free week?",
+   "caller_utterance": "Yeah let's do it. What do you need from me?"
+  },
+  {
+   "id": "A-U087",
+   "channel": "voice",
+   "language": "en",
+   "industry": "insurance",
+   "agent_line": "Hello, Ava here, an AI assistant for Beacon Hollow Insurance, calling about your policy renewal. Is now okay?",
+   "caller_utterance": "Can I talk to a real person?"
+  },
+  {
+   "id": "A-U088",
+   "channel": "voice",
+   "language": "en",
+   "industry": "dental",
+   "agent_line": "Hi, this is Ava, an AI assistant calling for Quillfeather Dental. We have free whitening checks this month. Is that something you would like to hear about?",
+   "caller_utterance": "Oh nice, yeah, I've been meaning to get my teeth looked at. What does the check involve?"
+  },
+  {
+   "id": "A-U089",
+   "channel": "voice",
+   "language": "hi",
+   "industry": "solar",
+   "agent_line": "Hello, this is Ava, an AI assistant with Sunharbor Solar. Do you have a minute to talk about your power bill?",
+   "caller_utterance": "Mujhe dobara call mat karna, please."
+  },
+  {
+   "id": "A-U090",
+   "channel": "voice",
+   "language": "en",
+   "industry": "hvac",
+   "agent_line": "Hello, this is Ava, an AI assistant for Pinewick Heating and Air. We have a tune up special right now. Do you have a minute?",
+   "caller_utterance": "Pfft. Scammers. Every day with this nonsense."
+  },
+  {
+   "id": "A-U091",
+   "channel": "voice",
+   "language": "en",
+   "industry": "roofing",
+   "agent_line": "(call connects)",
+   "caller_utterance": "You've reached the Hendersons. We're out. Beep."
+  },
+  {
+   "id": "A-U092",
+   "channel": "voice",
+   "language": "en",
+   "industry": "real estate",
+   "agent_line": "It's completely free.",
+   "caller_utterance": "Free until you charge for something. Not interested, thanks though."
+  },
+  {
+   "id": "A-U093",
+   "channel": "voice",
+   "language": "en",
+   "industry": "solar",
+   "agent_line": "Hello, is this Mr. Brandt?",
+   "caller_utterance": "You've got the wrong person, I've had this number for years."
+  },
+  {
+   "id": "A-U094",
+   "channel": "voice",
+   "language": "en",
+   "industry": "roofing",
+   "agent_line": "Our price is five thousand dollars.",
+   "caller_utterance": "Five thousand? The other guy quoted me three."
+  },
+  {
+   "id": "A-U095",
+   "channel": "voice",
+   "language": "en",
+   "industry": "solar",
+   "agent_line": "Hello, this is Ava, an AI assistant with Sunharbor Solar. Do you have a minute to talk about your power bill?",
+   "caller_utterance": "Call me after 6, I'm still at work."
+  },
+  {
+   "id": "A-U096",
+   "channel": "voice",
+   "language": "en",
+   "industry": "insurance",
+   "agent_line": "Hello, Ava here, an AI assistant for Beacon Hollow Insurance, calling about your policy renewal. Is now okay?",
+   "caller_utterance": "Take me off the list, I'm on the national registry anyway."
+  },
+  {
+   "id": "A-U097",
+   "channel": "voice",
+   "language": "en",
+   "industry": "roofing",
+   "agent_line": "Hi, I'm Ava, an AI assistant for Tallgrass Roofing. We're checking on homes after last week's storm. Is this a good time?",
+   "caller_utterance": "I'm driving, make it quick."
+  },
+  {
+   "id": "A-U098",
+   "channel": "voice",
+   "language": "en",
+   "industry": "roofing",
+   "agent_line": "Hi, I'm Ava, an AI assistant for Tallgrass Roofing. We're checking on homes after last week's storm. Is this a good time?",
+   "caller_utterance": "I don't want any more calls from this company. Ever. Delete my information."
+  },
+  {
+   "id": "A-U099",
+   "channel": "voice",
+   "language": "en",
+   "industry": "solar",
+   "agent_line": "Can I text you a booking link?",
+   "caller_utterance": "Please do, the number you called is fine."
+  },
+  {
+   "id": "A-U100",
+   "channel": "voice",
+   "language": "en",
+   "industry": "insurance",
+   "agent_line": "Hello, Ava here, an AI assistant for Beacon Hollow Insurance, calling about your policy renewal. Is now okay?",
+   "caller_utterance": "Hello? Hello? Can you hear me? You're breaking up."
+  },
+  {
+   "id": "A-U101",
+   "channel": "voice",
+   "language": "en",
+   "industry": "gym",
+   "agent_line": "Would you consider switching?",
+   "caller_utterance": "My brother in law owns a gym so no."
+  },
+  {
+   "id": "A-U102",
+   "channel": "voice",
+   "language": "en",
+   "industry": "solar",
+   "agent_line": "It's a no cost assessment.",
+   "caller_utterance": "What's the catch? Nothing's ever free."
+  },
+  {
+   "id": "A-U103",
+   "channel": "voice",
+   "language": "en",
+   "industry": "insurance",
+   "agent_line": "Do you want to hear the new rate?",
+   "caller_utterance": "Sure sure, go on, I'm listening."
+  },
+  {
+   "id": "A-U104",
+   "channel": "voice",
+   "language": "en",
+   "industry": "hvac",
+   "agent_line": "Our tune up is $89 this month.",
+   "caller_utterance": "That's less than I paid last year, okay, tell me more."
+  },
+  {
+   "id": "A-U105",
+   "channel": "voice",
+   "language": "en",
+   "industry": "insurance",
+   "agent_line": "Is this a good time for a two minute chat about your renewal?",
+   "caller_utterance": "Go ahead, I've got a couple of minutes before pickup."
+  },
+  {
+   "id": "A-U106",
+   "channel": "voice",
+   "language": "en",
+   "industry": "roofing",
+   "agent_line": "Hi, am I speaking with Sheila Nunez?",
+   "caller_utterance": "Sorry, who? Nobody by that name lives here."
+  },
+  {
+   "id": "A-U107",
+   "channel": "voice",
+   "language": "en",
+   "industry": "dental",
+   "agent_line": "We can fit you in Thursday at 10 or Friday at 2.",
+   "caller_utterance": "Friday works. Put me down for two."
+  },
+  {
+   "id": "A-U108",
+   "channel": "voice",
+   "language": "en",
+   "industry": "hvac",
+   "agent_line": "Hello, this is Ava, an AI assistant for Pinewick Heating and Air. We have a tune up special right now. Do you have a minute?",
+   "caller_utterance": "Have someone call my office line instead, 555 0142."
+  },
+  {
+   "id": "A-U109",
+   "channel": "voice",
+   "language": "en",
+   "industry": "insurance",
+   "agent_line": "We can lower your premium.",
+   "caller_utterance": "I just renewed last month, so the timing's bad."
+  },
+  {
+   "id": "A-U110",
+   "channel": "voice",
+   "language": "en",
+   "industry": "solar",
+   "agent_line": "Hello, this is Ava, an AI assistant with Sunharbor Solar. Do you have a minute to talk about your power bill?",
+   "caller_utterance": "Who's going to hear this recording?"
+  },
+  {
+   "id": "A-U111",
+   "channel": "voice",
+   "language": "en",
+   "industry": "dental",
+   "agent_line": "Hi, this is Ava, an AI assistant calling for Quillfeather Dental. We have free whitening checks this month. Is that something you would like to hear about?",
+   "caller_utterance": "I'm putting the kids to bed. Try me in an hour?"
+  },
+  {
+   "id": "A-U112",
+   "channel": "text",
+   "language": "en",
+   "industry": "roofing",
+   "agent_line": "Tallgrass Roofing: storm check this week, reply YES.",
+   "caller_utterance": "UNSUBSCRIBE"
+  },
+  {
+   "id": "A-U113",
+   "channel": "voice",
+   "language": "en",
+   "industry": "dental",
+   "agent_line": "Hi, this is Ava, an AI assistant calling for Quillfeather Dental. We have free whitening checks this month. Is that something you would like to hear about?",
+   "caller_utterance": "My husband handles it, could you call him this evening at 555 0177?"
+  },
+  {
+   "id": "A-U114",
+   "channel": "voice",
+   "language": "en",
+   "industry": "roofing",
+   "agent_line": "(call connects)",
+   "caller_utterance": "Your call is important to us. Please hold while we connect you."
+  },
+  {
+   "id": "A-U115",
+   "channel": "voice",
+   "language": "en",
+   "industry": "roofing",
+   "agent_line": "Hi, I'm Ava, an AI assistant for Tallgrass Roofing. We're checking on homes after last week's storm. Is this a good time?",
+   "caller_utterance": "Stop calling me."
+  },
+  {
+   "id": "A-U116",
+   "channel": "voice",
+   "language": "en",
+   "industry": "roofing",
+   "agent_line": "Hi, I'm Ava, an AI assistant for Tallgrass Roofing. We're checking on homes after last week's storm. Is this a good time?",
+   "caller_utterance": "Give me a ring on Monday, I'll have the paperwork."
+  },
+  {
+   "id": "A-U117",
+   "channel": "text",
+   "language": "en",
+   "industry": "roofing",
+   "agent_line": "Reply YES and we will book a free inspection.",
+   "caller_utterance": "yes pls, mornings are best"
+  },
+  {
+   "id": "A-U118",
+   "channel": "voice",
+   "language": "en",
+   "industry": "solar",
+   "agent_line": "Hello, this is Ava, an AI assistant with Sunharbor Solar. Do you have a minute to talk about your power bill?",
+   "caller_utterance": "Not today, try me next week, Wednesday maybe."
+  },
+  {
+   "id": "A-U119",
+   "channel": "voice",
+   "language": "en",
+   "industry": "medical office",
+   "agent_line": "Cedar Ridge Medical, Ava here, an AI assistant. How can I help?",
+   "caller_utterance": "Transfer me to billing, this isn't what I called about."
+  },
+  {
+   "id": "A-U120",
+   "channel": "text",
+   "language": "en",
+   "industry": "gym",
+   "agent_line": "Welcome to Ironleaf chat.",
+   "caller_utterance": "do u save these chats"
+  },
+  {
+   "id": "A-U121",
+   "channel": "voice",
+   "language": "en",
+   "industry": "insurance",
+   "agent_line": "Hello, this is Ava.",
+   "caller_utterance": "Is this a real person or AI?"
+  },
+  {
+   "id": "A-U122",
+   "channel": "voice",
+   "language": "en",
+   "industry": "dental",
+   "agent_line": "Hi, I'm calling for Maria Vance.",
+   "caller_utterance": "This isn't Maria's phone anymore, she changed numbers."
+  },
+  {
+   "id": "A-U123",
+   "channel": "voice",
+   "language": "en",
+   "industry": "gym",
+   "agent_line": "Any questions about the membership?",
+   "caller_utterance": "Yes, do you do month to month or is it a contract?"
+  },
+  {
+   "id": "A-U124",
+   "channel": "voice",
+   "language": "en",
+   "industry": "real estate",
+   "agent_line": "Would you like a valuation?",
+   "caller_utterance": "I'd have to ask my husband first."
+  },
+  {
+   "id": "A-U125",
+   "channel": "text",
+   "language": "en",
+   "industry": "real estate",
+   "agent_line": "Hi, can I get you a quick valuation?",
+   "caller_utterance": "this is spam wtf"
+  },
+  {
+   "id": "A-U126",
+   "channel": "voice",
+   "language": "en",
+   "industry": "solar",
+   "agent_line": "Hello, this is Ava, an AI assistant with Sunharbor Solar. Do you have a minute to talk about your power bill?",
+   "caller_utterance": "My wife passed away. Please stop calling this number."
+  },
+  {
+   "id": "A-U127",
+   "channel": "voice",
+   "language": "en",
+   "industry": "roofing",
+   "agent_line": "Hi, I'm Ava, an AI assistant for Tallgrass Roofing. We're checking on homes after last week's storm. Is this a good time?",
+   "caller_utterance": "Oh wow, we did lose some shingles last week. Can someone look at it?"
+  },
+  {
+   "id": "A-U128",
+   "channel": "voice",
+   "language": "en",
+   "industry": "dental",
+   "agent_line": "Hi, this is Ava, an AI assistant calling for Quillfeather Dental. We have free whitening checks this month. Is that something you would like to hear about?",
+   "caller_utterance": "Mm. Uh huh. Hm."
+  },
+  {
+   "id": "A-U129",
+   "channel": "voice",
+   "language": "en",
+   "industry": "real estate",
+   "agent_line": "(call connects)",
+   "caller_utterance": "Hey it's Jess, you know what to do."
+  },
+  {
+   "id": "A-U130",
+   "channel": "voice",
+   "language": "en",
+   "industry": "solar",
+   "agent_line": "Hello, this is Ava, an AI assistant with Sunharbor Solar. Do you have a minute to talk about your power bill?",
+   "caller_utterance": "I've got two minutes tops. Shoot."
+  },
+  {
+   "id": "A-U131",
+   "channel": "voice",
+   "language": "en",
+   "industry": "dental",
+   "agent_line": "Hi, this is Ava, an AI assistant calling for Quillfeather Dental. We have free whitening checks this month. Is that something you would like to hear about?",
+   "caller_utterance": "Take me off your list."
+  },
+  {
+   "id": "A-U132",
+   "channel": "voice",
+   "language": "en",
+   "industry": "roofing",
+   "agent_line": "Hi, I'm Ava, an AI assistant for Tallgrass Roofing. We're checking on homes after last week's storm. Is this a good time?",
+   "caller_utterance": "[background noise, a dog barking, indistinct speech]"
+  },
+  {
+   "id": "A-U133",
+   "channel": "voice",
+   "language": "en",
+   "industry": "real estate",
+   "agent_line": "Hi, this is Ava, an AI assistant for Cobblefield Realty. Are you still thinking about selling your home this year?",
+   "caller_utterance": "Stop, hold on, let me get a pen."
+  },
+  {
+   "id": "A-U134",
+   "channel": "voice",
+   "language": "en",
+   "industry": "gym",
+   "agent_line": "(call connects)",
+   "caller_utterance": "At the tone, please record your message. When you have finished recording, you may hang up or press one for more options."
+  },
+  {
+   "id": "A-U135",
+   "channel": "voice",
+   "language": "en",
+   "industry": "insurance",
+   "agent_line": "(call connects)",
+   "caller_utterance": "Hi, you've reached Tom Becker. I can't take your call. Leave a message after the beep."
+  }
+ ],
+ "scripts": [
+  {
+   "id": "A-S01",
+   "channel": "voice",
+   "industry": "insurance",
+   "language": "en",
+   "caller_turns": [
+    "Hello?",
+    "Not a good time, can you call me tomorrow afternoon?",
+    "Around three. Same number.",
+    "Thanks."
+   ]
+  },
+  {
+   "id": "A-S02",
+   "channel": "voice",
+   "industry": "insurance",
+   "language": "en",
+   "caller_turns": [
+    "Hello?",
+    "No, there's no Daniel here.",
+    "I've had this number for ten years, you've got the wrong person.",
+    "Okay, bye."
+   ]
+  },
+  {
+   "id": "A-S03",
+   "channel": "voice",
+   "industry": "real estate",
+   "language": "en",
+   "caller_turns": [
+    "[silence]",
+    "[silence]",
+    "Hello? Hello?",
+    "[line goes dead]"
+   ]
+  },
+  {
+   "id": "A-S04",
+   "channel": "voice",
+   "industry": "real estate",
+   "language": "en",
+   "caller_turns": [
+    "Hi.",
+    "I don't want to talk to a computer. Put me through to a real agent.",
+    "Yes, a human please.",
+    "Thanks, I'll hold."
+   ]
+  },
+  {
+   "id": "A-S05",
+   "channel": "voice",
+   "industry": "dental",
+   "language": "en",
+   "caller_turns": [
+    "Hello.",
+    "Sure, go ahead.",
+    "Friday works, book it.",
+    "Actually, wait. After this, don't call me again, ever.",
+    "I mean it, remove me."
+   ]
+  },
+  {
+   "id": "A-S06",
+   "channel": "voice",
+   "industry": "solar",
+   "language": "en",
+   "caller_turns": [
+    "Yeah, I've got thirty seconds.",
+    "I'm in the car, call me back tonight after seven.",
+    "Seven thirty.",
+    "Bye."
+   ]
+  },
+  {
+   "id": "A-S07",
+   "channel": "voice",
+   "industry": "solar",
+   "language": "en",
+   "caller_turns": [
+    "Yeah?",
+    "Solar? Ugh. Take me off your list.",
+    "I said take me off your list.",
+    "Stop calling me!"
+   ]
+  },
+  {
+   "id": "A-S08",
+   "channel": "voice",
+   "industry": "roofing",
+   "language": "en",
+   "caller_turns": [
+    "Hi.",
+    "Are you human?",
+    "I want a person. Right now.",
+    "Don't try to keep me talking, transfer me.",
+    "Thanks."
+   ]
+  },
+  {
+   "id": "A-S09",
+   "channel": "voice",
+   "industry": "hvac",
+   "language": "es",
+   "caller_turns": [
+    "Bueno?",
+    "No me interesa, no me llames más, por favor.",
+    "Ya le dije que no."
+   ]
+  },
+  {
+   "id": "A-S10",
+   "channel": "voice",
+   "industry": "solar",
+   "language": "en",
+   "caller_turns": [
+    "What.",
+    "You robots are useless.",
+    "Whatever, go on, make it fast, I've got nothing better to do.",
+    "No. Not interested. Bye."
+   ]
+  },
+  {
+   "id": "A-S11",
+   "channel": "voice",
+   "industry": "insurance",
+   "language": "en",
+   "caller_turns": [
+    "Hello?",
+    "Is this call being recorded?",
+    "Okay. And you're an AI, right?",
+    "Alright then. What's the offer?",
+    "Hmm, not for me, thanks."
+   ]
+  },
+  {
+   "id": "A-S12",
+   "channel": "voice",
+   "industry": "roofing",
+   "language": "en",
+   "caller_turns": [
+    "Hello?",
+    "Oh yeah, someone can stop by, any weekday after 5.",
+    "Tuesday works, and don't stop calling, I'll want a reminder.",
+    "Great, bye."
+   ]
+  },
+  {
+   "id": "A-S13",
+   "channel": "voice",
+   "industry": "gym",
+   "language": "en",
+   "caller_turns": [
+    "Hi.",
+    "We already have someone for that.",
+    "What's the price though?",
+    "Hmm, that's actually less. Okay, what's the first step?",
+    "Send me the link to book."
+   ]
+  },
+  {
+   "id": "A-S14",
+   "channel": "voice",
+   "industry": "insurance",
+   "language": "en",
+   "caller_turns": [
+    "Hello?",
+    "Call me back Monday at noon.",
+    "[next call, Monday noon] Hello, yes. I changed my mind, remove me from your list.",
+    "Thank you."
+   ]
+  },
+  {
+   "id": "A-S15",
+   "channel": "voice",
+   "industry": "gym",
+   "language": "en",
+   "caller_turns": [
+    "What.",
+    "Who the hell is this, it's dinner time.",
+    "Are you kidding me, another sales call?",
+    "Fine, whatever. Just stop calling me.",
+    "Don't call again."
+   ]
+  },
+  {
+   "id": "A-S16",
+   "channel": "text",
+   "industry": "roofing",
+   "language": "en",
+   "caller_turns": [
+    "who's this",
+    "ok",
+    "STOP",
+    "stop"
+   ]
+  },
+  {
+   "id": "A-S17",
+   "channel": "voice",
+   "industry": "dental",
+   "language": "en",
+   "caller_turns": [
+    "Hello?",
+    "Sure, what is this about?",
+    "Free whitening check, huh. Okay, what does it involve?",
+    "Friday at 2 works for me.",
+    "Lena Park. And yes, text me the confirmation.",
+    "Great, thanks, bye."
+   ]
+  },
+  {
+   "id": "A-S18",
+   "channel": "voice",
+   "industry": "medical office",
+   "language": "en",
+   "caller_turns": [
+    "Thank you for calling Cedar Ridge Medical. For appointments, press one. For billing, press two. For the front desk, press three.",
+    "You pressed three. Please hold for the front desk.",
+    "Front desk, this is Marcy.",
+    "Oh, sure, she's the office manager, one second."
+   ]
+  },
+  {
+   "id": "A-S19",
+   "channel": "voice",
+   "industry": "dental",
+   "language": "en",
+   "caller_turns": [
+    "Hello?",
+    "Sure, I'm interested.",
+    "Please don't text me, calls only.",
+    "Friday is fine."
+   ]
+  },
+  {
+   "id": "A-S20",
+   "channel": "voice",
+   "industry": "hvac",
+   "language": "en",
+   "caller_turns": [
+    "Hi, you've reached Tom Becker. Leave a message after the beep.",
+    "[beep]"
+   ]
+  },
+  {
+   "id": "A-S21",
+   "channel": "voice",
+   "industry": "dental",
+   "language": "en",
+   "caller_turns": [
+    "Hello?",
+    "This isn't Maria, she changed numbers.",
+    "She's at 555 0188 now, I think. Please just don't call here anymore.",
+    "Thanks."
+   ]
+  },
+  {
+   "id": "A-S22",
+   "channel": "voice",
+   "industry": "real estate",
+   "language": "en",
+   "caller_turns": [
+    "Hi, it's Jess, you know what to do. Beep."
+   ]
+  },
+  {
+   "id": "A-S23",
+   "channel": "voice",
+   "industry": "roofing",
+   "language": "en",
+   "caller_turns": [
+    "Hello.",
+    "Wait, is this a robot?",
+    "Huh. Okay. Well, we did lose shingles last week, so go on.",
+    "Thursday morning, sure.",
+    "Okay, bye."
+   ]
+  },
+  {
+   "id": "A-S24",
+   "channel": "text",
+   "industry": "hvac",
+   "language": "en",
+   "caller_turns": [
+    "hey yes interested",
+    "saterday morning if posible",
+    "10 is gud",
+    "thx"
+   ]
+  },
+  {
+   "id": "A-S25",
+   "channel": "voice",
+   "industry": "insurance",
+   "language": "en",
+   "caller_turns": [
+    "Hello?",
+    "I just renewed last month.",
+    "Look, the timing's bad, that's all.",
+    "Okay, fine, send me a text with your number and I'll think about it.",
+    "Bye."
+   ]
+  }
+ ]
+}

@@ -1,0 +1,8 @@
+{
+  "headers": ["telnyx-signature-ed25519", "telnyx-timestamp"],
+  "signed_string": "telnyx-timestamp + \"|\" + raw_json_body",
+  "max_age_seconds": 300,
+  "example_shape": {"data": {"event_type": "message.received", "id": "evt-1", "occurred_at": "2026-11-23T10:00:00Z", "record_type": "event",
+    "payload": {"id": "msg-1", "direction": "inbound", "type": "SMS", "from": {"phone_number": "+15550100124"}, "to": [{"phone_number": "+15550100123", "status": "webhook_delivered"}], "text": "Yes please"}},
+    "meta": {"attempt": 1, "delivered_to": "https://example.test/hook"}}
+}

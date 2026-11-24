@@ -1,0 +1,106 @@
+{
+ "base_path": "/v2",
+ "dial": {
+  "path": "/calls",
+  "required": [
+   "connection_id",
+   "to",
+   "from"
+  ],
+  "sent_by_ringlark": [
+   "connection_id",
+   "to",
+   "from",
+   "client_state",
+   "webhook_url",
+   "answering_machine_detection"
+  ],
+  "amd_values": [
+   "premium",
+   "premium_ios_call_screening_detection",
+   "detect",
+   "detect_beep",
+   "detect_words",
+   "greeting_end",
+   "disabled"
+  ],
+  "response_example": {
+   "data": {
+    "call_control_id": "v3:example-call-control-id",
+    "call_leg_id": "2dc6fc34-f9e0-11ea-b68e-02420a0f7768",
+    "call_session_id": "2dc1b3c8-f9e0-11ea-bc5a-02420a0f7768",
+    "client_state": "aGF2ZSBhIG5pY2UgZGF5ID1d",
+    "is_alive": false,
+    "record_type": "call"
+   }
+  }
+ },
+ "streaming_start": {
+  "path": "/calls/{call_control_id}/actions/streaming_start",
+  "fields": [
+   "stream_url",
+   "stream_track",
+   "stream_codec",
+   "stream_bidirectional_mode",
+   "stream_bidirectional_codec",
+   "stream_bidirectional_target_legs",
+   "stream_bidirectional_sampling_rate",
+   "enable_reconnect",
+   "client_state",
+   "command_id",
+   "custom_parameters",
+   "stream_auth_token"
+  ],
+  "stream_track": [
+   "inbound_track",
+   "outbound_track",
+   "both_tracks"
+  ],
+  "stream_bidirectional_mode": [
+   "mp3",
+   "rtp"
+  ],
+  "stream_url_example": "wss://www.example.com/websocket"
+ },
+ "send_dtmf": {
+  "path": "/calls/{call_control_id}/actions/send_dtmf",
+  "required": [
+   "digits"
+  ],
+  "optional": [
+   "duration_millis",
+   "client_state",
+   "command_id"
+  ],
+  "valid_digits": "0-9, A-D, *, #"
+ },
+ "speak": {
+  "path": "/calls/{call_control_id}/actions/speak",
+  "required": [
+   "payload",
+   "voice"
+  ],
+  "voice_format": "<Provider>.<Model>.<VoiceId>",
+  "voice_example": "Telnyx.KokoroTTS.af",
+  "optional": [
+   "language"
+  ],
+  "payload_max_chars": 3000
+ },
+ "transfer": {
+  "path": "/calls/{call_control_id}/actions/transfer",
+  "required": [
+   "to"
+  ]
+ },
+ "hangup": {
+  "path": "/calls/{call_control_id}/actions/hangup",
+  "confirmed": false,
+  "note": "page not fetched (404); path written by symmetry"
+ },
+ "machine_detection_event": {
+  "event_type": "call.machine.detection.ended",
+  "result_field": "data.payload.result",
+  "premium_event_type": "call.machine.premium.detection.ended"
+ }
+}

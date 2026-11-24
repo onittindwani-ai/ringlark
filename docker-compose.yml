@@ -1,0 +1,65 @@
+# One command start: docker compose up -d --build
+# Needs a .env file (copy .env.example). Postgres data lives in a named volume.
+services:
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ringlark
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ringlark
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ringlark"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://ringlark:${POSTGRES_PASSWORD}@db:5432/ringlark
+      HANDOFF_DIR: /data/handoff
+    volumes:
+      - handoff:/data/handoff
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8000:8000"
+
+  worker:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://ringlark:${POSTGRES_PASSWORD}@db:5432/ringlark
+      HANDOFF_DIR: /data/handoff
+    command: ["python", "-m", "ringlark.worker"]
+    volumes:
+      - handoff:/data/handoff
+    depends_on:
+      - api
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    restart: unless-stopped
+    environment:
+      API_BASE_URL: http://api:8000
+    depends_on:
+      - api
+    ports:
+      - "127.0.0.1:3000:3000"
+
+volumes:
+  dbdata:
+  handoff:

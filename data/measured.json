@@ -1,0 +1,110 @@
+{
+ "measured_on": "2026-11-24",
+ "tests": {
+  "passed": 236,
+  "skipped": 1,
+  "failed": 0,
+  "coverage_percent": 87
+ },
+ "browser_tests": 39,
+ "screenshots": 38,
+ "adapters_registered": 14,
+ "contract_tests": 12,
+ "tool_groups": 7,
+ "tools_scored": 22,
+ "seed": {
+  "measured": "2026-11-23",
+  "seed": {
+   "people": 55,
+   "practice_company_lines": 31,
+   "agents": 2,
+   "numbers": 2,
+   "do_not_call_entries": 5,
+   "consent_records": 13,
+   "planted_problems": 7,
+   "planted_rows": 19
+  },
+  "personas": {
+   "dev": 14,
+   "heldout_1": 14,
+   "heldout_2": 14
+  },
+  "first_runs": {
+   "heldout_1": "12 of 14",
+   "heldout_2": "7 of 14"
+  },
+  "ui_pages": 11,
+  "api_paths": 46,
+  "tools_scored": 22,
+  "tool_groups": 7,
+  "tests": {
+   "python_passed": 104,
+   "python_skipped": 1,
+   "coverage_percent": 86,
+   "browser_tests_passed": 10,
+   "fresh_clone_run": "install, build, 97 python tests, seed check, 10 browser tests, all passed in a clean copy"
+  }
+ },
+ "reader": {
+  "set_a_first": {
+   "lines": 135,
+   "strict": 65,
+   "strict_percent": 48.1,
+   "lenient": 69,
+   "must_stop": 24,
+   "must_stop_stopped": 15,
+   "clear_stop": 15,
+   "clear_stop_stopped": 11,
+   "scripts": 25,
+   "outcome_strict": 11
+  },
+  "set_a_after": {
+   "lines": 135,
+   "strict": 99,
+   "strict_percent": 73.3,
+   "lenient": 102,
+   "must_stop": 24,
+   "must_stop_stopped": 16,
+   "clear_stop": 15,
+   "clear_stop_stopped": 14,
+   "scripts": 25,
+   "outcome_strict": 16
+  },
+  "set_b_first": {
+   "lines": 137,
+   "strict": 83,
+   "strict_percent": 60.6,
+   "lenient": 84,
+   "must_stop": 21,
+   "must_stop_stopped": 15,
+   "clear_stop": 14,
+   "clear_stop_stopped": 13,
+   "scripts": 25,
+   "outcome_strict": 13
+  },
+  "set_a_final": {
+   "lines": 135,
+   "strict": 99,
+   "strict_percent": 73.3,
+   "lenient": 105,
+   "must_stop": 24,
+   "must_stop_stopped": 23,
+   "clear_stop": 15,
+   "clear_stop_stopped": 15,
+   "scripts": 25,
+   "outcome_strict": 16
+  },
+  "set_b_final": {
+   "lines": 137,
+   "strict": 84,
+   "strict_percent": 61.3,
+   "lenient": 87,
+   "must_stop": 21,
+   "must_stop_stopped": 21,
+   "clear_stop": 14,
+   "clear_stop_stopped": 14,
+   "scripts": 25,
+   "outcome_strict": 13
+  }
+ }
+}

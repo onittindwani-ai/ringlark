@@ -1,0 +1,7 @@
+{
+  "text": "{\"say\": \"I'm sorry, I'm not following. I'll have someone from the practice call you. Goodbye.\", \"tool_calls\": [{\"tool\": \"end_call\", \"slot\": null, \"person_name\": null, \"reason\": null, \"disposition\": \"needs_review\", \"note\": \"\", \"digit\": null, \"kind\": null}]}",
+  "input_tokens": 150,
+  "output_tokens": 40,
+  "model": "claude-sonnet-5-5",
+  "prompt_preview": "[task:agent_turn]\nWrite the agent's next turn for the call that follows.\n\nReply with only JSON matching this schema:\n{\"$defs\": {\"ToolCall\": {\"additionalProperti"
+}

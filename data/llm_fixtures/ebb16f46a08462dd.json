@@ -1,0 +1,7 @@
+{
+  "text": "{\"say\": \"Done, you're booked for Tuesday at 3 pm. You'll get a confirmation. Goodbye.\", \"tool_calls\": [{\"tool\": \"book_meeting\", \"slot\": \"Tuesday at 3 pm\", \"person_name\": \"Caller\", \"reason\": null, \"disposition\": null, \"note\": null, \"digit\": null, \"kind\": null}, {\"tool\": \"end_call\", \"slot\": null, \"person_name\": null, \"reason\": null, \"disposition\": \"booked\", \"note\": \"\", \"digit\": null, \"kind\": null}]}",
+  "input_tokens": 150,
+  "output_tokens": 40,
+  "model": "claude-sonnet-5-5",
+  "prompt_preview": "[task:agent_turn]\nWrite the agent's next turn for the call that follows.\n\nReply with only JSON matching this schema:\n{\"$defs\": {\"ToolCall\": {\"additionalProperti"
+}

@@ -1,0 +1,1280 @@
+{
+ "set": "a",
+ "engine": "offline rules (NOT a language model)",
+ "prompt": "shipped outbound agent, strong version",
+ "utterances": {
+  "total": 135,
+  "strict_correct": 65,
+  "strict_accuracy": 0.4815,
+  "lenient_correct": 69,
+  "lenient_accuracy": 0.5111,
+  "non_ambiguous": {
+   "count": 115,
+   "strict_accuracy": 0.4957,
+   "lenient_accuracy": 0.4957
+  },
+  "ambiguous": {
+   "count": 20,
+   "strict_accuracy": 0.4,
+   "lenient_accuracy": 0.6
+  },
+  "per_class": {
+   "interest": {
+    "support": 15,
+    "precision": 0.6875,
+    "recall": 0.7333
+   },
+   "objection": {
+    "support": 17,
+    "precision": 1.0,
+    "recall": 0.1176
+   },
+   "hostile": {
+    "support": 8,
+    "precision": 1.0,
+    "recall": 0.5
+   },
+   "rushed": {
+    "support": 8,
+    "precision": 1.0,
+    "recall": 0.5
+   },
+   "do_not_call": {
+    "support": 17,
+    "precision": 0.7222,
+    "recall": 0.7647
+   },
+   "wrong_person": {
+    "support": 9,
+    "precision": 1.0,
+    "recall": 0.4444
+   },
+   "callback_request": {
+    "support": 10,
+    "precision": 0.0,
+    "recall": 0.0
+   },
+   "transfer_request": {
+    "support": 8,
+    "precision": 1.0,
+    "recall": 0.375
+   },
+   "consent_opt_out": {
+    "support": 10,
+    "precision": 1.0,
+    "recall": 0.4
+   },
+   "robot_question": {
+    "support": 8,
+    "precision": 0.8,
+    "recall": 0.5
+   },
+   "recording_question": {
+    "support": 5,
+    "precision": null,
+    "recall": 0.0
+   },
+   "voicemail": {
+    "support": 7,
+    "precision": 1.0,
+    "recall": 0.5714
+   },
+   "phone_menu": {
+    "support": 6,
+    "precision": 0.8333,
+    "recall": 0.8333
+   },
+   "unclear": {
+    "support": 7,
+    "precision": 0.1111,
+    "recall": 1.0
+   }
+  },
+  "confusion_pairs": [
+   {
+    "expected": "callback_request",
+    "got": "unclear",
+    "count": 10
+   },
+   {
+    "expected": "objection",
+    "got": "unclear",
+    "count": 10
+   },
+   {
+    "expected": "transfer_request",
+    "got": "unclear",
+    "count": 5
+   },
+   {
+    "expected": "wrong_person",
+    "got": "unclear",
+    "count": 5
+   },
+   {
+    "expected": "consent_opt_out",
+    "got": "do_not_call",
+    "count": 4
+   },
+   {
+    "expected": "recording_question",
+    "got": "unclear",
+    "count": 4
+   },
+   {
+    "expected": "robot_question",
+    "got": "unclear",
+    "count": 4
+   },
+   {
+    "expected": "objection",
+    "got": "interest",
+    "count": 4
+   },
+   {
+    "expected": "rushed",
+    "got": "unclear",
+    "count": 4
+   },
+   {
+    "expected": "hostile",
+    "got": "unclear",
+    "count": 3
+   },
+   {
+    "expected": "do_not_call",
+    "got": "unclear",
+    "count": 3
+   },
+   {
+    "expected": "interest",
+    "got": "unclear",
+    "count": 3
+   },
+   {
+    "expected": "voicemail",
+    "got": "unclear",
+    "count": 2
+   },
+   {
+    "expected": "consent_opt_out",
+    "got": "unclear",
+    "count": 2
+   },
+   {
+    "expected": "phone_menu",
+    "got": "unclear",
+    "count": 1
+   },
+   {
+    "expected": "objection",
+    "got": "callback_request",
+    "count": 1
+   },
+   {
+    "expected": "interest",
+    "got": "do_not_call",
+    "count": 1
+   },
+   {
+    "expected": "recording_question",
+    "got": "interest",
+    "count": 1
+   },
+   {
+    "expected": "hostile",
+    "got": "robot_question",
+    "count": 1
+   },
+   {
+    "expected": "do_not_call",
+    "got": "callback_request",
+    "count": 1
+   },
+   {
+    "expected": "voicemail",
+    "got": "phone_menu",
+    "count": 1
+   }
+  ],
+  "by_tag": {
+   "hedge": {
+    "count": 4,
+    "lenient": 0.25,
+    "behaviour": 0.75
+   },
+   "mixed": {
+    "count": 7,
+    "lenient": 0.5714,
+    "behaviour": 0.7143
+   },
+   "textspeak": {
+    "count": 8,
+    "lenient": 0.375,
+    "behaviour": 1.0
+   },
+   "trap": {
+    "count": 5,
+    "lenient": 0.4,
+    "behaviour": 0.8
+   },
+   "typo": {
+    "count": 1,
+    "lenient": 0.0,
+    "behaviour": 1.0
+   }
+  },
+  "by_language": {
+   "en": {
+    "count": 129,
+    "lenient": 0.5271,
+    "behaviour": 0.9225
+   },
+   "es": {
+    "count": 4,
+    "lenient": 0.25,
+    "behaviour": 0.5
+   },
+   "fr": {
+    "count": 1,
+    "lenient": 0.0,
+    "behaviour": 0.0
+   },
+   "hi": {
+    "count": 1,
+    "lenient": 0.0,
+    "behaviour": 0.0
+   }
+  },
+  "compliance": {
+   "stop_at_once_items": 24,
+   "stop_at_once_stopped": 15,
+   "clear_stop_items": 15,
+   "clear_stop_stopped": 11,
+   "clear_stop_missed_ids": [
+    "A-U025",
+    "A-U036",
+    "A-U085",
+    "A-U089"
+   ],
+   "trap_items": 5,
+   "trap_wrongly_stopped": 1,
+   "stop_channel_items": 7,
+   "stop_channel_honoured": 7,
+   "stop_channel_consent_recorded_in_call": 0,
+   "plain_no_items": 96,
+   "plain_no_wrongly_stopped": 1,
+   "claimed_to_be_human": 0
+  },
+  "failures_outside_acceptable": [
+   {
+    "id": "A-U002",
+    "expected": "consent_opt_out",
+    "acceptable": [
+     "consent_opt_out"
+    ],
+    "got": "do_not_call",
+    "must_stop": "stop_channel",
+    "behaved": true
+   },
+   {
+    "id": "A-U003",
+    "expected": "callback_request",
+    "acceptable": [
+     "callback_request",
+     "objection"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U004",
+    "expected": "recording_question",
+    "acceptable": [
+     "recording_question"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U006",
+    "expected": "robot_question",
+    "acceptable": [
+     "robot_question"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U012",
+    "expected": "recording_question",
+    "acceptable": [
+     "consent_opt_out",
+     "recording_question"
+    ],
+    "got": "unclear",
+    "must_stop": "stop_channel",
+    "behaved": true
+   },
+   {
+    "id": "A-U014",
+    "expected": "phone_menu",
+    "acceptable": [
+     "phone_menu"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U017",
+    "expected": "hostile",
+    "acceptable": [
+     "hostile"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U018",
+    "expected": "transfer_request",
+    "acceptable": [
+     "transfer_request"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U019",
+    "expected": "objection",
+    "acceptable": [
+     "objection"
+    ],
+    "got": "callback_request",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U022",
+    "expected": "callback_request",
+    "acceptable": [
+     "callback_request"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U023",
+    "expected": "hostile",
+    "acceptable": [
+     "do_not_call",
+     "hostile"
+    ],
+    "got": "hostile",
+    "must_stop": "stop_at_once",
+    "behaved": false
+   },
+   {
+    "id": "A-U025",
+    "expected": "do_not_call",
+    "acceptable": [
+     "do_not_call"
+    ],
+    "got": "unclear",
+    "must_stop": "stop_at_once",
+    "behaved": false
+   },
+   {
+    "id": "A-U030",
+    "expected": "objection",
+    "acceptable": [
+     "objection"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U031",
+    "expected": "interest",
+    "acceptable": [
+     "interest"
+    ],
+    "got": "do_not_call",
+    "must_stop": "no",
+    "behaved": false
+   },
+   {
+    "id": "A-U032",
+    "expected": "recording_question",
+    "acceptable": [
+     "recording_question"
+    ],
+    "got": "interest",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U034",
+    "expected": "objection",
+    "acceptable": [
+     "objection"
+    ],
+    "got": "interest",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U036",
+    "expected": "do_not_call",
+    "acceptable": [
+     "do_not_call"
+    ],
+    "got": "unclear",
+    "must_stop": "stop_at_once",
+    "behaved": false
+   },
+   {
+    "id": "A-U037",
+    "expected": "rushed",
+    "acceptable": [
+     "rushed"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U038",
+    "expected": "interest",
+    "acceptable": [
+     "interest",
+     "objection"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U039",
+    "expected": "objection",
+    "acceptable": [
+     "objection"
+    ],
+    "got": "interest",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U041",
+    "expected": "voicemail",
+    "acceptable": [
+     "voicemail"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U044",
+    "expected": "rushed",
+    "acceptable": [
+     "rushed"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U047",
+    "expected": "objection",
+    "acceptable": [
+     "callback_request",
+     "objection"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U048",
+    "expected": "objection",
+    "acceptable": [
+     "objection"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U050",
+    "expected": "robot_question",
+    "acceptable": [
+     "robot_question"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U052",
+    "expected": "callback_request",
+    "acceptable": [
+     "callback_request"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U053",
+    "expected": "callback_request",
+    "acceptable": [
+     "callback_request"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U055",
+    "expected": "objection",
+    "acceptable": [
+     "objection"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U056",
+    "expected": "consent_opt_out",
+    "acceptable": [
+     "consent_opt_out"
+    ],
+    "got": "do_not_call",
+    "must_stop": "stop_channel",
+    "behaved": true
+   },
+   {
+    "id": "A-U060",
+    "expected": "wrong_person",
+    "acceptable": [
+     "wrong_person"
+    ],
+    "got": "unclear",
+    "must_stop": "end_politely",
+    "behaved": false
+   },
+   {
+    "id": "A-U061",
+    "expected": "transfer_request",
+    "acceptable": [
+     "transfer_request"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U062",
+    "expected": "consent_opt_out",
+    "acceptable": [
+     "consent_opt_out",
+     "do_not_call"
+    ],
+    "got": "unclear",
+    "must_stop": "stop_at_once",
+    "behaved": false
+   },
+   {
+    "id": "A-U065",
+    "expected": "transfer_request",
+    "acceptable": [
+     "transfer_request"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U067",
+    "expected": "wrong_person",
+    "acceptable": [
+     "do_not_call",
+     "wrong_person"
+    ],
+    "got": "unclear",
+    "must_stop": "stop_at_once",
+    "behaved": false
+   },
+   {
+    "id": "A-U069",
+    "expected": "transfer_request",
+    "acceptable": [
+     "transfer_request"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U070",
+    "expected": "wrong_person",
+    "acceptable": [
+     "wrong_person"
+    ],
+    "got": "unclear",
+    "must_stop": "end_politely",
+    "behaved": false
+   },
+   {
+    "id": "A-U073",
+    "expected": "robot_question",
+    "acceptable": [
+     "robot_question"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U074",
+    "expected": "consent_opt_out",
+    "acceptable": [
+     "consent_opt_out",
+     "do_not_call"
+    ],
+    "got": "unclear",
+    "must_stop": "stop_at_once",
+    "behaved": false
+   },
+   {
+    "id": "A-U075",
+    "expected": "hostile",
+    "acceptable": [
+     "hostile"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U078",
+    "expected": "rushed",
+    "acceptable": [
+     "rushed"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U079",
+    "expected": "hostile",
+    "acceptable": [
+     "hostile"
+    ],
+    "got": "robot_question",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U081",
+    "expected": "wrong_person",
+    "acceptable": [
+     "wrong_person"
+    ],
+    "got": "unclear",
+    "must_stop": "end_politely",
+    "behaved": false
+   },
+   {
+    "id": "A-U083",
+    "expected": "hostile",
+    "acceptable": [
+     "do_not_call",
+     "hostile"
+    ],
+    "got": "hostile",
+    "must_stop": "stop_at_once",
+    "behaved": false
+   },
+   {
+    "id": "A-U084",
+    "expected": "robot_question",
+    "acceptable": [
+     "robot_question"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U085",
+    "expected": "do_not_call",
+    "acceptable": [
+     "do_not_call"
+    ],
+    "got": "callback_request",
+    "must_stop": "stop_at_once",
+    "behaved": false
+   },
+   {
+    "id": "A-U089",
+    "expected": "do_not_call",
+    "acceptable": [
+     "do_not_call"
+    ],
+    "got": "unclear",
+    "must_stop": "stop_at_once",
+    "behaved": false
+   },
+   {
+    "id": "A-U092",
+    "expected": "objection",
+    "acceptable": [
+     "objection"
+    ],
+    "got": "interest",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U094",
+    "expected": "objection",
+    "acceptable": [
+     "objection"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U095",
+    "expected": "callback_request",
+    "acceptable": [
+     "callback_request"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U101",
+    "expected": "objection",
+    "acceptable": [
+     "objection"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U102",
+    "expected": "objection",
+    "acceptable": [
+     "objection"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U107",
+    "expected": "interest",
+    "acceptable": [
+     "interest"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U108",
+    "expected": "callback_request",
+    "acceptable": [
+     "callback_request"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U109",
+    "expected": "objection",
+    "acceptable": [
+     "objection"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U110",
+    "expected": "recording_question",
+    "acceptable": [
+     "recording_question"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U111",
+    "expected": "callback_request",
+    "acceptable": [
+     "callback_request"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U113",
+    "expected": "callback_request",
+    "acceptable": [
+     "callback_request"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U116",
+    "expected": "callback_request",
+    "acceptable": [
+     "callback_request"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U118",
+    "expected": "callback_request",
+    "acceptable": [
+     "callback_request"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U119",
+    "expected": "transfer_request",
+    "acceptable": [
+     "transfer_request"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U120",
+    "expected": "recording_question",
+    "acceptable": [
+     "recording_question"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U122",
+    "expected": "wrong_person",
+    "acceptable": [
+     "wrong_person"
+    ],
+    "got": "unclear",
+    "must_stop": "end_politely",
+    "behaved": false
+   },
+   {
+    "id": "A-U124",
+    "expected": "objection",
+    "acceptable": [
+     "callback_request",
+     "objection"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U125",
+    "expected": "hostile",
+    "acceptable": [
+     "hostile"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U127",
+    "expected": "interest",
+    "acceptable": [
+     "interest"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U129",
+    "expected": "voicemail",
+    "acceptable": [
+     "voicemail"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U130",
+    "expected": "rushed",
+    "acceptable": [
+     "rushed"
+    ],
+    "got": "unclear",
+    "must_stop": "no",
+    "behaved": true
+   },
+   {
+    "id": "A-U134",
+    "expected": "voicemail",
+    "acceptable": [
+     "voicemail"
+    ],
+    "got": "phone_menu",
+    "must_stop": "no",
+    "behaved": true
+   }
+  ]
+ },
+ "scripts": {
+  "total": 25,
+  "outcome_strict_correct": 11,
+  "outcome_strict_accuracy": 0.44,
+  "outcome_lenient_correct": 11,
+  "outcome_lenient_accuracy": 0.44,
+  "compliance_all_measured_codes_passed": 19,
+  "compliance_all_measured_codes_rate": 0.76,
+  "stop_scripts": 9,
+  "stop_scripts_stopped_in_time": 8,
+  "stop_scripts_not_stopped_ids": [
+   "A-S02"
+  ],
+  "codes_measured": {
+   "ADD_TO_SUPPRESSION": {
+    "checked": 5,
+    "passed": 3
+   },
+   "APOLOGIZE_AND_END": {
+    "checked": 2,
+    "passed": 2
+   },
+   "BE_BRIEF": {
+    "checked": 1,
+    "passed": 1
+   },
+   "CALL_CONTINUES_NOT_DNC": {
+    "checked": 1,
+    "passed": 0
+   },
+   "DE_ESCALATE": {
+    "checked": 2,
+    "passed": 2
+   },
+   "DISCLOSE_AI_AT_OPENING": {
+    "checked": 16,
+    "passed": 16
+   },
+   "DISCLOSE_AI_HONESTLY_WHEN_ASKED": {
+    "checked": 3,
+    "passed": 2
+   },
+   "DISCLOSE_AI_TO_HUMAN_ANSWERER": {
+    "checked": 1,
+    "passed": 1
+   },
+   "END_AFTER_REPEATED_SILENCE": {
+    "checked": 1,
+    "passed": 1
+   },
+   "END_CALL_WITH_DISPOSITION": {
+    "checked": 2,
+    "passed": 2
+   },
+   "NOT_DNC_ON_PLAIN_NO": {
+    "checked": 1,
+    "passed": 1
+   },
+   "NO_DEAD_AIR_LOOP": {
+    "checked": 1,
+    "passed": 1
+   },
+   "NO_FURTHER_PITCH": {
+    "checked": 2,
+    "passed": 2
+   },
+   "NO_LONG_PITCH_TO_MACHINE": {
+    "checked": 1,
+    "passed": 1
+   },
+   "NO_MESSAGES_AFTER_CONFIRM": {
+    "checked": 1,
+    "passed": 1
+   },
+   "NO_RETRY": {
+    "checked": 6,
+    "passed": 4
+   },
+   "NO_RETRY_THIS_NUMBER": {
+    "checked": 1,
+    "passed": 1
+   },
+   "NO_TEXTS_AFTER": {
+    "checked": 1,
+    "passed": 1
+   },
+   "PRESS_KEY_NOT_SPEAK_TO_MENU": {
+    "checked": 1,
+    "passed": 1
+   },
+   "RESPECT_VOICEMAIL_SETTING": {
+    "checked": 2,
+    "passed": 2
+   },
+   "STOP_IMMEDIATELY": {
+    "checked": 3,
+    "passed": 3
+   },
+   "STOP_IMMEDIATELY_AT_TURN_3": {
+    "checked": 1,
+    "passed": 1
+   },
+   "STOP_IMMEDIATELY_AT_TURN_4": {
+    "checked": 1,
+    "passed": 1
+   },
+   "STOP_SENDING_ON_CHANNEL": {
+    "checked": 1,
+    "passed": 1
+   },
+   "USE_TRANSFER_TOOL": {
+    "checked": 2,
+    "passed": 0
+   }
+  },
+  "codes_not_measured_by_this_harness": {
+   "CHECK_CONSENT_BEFORE_TEXT": 2,
+   "CONFIRM_ONCE_ONLY": 1,
+   "DO_NOT_DIAL_REFERRAL_WITHOUT_VERIFICATION": 1,
+   "DO_NOT_TREAT_STOP_BY_AS_OPT_OUT": 1,
+   "HONEST_RECORDING_ANSWER": 1,
+   "HONOR_CALLBACK_TIME": 3,
+   "NO_LONG_PITCH_INTO_SILENCE": 1,
+   "NO_PERSONAL_DETAILS_REVEALED": 2,
+   "NO_SENSITIVE_DETAILS_IN_MESSAGE": 2,
+   "NO_STALLING": 1,
+   "OFFER_HUMAN": 3,
+   "ONE_OBJECTION_ATTEMPT_MAX": 4,
+   "RECORD_REVOKED_CONSENT": 1,
+   "REPEAT_TIME_BACK": 1,
+   "REVOKE_TEXT_CONSENT": 1
+  },
+  "by_outcome": {
+   "booked": {
+    "count": 6,
+    "lenient_correct": 0
+   },
+   "callback_scheduled": {
+    "count": 2,
+    "lenient_correct": 2
+   },
+   "consent_revoked": {
+    "count": 1,
+    "lenient_correct": 0
+   },
+   "do_not_call": {
+    "count": 6,
+    "lenient_correct": 4
+   },
+   "hung_up": {
+    "count": 1,
+    "lenient_correct": 0
+   },
+   "not_interested": {
+    "count": 3,
+    "lenient_correct": 1
+   },
+   "phone_menu_navigated": {
+    "count": 1,
+    "lenient_correct": 1
+   },
+   "transferred_to_human": {
+    "count": 2,
+    "lenient_correct": 0
+   },
+   "voicemail_handled": {
+    "count": 2,
+    "lenient_correct": 2
+   },
+   "wrong_number": {
+    "count": 1,
+    "lenient_correct": 1
+   }
+  },
+  "failures": [
+   {
+    "id": "A-S03",
+    "expected": "hung_up",
+    "acceptable": [
+     "hung_up"
+    ],
+    "got": "needs_review",
+    "failed_codes": []
+   },
+   {
+    "id": "A-S04",
+    "expected": "transferred_to_human",
+    "acceptable": [
+     "transferred_to_human"
+    ],
+    "got": "needs_review",
+    "failed_codes": [
+     "USE_TRANSFER_TOOL"
+    ]
+   },
+   {
+    "id": "A-S08",
+    "expected": "transferred_to_human",
+    "acceptable": [
+     "transferred_to_human"
+    ],
+    "got": "needs_review",
+    "failed_codes": [
+     "USE_TRANSFER_TOOL"
+    ]
+   },
+   {
+    "id": "A-S09",
+    "expected": "do_not_call",
+    "acceptable": [
+     "do_not_call"
+    ],
+    "got": "needs_review",
+    "failed_codes": [
+     "ADD_TO_SUPPRESSION",
+     "NO_RETRY"
+    ]
+   },
+   {
+    "id": "A-S10",
+    "expected": "not_interested",
+    "acceptable": [
+     "not_interested"
+    ],
+    "got": "needs_review",
+    "failed_codes": []
+   },
+   {
+    "id": "A-S11",
+    "expected": "not_interested",
+    "acceptable": [
+     "not_interested"
+    ],
+    "got": "needs_review",
+    "failed_codes": [
+     "DISCLOSE_AI_HONESTLY_WHEN_ASKED"
+    ]
+   },
+   {
+    "id": "A-S12",
+    "expected": "booked",
+    "acceptable": [
+     "booked"
+    ],
+    "got": "do_not_call",
+    "failed_codes": []
+   },
+   {
+    "id": "A-S13",
+    "expected": "booked",
+    "acceptable": [
+     "booked",
+     "follow_up_requested"
+    ],
+    "got": "no_outcome",
+    "failed_codes": []
+   },
+   {
+    "id": "A-S15",
+    "expected": "do_not_call",
+    "acceptable": [
+     "do_not_call"
+    ],
+    "got": "needs_review",
+    "failed_codes": [
+     "ADD_TO_SUPPRESSION",
+     "NO_RETRY"
+    ]
+   },
+   {
+    "id": "A-S16",
+    "expected": "consent_revoked",
+    "acceptable": [
+     "consent_revoked"
+    ],
+    "got": "do_not_call",
+    "failed_codes": []
+   },
+   {
+    "id": "A-S17",
+    "expected": "booked",
+    "acceptable": [
+     "booked"
+    ],
+    "got": "callback_scheduled",
+    "failed_codes": []
+   },
+   {
+    "id": "A-S19",
+    "expected": "booked",
+    "acceptable": [
+     "booked"
+    ],
+    "got": "do_not_call",
+    "failed_codes": [
+     "CALL_CONTINUES_NOT_DNC"
+    ]
+   },
+   {
+    "id": "A-S23",
+    "expected": "booked",
+    "acceptable": [
+     "booked"
+    ],
+    "got": "no_outcome",
+    "failed_codes": []
+   },
+   {
+    "id": "A-S24",
+    "expected": "booked",
+    "acceptable": [
+     "booked"
+    ],
+    "got": "needs_review",
+    "failed_codes": []
+   }
+  ]
+ }
+}

@@ -1,0 +1,15 @@
+{
+ "now_utc": "2026-12-01T17:00:00+00:00",
+ "now_note": "Tuesday 17:00 UTC: 12:00 New York, 11:00 Chicago, 09:00 Los Angeles (open), 17:00 London and 22:30 Kolkata (closed).",
+ "planted": {
+  "bad_number": 3,
+  "unknown_timezone": 2,
+  "do_not_call": 4,
+  "consent_revoked": 3,
+  "duplicate_phone": 3,
+  "max_attempts": 2,
+  "retry_same_day": 2
+ },
+ "targets": 55,
+ "expected_blocked_reasons_when_all_targets_checked": {}
+}

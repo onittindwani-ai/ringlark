@@ -1,0 +1,7 @@
+{
+  "text": "{\"say\": \"Lovely. I can do Tuesday at 3 pm or Wednesday at 2 pm. Which suits you?\", \"tool_calls\": []}",
+  "input_tokens": 150,
+  "output_tokens": 40,
+  "model": "claude-sonnet-5-5",
+  "prompt_preview": "[task:agent_turn]\nWrite the agent's next turn for the call that follows.\n\nReply with only JSON matching this schema:\n{\"$defs\": {\"ToolCall\": {\"additionalProperti"
+}

@@ -1,0 +1,6 @@
+Vendor: Ultravox. Read 2026-11-23 with a page fetch (public docs, no account).
+Page: https://docs.ultravox.ai/api-reference/calls/calls-post
+Webhook signing page read earlier (hub facts): https://docs.ultravox.ai/webhooks/securing-webhooks.md
+calls_post.json holds the documented request fields, how a Telnyx medium is written, the auth header and the response fields used.
+No OpenAPI file was fetched (the fetch returns page text). The transcript endpoint (messages) and the shape of selectedTools entries were NOT on the page read: UNVERIFIED.
+Never run against the real service.

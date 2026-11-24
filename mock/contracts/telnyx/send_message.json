@@ -1,0 +1,10 @@
+{
+  "path": "/v2/messages",
+  "method": "POST",
+  "auth": "Authorization: Bearer <key>",
+  "request_fields": ["to", "from", "messaging_profile_id", "text", "subject", "media_urls", "type", "webhook_url", "webhook_failover_url", "use_profile_webhooks", "auto_detect", "send_at", "encoding"],
+  "request_required": ["to"],
+  "text_required_for": "SMS",
+  "response_example": {"data": {"record_type": "message", "direction": "outbound", "id": "40385f64-5717-4562-b3fc-2c963f66afa6", "type": "SMS", "to": [{"phone_number": "+15550100123", "status": "queued"}], "text": "Hello"}},
+  "error_example": {"errors": [{"code": "40310", "title": "Invalid 'to' address", "detail": "The 'to' address is invalid."}]}
+}

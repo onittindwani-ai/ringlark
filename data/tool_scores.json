@@ -1,0 +1,1036 @@
+{
+ "dated": "2026-11-23",
+ "note": "Judgements from vendor pages fetched on the date shown, not benchmarks. A tool with 'not run' was scored from its documentation only.",
+ "weights": {
+  "fit": 35,
+  "setup": 15,
+  "reliability": 15,
+  "cost": 15,
+  "data": 10,
+  "integration": 10
+ },
+ "criteria_names": {
+  "fit": "Fit",
+  "setup": "Setup effort",
+  "reliability": "Reliability and upkeep",
+  "cost": "Cost",
+  "data": "Data control",
+  "integration": "Integration depth"
+ },
+ "groups": [
+  {
+   "id": "voice_engine",
+   "job": "Voice engine (the part that listens, thinks and speaks on a call)",
+   "reference": "ultravox",
+   "recommendation": {
+    "beginner": "Ultravox. It is one hosted service with built in voices and tool calling, and Ringlark is built around it.",
+    "implementer": "Ultravox for most clients, because setup is one API key. Vapi and Retell do the same job and are listed as recipe prompts: ask Claude Code to write the adapter if a client already pays for one. Choose Pipecat or LiveKit Agents only when you will run and update the voice servers yourself.",
+    "cost_sensitive": "Compare real call minutes on each vendor's current price page before you choose. Open source frameworks remove the platform fee but add servers and your time.",
+    "open_source_when": "Open source is the right call when a client needs the call audio to stay on their own servers and you can run real time services reliably. It is the wrong call for a first project: real time audio is harder to keep healthy than a web app."
+   },
+   "tools": [
+    {
+     "id": "ultravox",
+     "name": "Ultravox",
+     "kind": "paid",
+     "supported_in_ringlark": "Adapter tested on a mock",
+     "run": "run on a mock only",
+     "scores": {
+      "fit": {
+       "score": 85,
+       "evidence": "Create call, tools, built in voices, cloning and a bring your own voice option are all in the API reference pages read on 2026-11-23, and it carries the Telnyx phone line directly."
+      },
+      "setup": {
+       "score": 80,
+       "evidence": "One API key and one webhook secret; no servers to run. How the Telnyx call joins the Ultravox call is UNVERIFIED (docs/14)."
+      },
+      "reliability": {
+       "score": 65,
+       "evidence": "Hosted by the vendor, so no upkeep; no uptime measurement was made, so this is a judgement."
+      },
+      "cost": {
+       "score": 60,
+       "evidence": "Usage based; the pages read did not state prices, so no figure is quoted and the score is a placeholder judgement."
+      },
+      "data": {
+       "score": 45,
+       "evidence": "Call audio and transcripts pass through the vendor; recording is off in the calls Ringlark creates."
+      },
+      "integration": {
+       "score": 65,
+       "evidence": "The adapter creates calls, builds the six tool definitions and checks webhook signatures against a mock; none of it was run live."
+      }
+     },
+     "sources": [
+      {
+       "url": "https://docs.ultravox.ai/api-reference/calls/calls-post",
+       "checked": "2026-11-23"
+      },
+      {
+       "url": "https://docs.ultravox.ai/webhooks/securing-webhooks.md",
+       "checked": "2026-11-23"
+      },
+      {
+       "url": "https://docs.ultravox.ai/voices/overview.md",
+       "checked": "2026-11-23"
+      }
+     ]
+    },
+    {
+     "id": "vapi",
+     "name": "Vapi",
+     "kind": "paid",
+     "supported_in_ringlark": "Recipe prompt only",
+     "run": "not run",
+     "scores": {
+      "fit": {
+       "score": 80,
+       "evidence": "Does the same job (phone voice agents with assistants and tools). The quickstart page read does not say how numbers connect, so fit is judged from the description only."
+      },
+      "setup": {
+       "score": 65,
+       "evidence": "Not verified: the page read gave no setup steps for phone numbers."
+      },
+      "reliability": {
+       "score": 65,
+       "evidence": "Hosted, no upkeep; no measurement."
+      },
+      "cost": {
+       "score": 55,
+       "evidence": "The page read states no pricing."
+      },
+      "data": {
+       "score": 45,
+       "evidence": "Hosted by the vendor, like Ultravox."
+      },
+      "integration": {
+       "score": 10,
+       "evidence": "No adapter is built; a recipe prompt would have Claude Code write one."
+      }
+     },
+     "sources": [
+      {
+       "url": "https://docs.vapi.ai/quickstart/introduction",
+       "checked": "2026-11-23"
+      }
+     ]
+    },
+    {
+     "id": "retell",
+     "name": "Retell AI",
+     "kind": "paid",
+     "supported_in_ringlark": "Recipe prompt only",
+     "run": "not run",
+     "scores": {
+      "fit": {
+       "score": 80,
+       "evidence": "Builds, tests and deploys voice agents with telephony included; you can buy a number in the US or Canada or connect your own through SIP trunking (page read 2026-11-23)."
+      },
+      "setup": {
+       "score": 70,
+       "evidence": "A managed number needs no carrier account, which is easy; connecting your own provider takes SIP trunking."
+      },
+      "reliability": {
+       "score": 65,
+       "evidence": "Hosted, no upkeep; no measurement."
+      },
+      "cost": {
+       "score": 55,
+       "evidence": "The page read states no pricing."
+      },
+      "data": {
+       "score": 45,
+       "evidence": "Hosted by the vendor."
+      },
+      "integration": {
+       "score": 10,
+       "evidence": "No adapter is built; recipe prompt only."
+      }
+     },
+     "sources": [
+      {
+       "url": "https://docs.retellai.com/general/introduction",
+       "checked": "2026-11-23"
+      }
+     ]
+    },
+    {
+     "id": "pipecat",
+     "name": "Pipecat",
+     "kind": "open source",
+     "supported_in_ringlark": "Not built",
+     "run": "not run",
+     "scores": {
+      "fit": {
+       "score": 75,
+       "evidence": "An open source Python framework for real time voice agents with Twilio and Telnyx examples (GitHub page read 2026-11-23); you build the agent logic yourself."
+      },
+      "setup": {
+       "score": 25,
+       "evidence": "You write and host the agent processes and bring your own accounts for speech and language services."
+      },
+      "reliability": {
+       "score": 40,
+       "evidence": "You run and update it. The project is active (17.4 thousand stars on its page) but real time audio needs watching."
+      },
+      "cost": {
+       "score": 70,
+       "evidence": "Free to use under the BSD 2 Clause licence; you pay for servers and the model and speech services it calls."
+      },
+      "data": {
+       "score": 90,
+       "evidence": "Everything can run on your own servers."
+      },
+      "integration": {
+       "score": 10,
+       "evidence": "No adapter is built."
+      }
+     },
+     "sources": [
+      {
+       "url": "https://github.com/pipecat-ai/pipecat",
+       "checked": "2026-11-23"
+      }
+     ]
+    },
+    {
+     "id": "livekit_agents",
+     "name": "LiveKit Agents",
+     "kind": "open source",
+     "supported_in_ringlark": "Not built",
+     "run": "not run",
+     "scores": {
+      "fit": {
+       "score": 75,
+       "evidence": "An open source framework (Apache 2.0) for real time voice agents with a SIP stack for phone calls (GitHub page read 2026-11-23)."
+      },
+      "setup": {
+       "score": 25,
+       "evidence": "Agents run on your servers and connect to LiveKit Cloud or a self hosted LiveKit server."
+      },
+      "reliability": {
+       "score": 40,
+       "evidence": "You run and update it; about 15.3 thousand stars on its page."
+      },
+      "cost": {
+       "score": 70,
+       "evidence": "Free framework; hosting and the model and speech services cost money."
+      },
+      "data": {
+       "score": 90,
+       "evidence": "Can run fully on your own servers."
+      },
+      "integration": {
+       "score": 10,
+       "evidence": "No adapter is built."
+      }
+     },
+     "sources": [
+      {
+       "url": "https://github.com/livekit/agents",
+       "checked": "2026-11-23"
+      }
+     ]
+    }
+   ],
+   "no_open_source": false
+  },
+  {
+   "id": "voice",
+   "job": "The agent's voice",
+   "reference": "elevenlabs",
+   "recommendation": {
+    "beginner": "Start with an Ultravox built in voice. It needs nothing extra, and a person should listen to a real test call before any client hears it.",
+    "implementer": "Built in voice first. Use one cloned voice (Ultravox cloning, a 30 to 60 second sample) when a client wants their own voice, with the speaker's written permission. ElevenLabs through your own key and VoiceStudio through the generic external voice option are possible; neither was run.",
+    "cost_sensitive": "Built in voices cost nothing extra. A separate voice service adds its own bill.",
+    "open_source_when": "A self hosted voice is the right call when voice data must stay on your server and you have someone who can run it. Claude cannot hear, so a person must judge quality either way."
+   },
+   "tools": [
+    {
+     "id": "elevenlabs",
+     "name": "ElevenLabs",
+     "kind": "paid",
+     "supported_in_ringlark": "Option in the voice guide, not built",
+     "run": "not run",
+     "scores": {
+      "fit": {
+       "score": 85,
+       "evidence": "Text to speech with instant and professional voice cloning on paid plans (pricing page read 2026-11-23). Used through Ultravox's bring your own voice option, which is UNVERIFIED here."
+      },
+      "setup": {
+       "score": 65,
+       "evidence": "An account and an API key, then the voice id goes into the agent settings."
+      },
+      "reliability": {
+       "score": 75,
+       "evidence": "Hosted, no upkeep; no measurement."
+      },
+      "cost": {
+       "score": 55,
+       "evidence": "A free plan with 10 thousand monthly credits exists; text to speech costs 1 credit per character; cloning needs a paid plan (page read 2026-11-23)."
+      },
+      "data": {
+       "score": 40,
+       "evidence": "Text and cloned voice samples go to the vendor."
+      },
+      "integration": {
+       "score": 25,
+       "evidence": "Only a documented option, no code that calls it."
+      }
+     },
+     "sources": [
+      {
+       "url": "https://elevenlabs.io/pricing",
+       "checked": "2026-11-23"
+      }
+     ]
+    },
+    {
+     "id": "voicestudio",
+     "name": "VoiceStudio (a self hosted voice clone server)",
+     "kind": "open source",
+     "supported_in_ringlark": "Option in the voice guide, not built",
+     "run": "not run",
+     "scores": {
+      "fit": {
+       "score": 60,
+       "evidence": "The owner runs this on his own server. Whether it fits a live call (speed and streaming) is UNVERIFIED and it needs the generic external voice option."
+      },
+      "setup": {
+       "score": 30,
+       "evidence": "You run a server and keep it healthy."
+      },
+      "reliability": {
+       "score": 40,
+       "evidence": "You do the updates and watch memory."
+      },
+      "cost": {
+       "score": 85,
+       "evidence": "No per use fee, only the server."
+      },
+      "data": {
+       "score": 95,
+       "evidence": "Voice data never leaves your server."
+      },
+      "integration": {
+       "score": 10,
+       "evidence": "No code; documented option only."
+      }
+     },
+     "sources": [
+      {
+       "url": "https://docs.ultravox.ai/voices/overview.md",
+       "checked": "2026-11-23"
+      }
+     ]
+    },
+    {
+     "id": "piper",
+     "name": "An open source local voice (Piper)",
+     "kind": "open source",
+     "supported_in_ringlark": "Not built",
+     "run": "not run",
+     "scores": {
+      "fit": {
+       "score": 50,
+       "evidence": "A fast local neural text to speech engine under GPL 3.0 (GitHub page read 2026-11-23). Voice quality and live call fit were not checked."
+      },
+      "setup": {
+       "score": 35,
+       "evidence": "You host it and connect it as an external voice."
+      },
+      "reliability": {
+       "score": 45,
+       "evidence": "You run and update it."
+      },
+      "cost": {
+       "score": 90,
+       "evidence": "No per use fee, only the cost of your own server."
+      },
+      "data": {
+       "score": 95,
+       "evidence": "Runs on your own server, so audio stays with you."
+      },
+      "integration": {
+       "score": 5,
+       "evidence": "No adapter or code exists for it in this repo."
+      }
+     },
+     "sources": [
+      {
+       "url": "https://github.com/OHF-Voice/piper1-gpl",
+       "checked": "2026-11-23"
+      }
+     ]
+    }
+   ],
+   "no_open_source": false
+  },
+  {
+   "id": "texting",
+   "job": "Phone numbers, calls and texts",
+   "reference": "twilio",
+   "no_open_source": true,
+   "tools": [
+    {
+     "id": "twilio",
+     "name": "Twilio",
+     "kind": "paid",
+     "supported_in_ringlark": "No adapter, no recipe",
+     "run": "not run",
+     "scores": {
+      "fit": {
+       "score": 85,
+       "evidence": "Twilio also places calls and texts, but Ringlark has no Twilio adapter, so fit is scored on the job, not on the code."
+      },
+      "setup": {
+       "score": 45,
+       "evidence": "10DLC brand and campaign registration is needed and carries fees (page says registration onboarding fees apply, amount not stated)."
+      },
+      "reliability": {
+       "score": 90,
+       "evidence": "Large and long established; no measurement was made here."
+      },
+      "cost": {
+       "score": 55,
+       "evidence": "Per message segment plus a carrier fee plus a monthly number rental; the figures on the page change (fetched 2026-11-23, about $0.0083 per segment)."
+      },
+      "data": {
+       "score": 45,
+       "evidence": "Messages and numbers sit with the vendor."
+      },
+      "integration": {
+       "score": 0,
+       "evidence": "No adapter exists, so Ringlark cannot use it today."
+      }
+     },
+     "sources": [
+      {
+       "url": "https://www.twilio.com/en-us/sms/pricing/us",
+       "checked": "2026-11-23"
+      }
+     ]
+    },
+    {
+     "id": "telnyx",
+     "name": "Telnyx",
+     "kind": "paid",
+     "supported_in_ringlark": "Adapter tested on a mock (signature checked)",
+     "run": "run on a mock only",
+     "scores": {
+      "fit": {
+       "score": 82,
+       "evidence": "Does the three jobs Ringlark needs on a number: place the call, carry texts, send call events (Telnyx docs read 2026-11-23). The calls adapter has only run on a mock."
+      },
+      "setup": {
+       "score": 45,
+       "evidence": "Same 10DLC registration as any US provider; the portal steps for keys are UNVERIFIED."
+      },
+      "reliability": {
+       "score": 75,
+       "evidence": "Reliability was not measured; score is a judgement from the docs."
+      },
+      "cost": {
+       "score": 70,
+       "evidence": "Pricing page lists about $0.004 per message part plus the carrier fee and $1 a month per local number, lower than Twilio's listed rate (fetched 2026-11-23)."
+      },
+      "data": {
+       "score": 45,
+       "evidence": "Messages and numbers sit with the vendor."
+      },
+      "integration": {
+       "score": 72,
+       "evidence": "Adapter, mock and a real Ed25519 signature test; never run against the real service."
+      }
+     },
+     "sources": [
+      {
+       "url": "https://telnyx.com/pricing/messaging",
+       "checked": "2026-11-23"
+      },
+      {
+       "url": "https://developers.telnyx.com",
+       "checked": "2026-11-23"
+      }
+     ]
+    }
+   ],
+   "recommendation": {
+    "beginner": "Do not text on day one. Email and calls first; add texting after the carrier registration is approved.",
+    "implementer": "Telnyx, because the adapter exists and is tested. Registering the brand and campaign is the client's job and takes time, so start it early.",
+    "cost_sensitive": "The listed per message rate is lower at Telnyx, but registration and number fees are similar. The big cost is the time to register.",
+    "open_source_when": "There is no close open source replacement for business texting in the US, because delivery depends on registered carrier routes, not on software. We did not invent a match."
+   }
+  },
+  {
+   "id": "calendar",
+   "job": "Calendar (where meetings are booked)",
+   "reference": "calendly",
+   "tools": [
+    {
+     "id": "calendly",
+     "name": "Calendly",
+     "kind": "paid",
+     "supported_in_ringlark": "No adapter, no recipe",
+     "run": "not run",
+     "scores": {
+      "fit": {
+       "score": 75,
+       "evidence": "Booking links are its core job and a free plan exists, but Ringlark would need an adapter and the pricing page does not say which plans include the API (fetched 2026-11-23)."
+      },
+      "setup": {
+       "score": 85,
+       "evidence": "Hosted; you connect your calendar and share a link."
+      },
+      "reliability": {
+       "score": 88,
+       "evidence": "Hosted by the vendor; no uptime measurement was made."
+      },
+      "cost": {
+       "score": 60,
+       "evidence": "Free plan has one event type; paid plans are per seat (page fetched 2026-11-23)."
+      },
+      "data": {
+       "score": 40,
+       "evidence": "Hosted by the vendor."
+      },
+      "integration": {
+       "score": 0,
+       "evidence": "No adapter exists, so Ringlark cannot use it today."
+      }
+     },
+     "sources": [
+      {
+       "url": "https://www.calendly.com/pricing",
+       "checked": "2026-11-23"
+      }
+     ]
+    },
+    {
+     "id": "calcom",
+     "name": "Cal.com",
+     "kind": "open source",
+     "supported_in_ringlark": "Adapter tested on a mock",
+     "run": "run on a mock only",
+     "scores": {
+      "fit": {
+       "score": 78,
+       "evidence": "Same job as Calendly with slots and bookings in its API; the adapter books through POST /v2/bookings (docs/facts/calcom.md)."
+      },
+      "setup": {
+       "score": 60,
+       "evidence": "Hosted is easy; the self hosting page we fetched says self hosting suits personal, non production use, so production self hosting is a bigger job."
+      },
+      "reliability": {
+       "score": 75,
+       "evidence": "Active project (about 50,000 stars on GitHub); the slots version header was inconsistent in two doc pages, a sign the docs move."
+      },
+      "cost": {
+       "score": 85,
+       "evidence": "A free plan exists and paid plans are per seat; self hosting has no fee (pages fetched 2026-11-23)."
+      },
+      "data": {
+       "score": 70,
+       "evidence": "Self hosting keeps data with you, and its licence file on main reads MIT, while another page calls it open core with enterprise only parts. Check which parts you need."
+      },
+      "integration": {
+       "score": 65,
+       "evidence": "Adapter and mock are tested; the real service was never called."
+      }
+     },
+     "sources": [
+      {
+       "url": "https://cal.com/pricing",
+       "checked": "2026-11-23"
+      },
+      {
+       "url": "https://github.com/calcom/cal.com",
+       "checked": "2026-11-23"
+      },
+      {
+       "url": "https://raw.githubusercontent.com/calcom/cal.com/main/LICENSE",
+       "checked": "2026-11-23"
+      }
+     ]
+    },
+    {
+     "id": "google_calendar",
+     "name": "Google Calendar",
+     "kind": "cheap",
+     "supported_in_ringlark": "Adapter (creates events only)",
+     "run": "not run",
+     "scores": {
+      "fit": {
+       "score": 55,
+       "evidence": "Creates the meeting event but has no booking page for the person, so the person must be given times another way."
+      },
+      "setup": {
+       "score": 45,
+       "evidence": "You need an OAuth token and how to get it is not covered by the adapter (UNVERIFIED)."
+      },
+      "reliability": {
+       "score": 90,
+       "evidence": "Google's own API with high quotas (10,000 requests a minute per project on the quota page)."
+      },
+      "cost": {
+       "score": 95,
+       "evidence": "The quota page says standard use of the API is at no extra cost, with charges planned only for going over quota."
+      },
+      "data": {
+       "score": 50,
+       "evidence": "Data stays in your Google account."
+      },
+      "integration": {
+       "score": 40,
+       "evidence": "One endpoint (events insert), never run live."
+      }
+     },
+     "sources": [
+      {
+       "url": "https://developers.google.com/workspace/calendar/api/guides/quota",
+       "checked": "2026-11-23"
+      },
+      {
+       "url": "https://developers.google.com/calendar",
+       "checked": "2026-11-23"
+      }
+     ]
+    }
+   ],
+   "recommendation": {
+    "beginner": "Cal.com hosted free plan. You only share a link and nothing needs installing.",
+    "implementer": "Cal.com for most clients, because Ringlark can read open times and book. Use Google Calendar only to drop the event on the owner's calendar.",
+    "cost_sensitive": "Cal.com free plan plus Google Calendar events.",
+    "open_source_when": "Self host Cal.com only if you can run a production server; for most clients the hosted free plan is the safer way to use the open source product."
+   }
+  },
+  {
+   "id": "crm",
+   "job": "CRM (where booked people are written)",
+   "reference": "hubspot",
+   "tools": [
+    {
+     "id": "hubspot",
+     "name": "HubSpot",
+     "kind": "paid",
+     "supported_in_ringlark": "Adapter written from the docs (contacts only)",
+     "run": "not run",
+     "scores": {
+      "fit": {
+       "score": 80,
+       "evidence": "Does the job Ringlark needs from a CRM (a contact record to mirror to); Ringlark keeps its own pipeline so it does not need HubSpot sales features."
+      },
+      "setup": {
+       "score": 70,
+       "evidence": "A private app token is enough, but the portal steps came from a third party and are UNVERIFIED (docs/facts/hubspot.md)."
+      },
+      "reliability": {
+       "score": 85,
+       "evidence": "Hosted by the vendor, so no upkeep for you; no uptime measurement was made, score is a judgement."
+      },
+      "cost": {
+       "score": 70,
+       "evidence": "Page says free for up to 2 users and 1,000 contacts with no time limit; paid tiers are per seat (page fetched 2026-11-23)."
+      },
+      "data": {
+       "score": 50,
+       "evidence": "Data sits with the vendor; export was not checked, so the score stays modest."
+      },
+      "integration": {
+       "score": 40,
+       "evidence": "The adapter writes contacts through one endpoint and was never run against the real service."
+      }
+     },
+     "sources": [
+      {
+       "url": "https://www.hubspot.com/pricing/crm",
+       "checked": "2026-11-23"
+      },
+      {
+       "url": "https://developers.hubspot.com",
+       "checked": "2026-11-23"
+      }
+     ]
+    },
+    {
+     "id": "twenty",
+     "name": "Twenty",
+     "kind": "open source",
+     "supported_in_ringlark": "Adapter tested on a mock (GraphQL)",
+     "run": "run on a mock only",
+     "scores": {
+      "fit": {
+       "score": 72,
+       "evidence": "Holds people and companies and has an API; real field names for creating a person are UNVERIFIED, so fit is scored below HubSpot."
+      },
+      "setup": {
+       "score": 45,
+       "evidence": "Self hosting is Docker Compose with Postgres and Redis (GitHub page and docs fetched 2026-11-23); more work than a hosted account."
+      },
+      "reliability": {
+       "score": 55,
+       "evidence": "You do the updates and backups; the repo is very active (about 61,000 stars on its GitHub page) but young."
+      },
+      "cost": {
+       "score": 85,
+       "evidence": "The twenty.com page says self hosting the open source core is free; the hosted plans are per seat."
+      },
+      "data": {
+       "score": 95,
+       "evidence": "Your own server and database, nothing leaves it; the repo licence file says mostly AGPLv3 with a few commercial and MIT parts."
+      },
+      "integration": {
+       "score": 50,
+       "evidence": "The adapter and a mock server exist and are tested, but the real input fields were never confirmed."
+      }
+     },
+     "sources": [
+      {
+       "url": "https://github.com/twentyhq/twenty",
+       "checked": "2026-11-23"
+      },
+      {
+       "url": "https://twenty.com/pricing",
+       "checked": "2026-11-23"
+      },
+      {
+       "url": "https://docs.twenty.com/developers/self-host/self-host",
+       "checked": "2026-11-23"
+      },
+      {
+       "url": "https://raw.githubusercontent.com/twentyhq/twenty/main/LICENSE",
+       "checked": "2026-11-23"
+      }
+     ]
+    },
+    {
+     "id": "notion",
+     "name": "Notion (as a CRM table)",
+     "kind": "cheap",
+     "supported_in_ringlark": "Adapter written from the docs",
+     "run": "not run",
+     "scores": {
+      "fit": {
+       "score": 55,
+       "evidence": "A table of leads works, but there are no deal stages or reminders built in, so it is a log more than a CRM."
+      },
+      "setup": {
+       "score": 65,
+       "evidence": "Share a database with an integration token; the shape is in the docs, but a newer API version may need a different id (UNVERIFIED)."
+      },
+      "reliability": {
+       "score": 80,
+       "evidence": "Hosted by the vendor; no uptime measurement was made."
+      },
+      "cost": {
+       "score": 80,
+       "evidence": "Free plan costs nothing but is capped on blocks; the page did not make API access on the free plan clear (fetched 2026-11-23)."
+      },
+      "data": {
+       "score": 40,
+       "evidence": "Hosted by the vendor, export not checked."
+      },
+      "integration": {
+       "score": 35,
+       "evidence": "The adapter writes pages and was never run live."
+      }
+     },
+     "sources": [
+      {
+       "url": "https://www.notion.com/pricing",
+       "checked": "2026-11-23"
+      },
+      {
+       "url": "https://developers.notion.com",
+       "checked": "2026-11-23"
+      }
+     ]
+    }
+   ],
+   "recommendation": {
+    "beginner": "Skip a CRM at first. Ringlark's own database is enough. If the client insists, use the free HubSpot tier.",
+    "implementer": "Twenty when the client wants to own the data and you can keep it updated, HubSpot when they already pay for it. Run the real field check (docs/03) before you promise a sync.",
+    "cost_sensitive": "Twenty self hosted or the free HubSpot tier. Do not pay per seat for a CRM that only receives written contacts.",
+    "open_source_when": "Open source is the right call when someone will patch the server and run backups. It is the wrong call when nobody will, because a stale CRM is worse than a hosted one."
+   }
+  },
+  {
+   "id": "email",
+   "job": "Email for follow ups",
+   "reference": "sendkit",
+   "tools": [
+    {
+     "id": "sendkit",
+     "name": "SendKit",
+     "kind": "paid",
+     "supported_in_ringlark": "Recipe prompt only",
+     "run": "not run",
+     "scores": {
+      "fit": {
+       "score": 70,
+       "evidence": "A cold email platform with sequences and a unified inbox; Ringlark already does sequencing, so it would only be a sending route, and a public API is not confirmed on the page."
+      },
+      "setup": {
+       "score": 70,
+       "evidence": "Connect your own mailboxes and use its dedicated sending addresses (what-is page fetched 2026-11-23)."
+      },
+      "reliability": {
+       "score": 75,
+       "evidence": "Vendor run; a beta Platform API was seen in a search result, so maturity is unclear."
+      },
+      "cost": {
+       "score": 45,
+       "evidence": "Monthly plans by email volume with a 14 day trial (page fetched 2026-11-23)."
+      },
+      "data": {
+       "score": 35,
+       "evidence": "Leads and campaigns sit with the vendor."
+      },
+      "integration": {
+       "score": 5,
+       "evidence": "Only a recipe prompt exists, no adapter."
+      }
+     },
+     "sources": [
+      {
+       "url": "https://sendkit.ai/what-is-sendkit",
+       "checked": "2026-11-23"
+      }
+     ]
+    },
+    {
+     "id": "inboxkit",
+     "name": "InboxKit",
+     "kind": "paid",
+     "supported_in_ringlark": "Not integrated (a mailbox supplier)",
+     "run": "not run",
+     "scores": {
+      "fit": {
+       "score": 40,
+       "evidence": "It creates mailboxes and sets up DNS records and warmup, it does not send campaigns; it feeds mailboxes into a sender, so it is a partner of the next row more than a rival."
+      },
+      "setup": {
+       "score": 75,
+       "evidence": "Mailboxes and DNS records are automated (page fetched 2026-11-23)."
+      },
+      "reliability": {
+       "score": 60,
+       "evidence": "Vendor run; no measurement made."
+      },
+      "cost": {
+       "score": 55,
+       "evidence": "Priced per mailbox per month on the page (Google or Microsoft mailboxes, warmup extra)."
+      },
+      "data": {
+       "score": 40,
+       "evidence": "Mailboxes are on your domains but managed through the vendor."
+      },
+      "integration": {
+       "score": 20,
+       "evidence": "Its mailboxes could be used with smtp_imap, but that was not tested."
+      }
+     },
+     "sources": [
+      {
+       "url": "https://www.inboxkit.com",
+       "checked": "2026-11-23"
+      }
+     ]
+    },
+    {
+     "id": "smtp_imap",
+     "name": "Your own mailboxes over SMTP and IMAP (Google Workspace, Gmail, Outlook)",
+     "kind": "open source",
+     "supported_in_ringlark": "Adapter tested on a fake mail server",
+     "run": "run on a fake server only",
+     "scores": {
+      "fit": {
+       "score": 78,
+       "evidence": "Sends, reads replies, keeps the suppression list and daily caps in Ringlark's own code, which is what a sender needs to do."
+      },
+      "setup": {
+       "score": 55,
+       "evidence": "You need a separate domain, DNS records and an app password (docs/facts/gmail.md); the steps are manual."
+      },
+      "reliability": {
+       "score": 60,
+       "evidence": "Deliverability and mailbox health are on you; Google's sending limit page says 2,000 messages a day per user (fetched 2026-11-23) and limits can change."
+      },
+      "cost": {
+       "score": 85,
+       "evidence": "You pay only for mailboxes and domains."
+      },
+      "data": {
+       "score": 90,
+       "evidence": "Mail stays with your mail provider and the call list stays in your own database."
+      },
+      "integration": {
+       "score": 80,
+       "evidence": "Tested against a fake SMTP and IMAP server; never a real mail host."
+      }
+     },
+     "sources": [
+      {
+       "url": "https://knowledge.workspace.google.com/admin/gmail/gmail-sending-limits-in-google-workspace",
+       "checked": "2026-11-23"
+      },
+      {
+       "url": "https://support.google.com/mail",
+       "checked": "2026-11-23"
+      }
+     ]
+    }
+   ],
+   "recommendation": {
+    "beginner": "One normal mailbox on a separate domain through smtp_imap, a few messages a day. It teaches you the basics at the lowest cost.",
+    "implementer": "smtp_imap with several client owned mailboxes. Add a mailbox supplier such as InboxKit only when you need many mailboxes and can check its terms. SendKit only if a client already uses it.",
+    "cost_sensitive": "smtp_imap. The paid tools add features Ringlark already has.",
+    "open_source_when": "Own mailboxes are the right call when you can watch deliverability yourself. If you send in large volume and need dedicated sending addresses, a paid platform may suit better. Ringlark does not claim it replaces one. A closeness above 100 percent only means Ringlark already does the sequencing, not that the route is better for deliverability."
+   }
+  },
+  {
+   "id": "hosting",
+   "job": "Where it runs",
+   "reference": "railway",
+   "tools": [
+    {
+     "id": "vercel",
+     "name": "Vercel",
+     "kind": "paid",
+     "supported_in_ringlark": "Deploy guide for the web app only",
+     "run": "not deployed",
+     "scores": {
+      "fit": {
+       "score": 60,
+       "evidence": "Runs the web app only; the API and worker must run elsewhere."
+      },
+      "setup": {
+       "score": 75,
+       "evidence": "Set the root directory to apps/web and include files outside it (docs/facts/hosting.md)."
+      },
+      "reliability": {
+       "score": 90,
+       "evidence": "Large vendor, no measurement made here."
+      },
+      "cost": {
+       "score": 70,
+       "evidence": "Hobby is free with usage caps and Pro is per seat on the pricing page (fetched 2026-11-23)."
+      },
+      "data": {
+       "score": 40,
+       "evidence": "Code and logs sit with the vendor."
+      },
+      "integration": {
+       "score": 55,
+       "evidence": "A guide and config were written, never deployed."
+      }
+     },
+     "sources": [
+      {
+       "url": "https://vercel.com/pricing",
+       "checked": "2026-11-23"
+      }
+     ]
+    },
+    {
+     "id": "railway",
+     "name": "Railway",
+     "kind": "paid",
+     "supported_in_ringlark": "Deploy guide and Dockerfiles",
+     "run": "not deployed",
+     "scores": {
+      "fit": {
+       "score": 85,
+       "evidence": "Runs the API, worker, web app and database together from the Dockerfiles."
+      },
+      "setup": {
+       "score": 70,
+       "evidence": "Dashboard setup; its Config as Code files are deprecated, so use dashboard settings (docs/facts/hosting.md)."
+      },
+      "reliability": {
+       "score": 80,
+       "evidence": "Managed platform; no measurement made."
+      },
+      "cost": {
+       "score": 65,
+       "evidence": "A monthly plan fee plus metered usage for memory, CPU and traffic (docs page fetched 2026-11-23)."
+      },
+      "data": {
+       "score": 50,
+       "evidence": "Data sits with the vendor."
+      },
+      "integration": {
+       "score": 55,
+       "evidence": "Guide and Dockerfiles written, docker build never run, never deployed."
+      }
+     },
+     "sources": [
+      {
+       "url": "https://docs.railway.com/reference/pricing/plans",
+       "checked": "2026-11-23"
+      }
+     ]
+    },
+    {
+     "id": "hetzner",
+     "name": "Hetzner Cloud server",
+     "kind": "cheap",
+     "supported_in_ringlark": "Deploy guide, compose file, backup script",
+     "run": "not deployed",
+     "scores": {
+      "fit": {
+       "score": 85,
+       "evidence": "A plain Linux server that runs the whole compose stack, same fit as Railway."
+      },
+      "setup": {
+       "score": 40,
+       "evidence": "You create the server, add an SSH key, set the firewall and install Docker (firewall details UNVERIFIED)."
+      },
+      "reliability": {
+       "score": 60,
+       "evidence": "You patch the server and own the backups."
+      },
+      "cost": {
+       "score": 90,
+       "evidence": "Small servers are listed at a few euros a month (page fetched 2026-11-23)."
+      },
+      "data": {
+       "score": 95,
+       "evidence": "Your own server, in the country you pick."
+      },
+      "integration": {
+       "score": 55,
+       "evidence": "Compose file and backup script checked for syntax only."
+      }
+     },
+     "sources": [
+      {
+       "url": "https://www.hetzner.com/cloud",
+       "checked": "2026-11-23"
+      }
+     ]
+    }
+   ],
+   "recommendation": {
+    "beginner": "Railway for everything, or try the offline demo on your own computer first. Nothing to patch.",
+    "implementer": "Hetzner with the compose file when the client wants low cost and data in a chosen country; Railway when you do not want server duty.",
+    "cost_sensitive": "Hetzner, if someone can spend an hour a month on updates and backups.",
+    "open_source_when": "A server you run is the right call when you will keep it patched. It is the wrong call when nobody watches it."
+   }
+  }
+ ],
+ "unscored_named": [
+  {
+   "name": "Postgres, SQLite",
+   "why": "Free and open source databases; there is no paid tool to compare against."
+  },
+  {
+   "name": "Docker, GitHub, GitHub Actions",
+   "why": "Free tooling for packaging and CI; no comparison is useful."
+  },
+  {
+   "name": "Anthropic models",
+   "why": "The offline stand in covers the demo, a live model is optional and UNVERIFIED here, and there is no close open source model this repo supports."
+  }
+ ]
+}

@@ -1,0 +1,7 @@
+{
+  "text": "{\"say\": \"Of course, I'll connect you with someone now.\", \"tool_calls\": [{\"tool\": \"transfer_to_human\", \"slot\": null, \"person_name\": null, \"reason\": \"caller asked for a person\", \"disposition\": null, \"note\": null, \"digit\": null, \"kind\": null}, {\"tool\": \"end_call\", \"slot\": null, \"person_name\": null, \"reason\": null, \"disposition\": \"transferred\", \"note\": \"\", \"digit\": null, \"kind\": null}]}",
+  "input_tokens": 150,
+  "output_tokens": 40,
+  "model": "claude-sonnet-5-5",
+  "prompt_preview": "[task:agent_turn]\nWrite the agent's next turn for the call that follows.\n\nReply with only JSON matching this schema:\n{\"$defs\": {\"ToolCall\": {\"additionalProperti"
+}

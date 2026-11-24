@@ -1,0 +1,21 @@
+Vendor: Telnyx messaging. Read 2026-11-23 with a page fetch (public docs, no account).
+Pages:
+  https://developers.telnyx.com/api/messaging/send-message
+  https://developers.telnyx.com/docs/messaging/messages/receiving-webhooks
+What the files hold:
+  send_message.json  the documented request fields of POST /v2/messages, the response data fields used here and the error shape.
+  inbound_webhook.json  the documented field paths of the message.received webhook and the signature scheme.
+The send page states the examples live in a machine readable spec (a published OpenAPI repository exists); the fetch tool could not return that file, so these are field lists read from the page, not the vendor's spec file.
+The response id example is invented to match the documented type (UUID). Never run against the real service.
+These excerpts were first saved for a sibling system and are copied here unchanged (same pages, same date).
+
+Call Control, added for this system, read 2026-11-23 (public docs, no account):
+  https://developers.telnyx.com/api-reference/call-commands/dial
+  https://developers.telnyx.com/api-reference/call-commands/streaming-start
+  https://developers.telnyx.com/api-reference/call-commands/send-dtmf
+  https://developers.telnyx.com/api-reference/call-commands/speak-text
+  https://developers.telnyx.com/api-reference/call-commands/transfer-call
+  https://developers.telnyx.com/docs/voice/programmable-voice/answering-machine-detection
+call_control.json holds the documented fields. The dial page lists about 80 optional fields; only the ones this system sends are kept, plus the full list of allowed
+answering_machine_detection values. The hangup action page returned 404 on the fetch, so the hangup path is NOT confirmed (UNVERIFIED). No OpenAPI file was fetched.
+The call_control_id in the example is invented to match the documented shape. Never run against the real service.

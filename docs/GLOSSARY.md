@@ -1,0 +1,25 @@
+# Glossary
+
+- **Adapter:** the small piece of code that talks to one outside service. Every category has an offline one called `seed`.
+- **AI disclosure:** the agent saying in its first sentence that it is an AI assistant. The dialer refuses prompts without it.
+- **AMD (answering machine detection):** the carrier's guess whether a person or a machine answered. Telnyx reports human, machine or not sure.
+- **Approval:** a person says yes to a follow up before it is sent.
+- **Audit log:** a record of important actions where each line includes a fingerprint of the one before, so edits show.
+- **Calling window:** the hours when a person may be called, in the person's own time zone. Default 09:00 to 17:00 on weekdays.
+- **Campaign:** a list of people, an agent and the rules for when it may call.
+- **Consent record:** what a person agreed to, when and how. A revoked consent stops all calls.
+- **Disposition:** the result code of a call, such as booked, not interested, wrong number, do not call.
+- **Do not call list:** numbers that must never be dialed. Added at once when someone asks.
+- **E.164:** the international phone format, a plus sign then digits, for example +14155550123.
+- **Held out set:** test callers written after the agent was tuned, and scored once, so the score is honest. After you tune against them they are no longer held out.
+- **IVR / phone menu:** the "press 1 for sales" menu. The agent hangs up or presses one key once.
+- **Kill switch:** one button that stops everything.
+- **Persona suite:** scripted fake callers (hostile, rushed, wrong number, asks if it is a robot, and more) with an answer key.
+- **Prompt:** the written instructions that tell the agent who it is and what it may do. Each change is a new version.
+- **QA score:** a score for each call from checks like "said it was an AI" and "honored stop".
+- **STIR/SHAKEN:** a system where your carrier signs your calls so other carriers can trust the caller id.
+- **10DLC:** US registration of your business for texts from a normal number.
+- **Telnyx:** the service that carries phone calls and texts.
+- **TeXML:** Telnyx's way to control a call with a short document. A documented alternative way to join a call to Ultravox.
+- **Ultravox:** the voice engine that listens, thinks and speaks on the call.
+- **Webhook:** a message an outside service sends to your server when something happens. Ringlark checks its signature before it reads it.

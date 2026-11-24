@@ -1,0 +1,2284 @@
+{
+ "openapi": "3.1.0",
+ "info": {
+  "title": "Ringlark API",
+  "version": "1.0.0"
+ },
+ "paths": {
+  "/health": {
+   "get": {
+    "summary": "Health",
+    "operationId": "health_health_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/ready": {
+   "get": {
+    "summary": "Ready",
+    "operationId": "ready_ready_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/events/stream": {
+   "get": {
+    "summary": "Stream",
+    "operationId": "stream_api_events_stream_get",
+    "parameters": [
+     {
+      "name": "after",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "default": 0,
+       "title": "After"
+      }
+     },
+     {
+      "name": "prefix",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Prefix"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/auth/login": {
+   "post": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "Sign in with email and password",
+    "operationId": "login_api_auth_login_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/Login"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/auth/logout": {
+   "post": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "End the session (the web app clears the cookie)",
+    "operationId": "logout_api_auth_logout_post",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/auth/me": {
+   "get": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "Who is signed in",
+    "operationId": "me_api_auth_me_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/calls": {
+   "get": {
+    "tags": [
+     "data"
+    ],
+    "summary": "Call log",
+    "operationId": "calls_api_calls_get",
+    "parameters": [
+     {
+      "name": "status",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string",
+       "default": "",
+       "title": "Status"
+      }
+     },
+     {
+      "name": "disposition",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string",
+       "default": "",
+       "title": "Disposition"
+      }
+     },
+     {
+      "name": "q",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string",
+       "default": "",
+       "title": "Q"
+      }
+     },
+     {
+      "name": "limit",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "maximum": 5000,
+       "minimum": 1,
+       "default": 200,
+       "title": "Limit"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/calls/{call_id}": {
+   "get": {
+    "tags": [
+     "data"
+    ],
+    "summary": "One call with its transcript, QA score and follow ups",
+    "operationId": "call_detail_api_calls__call_id__get",
+    "parameters": [
+     {
+      "name": "call_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Call Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/calls/{call_id}/replay": {
+   "get": {
+    "tags": [
+     "data"
+    ],
+    "summary": "A recorded call as timed events, for the live console demo",
+    "operationId": "replay_api_calls__call_id__replay_get",
+    "parameters": [
+     {
+      "name": "call_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Call Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/calls/{call_id}/take-over": {
+   "post": {
+    "tags": [
+     "data"
+    ],
+    "summary": "A person takes over the call (owner or approver)",
+    "operationId": "take_over_api_calls__call_id__take_over_post",
+    "parameters": [
+     {
+      "name": "call_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Call Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/calls/{call_id}/transfer": {
+   "post": {
+    "tags": [
+     "data"
+    ],
+    "summary": "Send the live call to the agent's human number (owner or approver)",
+    "operationId": "transfer_api_calls__call_id__transfer_post",
+    "parameters": [
+     {
+      "name": "call_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Call Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/TransferIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/campaigns": {
+   "get": {
+    "tags": [
+     "data"
+    ],
+    "summary": "Campaigns with target counts",
+    "operationId": "campaigns_api_campaigns_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "data"
+    ],
+    "summary": "Create a campaign (starts as a draft, never running)",
+    "operationId": "create_campaign_api_campaigns_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/CampaignIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/campaigns/{cid}/start": {
+   "post": {
+    "tags": [
+     "data"
+    ],
+    "summary": "Start a campaign (owner only)",
+    "operationId": "campaign_start_api_campaigns__cid__start_post",
+    "parameters": [
+     {
+      "name": "cid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Cid"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/campaigns/{cid}/pause": {
+   "post": {
+    "tags": [
+     "data"
+    ],
+    "summary": "Pause a campaign",
+    "operationId": "campaign_pause_api_campaigns__cid__pause_post",
+    "parameters": [
+     {
+      "name": "cid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Cid"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/campaigns/{cid}/targets": {
+   "get": {
+    "tags": [
+     "data"
+    ],
+    "summary": "Targets of a campaign, with the reason each one can or cannot be called right now",
+    "operationId": "targets_api_campaigns__cid__targets_get",
+    "parameters": [
+     {
+      "name": "cid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Cid"
+      }
+     },
+     {
+      "name": "limit",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "maximum": 5000,
+       "minimum": 1,
+       "default": 500,
+       "title": "Limit"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "data"
+    ],
+    "summary": "Import targets (a list of rows with phone and timezone)",
+    "operationId": "import_targets_api_campaigns__cid__targets_post",
+    "parameters": [
+     {
+      "name": "cid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Cid"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/TargetsIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/agents": {
+   "get": {
+    "tags": [
+     "data"
+    ],
+    "summary": "Agents with every prompt version",
+    "operationId": "agents_api_agents_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/agents/{aid}/versions": {
+   "post": {
+    "tags": [
+     "data"
+    ],
+    "summary": "Save a new prompt version (never edits an old one)",
+    "operationId": "add_version_api_agents__aid__versions_post",
+    "parameters": [
+     {
+      "name": "aid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Aid"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/VersionIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/agents/{aid}/activate": {
+   "post": {
+    "tags": [
+     "data"
+    ],
+    "summary": "Make a version the one used for new calls (owner only)",
+    "operationId": "activate_api_agents__aid__activate_post",
+    "parameters": [
+     {
+      "name": "aid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Aid"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ActivateIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/agents/{aid}/split": {
+   "post": {
+    "tags": [
+     "data"
+    ],
+    "summary": "Send a share of calls to a candidate version (owner only)",
+    "operationId": "split_api_agents__aid__split_post",
+    "parameters": [
+     {
+      "name": "aid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Aid"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/SplitIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/agents/{aid}/diff": {
+   "get": {
+    "tags": [
+     "data"
+    ],
+    "summary": "Line by line difference between two versions",
+    "operationId": "diff_api_agents__aid__diff_get",
+    "parameters": [
+     {
+      "name": "aid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Aid"
+      }
+     },
+     {
+      "name": "a",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "A"
+      }
+     },
+     {
+      "name": "b",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "B"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/personas": {
+   "get": {
+    "tags": [
+     "data"
+    ],
+    "summary": "The scripted callers of a persona set",
+    "operationId": "personas_api_personas_get",
+    "parameters": [
+     {
+      "name": "set",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string",
+       "pattern": "^(dev|heldout|heldout2)$",
+       "default": "dev",
+       "title": "Set"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/agents/{aid}/simulate": {
+   "post": {
+    "tags": [
+     "data"
+    ],
+    "summary": "Run one scripted caller against a prompt version as text. No voice, no network.",
+    "operationId": "simulate_api_agents__aid__simulate_post",
+    "parameters": [
+     {
+      "name": "aid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Aid"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/SimIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/agents/{aid}/persona-suite": {
+   "post": {
+    "tags": [
+     "data"
+    ],
+    "summary": "Run a whole persona set against a prompt version and score it",
+    "operationId": "persona_suite_api_agents__aid__persona_suite_post",
+    "parameters": [
+     {
+      "name": "aid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Aid"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/SuiteIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/numbers": {
+   "get": {
+    "tags": [
+     "data"
+    ],
+    "summary": "Numbers and their compliance checklist",
+    "operationId": "numbers_api_numbers_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/numbers/{nid}/checklist": {
+   "post": {
+    "tags": [
+     "data"
+    ],
+    "summary": "Tick a compliance step you did with your carrier (owner only). This records your word, it checks nothing with the carrier.",
+    "operationId": "checklist_api_numbers__nid__checklist_post",
+    "parameters": [
+     {
+      "name": "nid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Nid"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ChecklistIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/qa": {
+   "get": {
+    "tags": [
+     "data"
+    ],
+    "summary": "Calls queued for a person to read, flagged first",
+    "operationId": "qa_queue_api_qa_get",
+    "parameters": [
+     {
+      "name": "show",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string",
+       "pattern": "^(open|all)$",
+       "default": "open",
+       "title": "Show"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/qa/{call_id}/review": {
+   "post": {
+    "tags": [
+     "data"
+    ],
+    "summary": "Mark a call as read",
+    "operationId": "review_api_qa__call_id__review_post",
+    "parameters": [
+     {
+      "name": "call_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Call Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/followups": {
+   "get": {
+    "tags": [
+     "data"
+    ],
+    "summary": "Follow ups after calls",
+    "operationId": "followups_api_followups_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/suppressions": {
+   "get": {
+    "tags": [
+     "data"
+    ],
+    "summary": "The do not call list",
+    "operationId": "suppressions_api_suppressions_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "data"
+    ],
+    "summary": "Add a number to the do not call list",
+    "operationId": "add_suppression_api_suppressions_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/SuppIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/overview": {
+   "get": {
+    "tags": [
+     "operations"
+    ],
+    "summary": "Numbers for the overview page",
+    "operationId": "overview_api_overview_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/approvals": {
+   "get": {
+    "tags": [
+     "operations"
+    ],
+    "summary": "Pending and recent approvals",
+    "operationId": "approvals_api_approvals_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/approvals/{approval_id}/decide": {
+   "post": {
+    "tags": [
+     "operations"
+    ],
+    "summary": "Approve or reject",
+    "operationId": "decide_approval_api_approvals__approval_id__decide_post",
+    "parameters": [
+     {
+      "name": "approval_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Approval Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/DecideIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/audit": {
+   "get": {
+    "tags": [
+     "operations"
+    ],
+    "summary": "Audit log, newest first",
+    "operationId": "audit_api_audit_get",
+    "parameters": [
+     {
+      "name": "limit",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "maximum": 1000,
+       "minimum": 1,
+       "default": 100,
+       "title": "Limit"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/audit/verify": {
+   "get": {
+    "tags": [
+     "operations"
+    ],
+    "summary": "Check the audit chain has not been edited",
+    "operationId": "audit_verify_api_audit_verify_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/integrations": {
+   "get": {
+    "tags": [
+     "operations"
+    ],
+    "summary": "Every adapter, which one is selected, and what it needs",
+    "operationId": "integrations_api_integrations_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/integrations/{category}/test": {
+   "post": {
+    "tags": [
+     "operations"
+    ],
+    "summary": "Test the selected adapter in a category",
+    "operationId": "test_integration_api_integrations__category__test_post",
+    "parameters": [
+     {
+      "name": "category",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Category"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/settings": {
+   "get": {
+    "tags": [
+     "operations"
+    ],
+    "summary": "Mode, kill switch and config problems",
+    "operationId": "get_settings_api_settings_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "operations"
+    ],
+    "summary": "Turn the kill switch or draft mode on or off (owner only). The app can never switch live calling on.",
+    "operationId": "post_settings_api_settings_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/SettingsIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/metrics/versions": {
+   "get": {
+    "tags": [
+     "operations"
+    ],
+    "summary": "How each prompt version did: calls, booked share and average QA score",
+    "operationId": "version_metrics_api_metrics_versions_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/tools/{call_id}/{tool}": {
+   "post": {
+    "tags": [
+     "tools"
+    ],
+    "summary": "Run one agent tool for one call",
+    "operationId": "run_tool_api_tools__call_id___tool__post",
+    "parameters": [
+     {
+      "name": "call_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Call Id"
+      }
+     },
+     {
+      "name": "tool",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Tool"
+      }
+     },
+     {
+      "name": "x-tool-token",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-Tool-Token"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/webhooks/telnyx": {
+   "post": {
+    "tags": [
+     "webhooks"
+    ],
+    "summary": "Call and text events from Telnyx (Ed25519 signed)",
+    "operationId": "telnyx_api_webhooks_telnyx_post",
+    "parameters": [
+     {
+      "name": "telnyx-signature-ed25519",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Telnyx-Signature-Ed25519"
+      }
+     },
+     {
+      "name": "telnyx-timestamp",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Telnyx-Timestamp"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/webhooks/ultravox": {
+   "post": {
+    "tags": [
+     "webhooks"
+    ],
+    "summary": "Call events from Ultravox (HMAC signed)",
+    "operationId": "ultravox_api_webhooks_ultravox_post",
+    "parameters": [
+     {
+      "name": "x-ultravox-webhook-signature",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-Ultravox-Webhook-Signature"
+      }
+     },
+     {
+      "name": "x-ultravox-webhook-timestamp",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-Ultravox-Webhook-Timestamp"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/demo/state": {
+   "get": {
+    "tags": [
+     "demo"
+    ],
+    "summary": "The demo clock",
+    "operationId": "state_api_demo_state_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/demo/reset": {
+   "post": {
+    "tags": [
+     "demo"
+    ],
+    "summary": "Reset to the seed data and a fresh clock",
+    "operationId": "reset_api_demo_reset_post",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/demo/tick": {
+   "post": {
+    "tags": [
+     "demo"
+    ],
+    "summary": "Run every job once, now",
+    "operationId": "tick_api_demo_tick_post",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/demo/advance": {
+   "post": {
+    "tags": [
+     "demo"
+    ],
+    "summary": "Move the demo clock forward",
+    "operationId": "advance_api_demo_advance_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/AdvanceIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/demo/stress-calls": {
+   "post": {
+    "tags": [
+     "demo"
+    ],
+    "summary": "Add many fictional finished calls, to check that long tables stay fast",
+    "operationId": "stress_api_demo_stress_calls_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/StressIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "components": {
+  "schemas": {
+   "ActivateIn": {
+    "properties": {
+     "version_id": {
+      "type": "integer",
+      "title": "Version Id"
+     }
+    },
+    "type": "object",
+    "required": [
+     "version_id"
+    ],
+    "title": "ActivateIn"
+   },
+   "AdvanceIn": {
+    "properties": {
+     "hours": {
+      "type": "number",
+      "maximum": 720.0,
+      "minimum": 0.0,
+      "title": "Hours"
+     }
+    },
+    "type": "object",
+    "required": [
+     "hours"
+    ],
+    "title": "AdvanceIn"
+   },
+   "CampaignIn": {
+    "properties": {
+     "name": {
+      "type": "string",
+      "maxLength": 120,
+      "minLength": 2,
+      "title": "Name"
+     },
+     "agent_id": {
+      "type": "integer",
+      "title": "Agent Id"
+     },
+     "number_id": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Number Id"
+     },
+     "window_start_hour": {
+      "anyOf": [
+       {
+        "type": "integer",
+        "maximum": 23.0,
+        "minimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Window Start Hour"
+     },
+     "window_end_hour": {
+      "anyOf": [
+       {
+        "type": "integer",
+        "maximum": 24.0,
+        "minimum": 1.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Window End Hour"
+     },
+     "daily_cap": {
+      "anyOf": [
+       {
+        "type": "integer",
+        "maximum": 5000.0,
+        "minimum": 1.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Daily Cap"
+     },
+     "max_attempts": {
+      "type": "integer",
+      "maximum": 5.0,
+      "minimum": 1.0,
+      "title": "Max Attempts",
+      "default": 3
+     },
+     "retry_gap_days": {
+      "type": "integer",
+      "maximum": 14.0,
+      "minimum": 1.0,
+      "title": "Retry Gap Days",
+      "default": 1
+     },
+     "allow_voicemail": {
+      "type": "boolean",
+      "title": "Allow Voicemail",
+      "default": false
+     },
+     "voicemail_text": {
+      "type": "string",
+      "maxLength": 600,
+      "title": "Voicemail Text",
+      "default": ""
+     },
+     "ivr_policy": {
+      "type": "string",
+      "pattern": "^(hangup|press_once)$",
+      "title": "Ivr Policy",
+      "default": "hangup"
+     },
+     "ivr_extension": {
+      "type": "string",
+      "maxLength": 4,
+      "title": "Ivr Extension",
+      "default": ""
+     }
+    },
+    "type": "object",
+    "required": [
+     "name",
+     "agent_id"
+    ],
+    "title": "CampaignIn"
+   },
+   "ChecklistIn": {
+    "properties": {
+     "step": {
+      "type": "string",
+      "pattern": "^(caller_id_registered|stir_shaken_attestation|a2p_10dlc_brand|a2p_10dlc_campaign|recording_notice_reviewed)$",
+      "title": "Step"
+     },
+     "done": {
+      "type": "boolean",
+      "title": "Done"
+     }
+    },
+    "type": "object",
+    "required": [
+     "step",
+     "done"
+    ],
+    "title": "ChecklistIn"
+   },
+   "DecideIn": {
+    "properties": {
+     "approve": {
+      "type": "boolean",
+      "title": "Approve"
+     },
+     "note": {
+      "type": "string",
+      "maxLength": 500,
+      "title": "Note",
+      "default": ""
+     }
+    },
+    "type": "object",
+    "required": [
+     "approve"
+    ],
+    "title": "DecideIn"
+   },
+   "HTTPValidationError": {
+    "properties": {
+     "detail": {
+      "items": {
+       "$ref": "#/components/schemas/ValidationError"
+      },
+      "type": "array",
+      "title": "Detail"
+     }
+    },
+    "type": "object",
+    "title": "HTTPValidationError"
+   },
+   "Login": {
+    "properties": {
+     "email": {
+      "type": "string",
+      "title": "Email"
+     },
+     "password": {
+      "type": "string",
+      "title": "Password"
+     }
+    },
+    "type": "object",
+    "required": [
+     "email",
+     "password"
+    ],
+    "title": "Login"
+   },
+   "SettingsIn": {
+    "properties": {
+     "kill_switch": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Kill Switch"
+     },
+     "force_draft": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Force Draft"
+     }
+    },
+    "type": "object",
+    "title": "SettingsIn"
+   },
+   "SimIn": {
+    "properties": {
+     "version_id": {
+      "type": "integer",
+      "title": "Version Id"
+     },
+     "persona_id": {
+      "type": "string",
+      "title": "Persona Id"
+     },
+     "set": {
+      "type": "string",
+      "pattern": "^(dev|heldout|heldout2)$",
+      "title": "Set",
+      "default": "dev"
+     }
+    },
+    "type": "object",
+    "required": [
+     "version_id",
+     "persona_id"
+    ],
+    "title": "SimIn"
+   },
+   "SplitIn": {
+    "properties": {
+     "candidate_id": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Candidate Id"
+     },
+     "share_b": {
+      "type": "number",
+      "maximum": 0.5,
+      "minimum": 0.0,
+      "title": "Share B",
+      "default": 0.0
+     }
+    },
+    "type": "object",
+    "title": "SplitIn"
+   },
+   "StressIn": {
+    "properties": {
+     "n": {
+      "type": "integer",
+      "maximum": 20000.0,
+      "minimum": 1.0,
+      "title": "N"
+     }
+    },
+    "type": "object",
+    "required": [
+     "n"
+    ],
+    "title": "StressIn"
+   },
+   "SuiteIn": {
+    "properties": {
+     "version_id": {
+      "type": "integer",
+      "title": "Version Id"
+     },
+     "set": {
+      "type": "string",
+      "pattern": "^(dev|heldout|heldout2)$",
+      "title": "Set",
+      "default": "dev"
+     }
+    },
+    "type": "object",
+    "required": [
+     "version_id"
+    ],
+    "title": "SuiteIn"
+   },
+   "SuppIn": {
+    "properties": {
+     "phone": {
+      "type": "string",
+      "title": "Phone"
+     },
+     "reason": {
+      "type": "string",
+      "maxLength": 80,
+      "title": "Reason",
+      "default": "Added by the owner"
+     }
+    },
+    "type": "object",
+    "required": [
+     "phone"
+    ],
+    "title": "SuppIn"
+   },
+   "TargetsIn": {
+    "properties": {
+     "rows": {
+      "items": {
+       "additionalProperties": true,
+       "type": "object"
+      },
+      "type": "array",
+      "maxItems": 5000,
+      "title": "Rows"
+     }
+    },
+    "type": "object",
+    "required": [
+     "rows"
+    ],
+    "title": "TargetsIn"
+   },
+   "TransferIn": {
+    "properties": {
+     "reason": {
+      "type": "string",
+      "maxLength": 200,
+      "title": "Reason",
+      "default": ""
+     }
+    },
+    "type": "object",
+    "title": "TransferIn"
+   },
+   "ValidationError": {
+    "properties": {
+     "loc": {
+      "items": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "integer"
+        }
+       ]
+      },
+      "type": "array",
+      "title": "Location"
+     },
+     "msg": {
+      "type": "string",
+      "title": "Message"
+     },
+     "type": {
+      "type": "string",
+      "title": "Error Type"
+     },
+     "input": {
+      "title": "Input"
+     },
+     "ctx": {
+      "type": "object",
+      "title": "Context"
+     }
+    },
+    "type": "object",
+    "required": [
+     "loc",
+     "msg",
+     "type"
+    ],
+    "title": "ValidationError"
+   },
+   "VersionIn": {
+    "properties": {
+     "body": {
+      "type": "string",
+      "maxLength": 20000,
+      "minLength": 40,
+      "title": "Body"
+     },
+     "note": {
+      "type": "string",
+      "maxLength": 200,
+      "title": "Note",
+      "default": ""
+     }
+    },
+    "type": "object",
+    "required": [
+     "body"
+    ],
+    "title": "VersionIn"
+   }
+  }
+ }
+}
