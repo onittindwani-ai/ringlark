@@ -41,8 +41,9 @@ def test_a_service_group_filled_in_halfway_is_reported_by_name():
     assert any("Phone calls and texts" in p and "TELNYX_PUBLIC_KEY" in p for p in problems)
 
 
-def test_a_mail_login_left_out_is_not_a_problem_but_a_missing_host_is():
-    assert check_env.check(EXAMPLE, real_install(SMTP_HOST="smtp.example.test")) == []
+def test_a_mail_group_filled_in_completely_is_clean_but_a_missing_host_is_reported():
+    full = real_install(SMTP_HOST="smtp.example.test", SMTP_USER="calls@example.test", SMTP_PASSWORD="test-only-pw", IMAP_HOST="imap.example.test")
+    assert check_env.check(EXAMPLE, full) == []
     assert any("SMTP_HOST" in p for p in check_env.check(EXAMPLE, real_install(SMTP_USER="calls@example.test")))
 
 
