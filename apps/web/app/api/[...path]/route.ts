@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { forwardPath, visitorAddress } from "@/lib/proxy-path";
 
 const API = process.env.API_BASE_URL ?? "http://127.0.0.1:8000";
 const HOP = new Set(["connection", "keep-alive", "transfer-encoding", "content-encoding", "content-length"]);
@@ -7,8 +8,8 @@ const HOP = new Set(["connection", "keep-alive", "transfer-encoding", "content-e
 /** Forward /api/* to the private API. Adds the session from the cookie. Mutations need the x-ringlark header, which a cross site page cannot send. */
 async function forward(request: Request, ctx: { params: Promise<{ path: string[] }> }) {
   const { path } = await ctx.params;
-  const joined = path.join("/");
-  if (joined.startsWith("auth/login") || joined.startsWith("webhooks") || joined.startsWith("tools")) return NextResponse.json({ error: { message: "Not found." } }, { status: 404 });
+  const joined = forwardPath(path);
+  if (joined === null) return NextResponse.json({ error: { message: "Not found." } }, { status: 404 }); // an allow list, and no dots or encoded slashes
   if (!["GET", "HEAD"].includes(request.method) && request.headers.get("x-ringlark") !== "1") {
     return NextResponse.json({ error: { message: "Missing request header." } }, { status: 400 });
   }
@@ -20,7 +21,7 @@ async function forward(request: Request, ctx: { params: Promise<{ path: string[]
   const ct = request.headers.get("content-type");
   if (ct) headers["content-type"] = ct;
   if (token) headers["x-session"] = token;
-  const ip = request.headers.get("x-forwarded-for");
+  const ip = visitorAddress(request.headers.get("x-forwarded-for")); // the last hop only: the visitor can write the rest
   if (ip) headers["x-forwarded-for"] = ip;
   const body = ["GET", "HEAD"].includes(request.method) ? undefined : await request.arrayBuffer();
   const send = () => fetch(`${API}/api/${joined}${url.search}`, {

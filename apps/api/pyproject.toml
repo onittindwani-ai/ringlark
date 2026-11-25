@@ -1,6 +1,6 @@
 [project]
 name = "ringlark"
-version = "1.0.0"
+version = "1.0.1"
 description = "Ringlark: AI SDR setup system (phone callers and follow ups)"
 requires-python = ">=3.12"
 license = { text = "MIT" }

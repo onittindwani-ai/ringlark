@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -30,6 +30,9 @@ def overview(session: Session, now: datetime) -> dict:
         series.append({"day": a.date().isoformat(), "calls": cnt(Call.status.in_(REAL), Call.created_at >= a, Call.created_at < b), "booked": cnt(Call.disposition == "booked", Call.created_at >= a, Call.created_at < b)})
     avg_qa = session.scalar(select(func.avg(QAScore.score)))
     last = session.get(State, "last_dial")
+    stamp = session.get(State, "last_dial_at")
+    last_at = stamp.value if stamp and stamp.value else None
+    age = int((datetime.now(UTC) - aware(datetime.fromisoformat(last_at))).total_seconds()) if last_at else None  # a quiet stop of the dialer shows up here
     held = dict(blocked)
     for k, v in (json.loads(last.value)["reasons"] if last and last.value else {}).items():
         if k not in held and k not in ("draft_mode",):
@@ -42,4 +45,4 @@ def overview(session: Session, now: datetime) -> dict:
             "pending_approvals": int(session.scalar(select(func.count()).select_from(Approval).where(Approval.status == "pending")) or 0),
             "targets": {k: int(v) for k, v in session.execute(select(Target.status, func.count()).group_by(Target.status)).all()},
             "campaigns_running": int(session.scalar(select(func.count()).select_from(Campaign).where(Campaign.status == "running")) or 0), "series": series,
-            "followups_pending": int(session.scalar(select(func.count()).select_from(FollowUp).where(FollowUp.status == "pending")) or 0)}
+            "last_dial_at": last_at, "dial_tick_age_s": age, "followups_pending": int(session.scalar(select(func.count()).select_from(FollowUp).where(FollowUp.status == "pending")) or 0)}

@@ -26,5 +26,6 @@ def add_suppression(session: Session, phone: str, reason: str, source: str, acto
 
 
 def latest_consent(session: Session, phone: str, kind: str) -> str | None:
-    row = session.scalars(select(ConsentRecord).where(ConsentRecord.phone == normalize_phone(phone), ConsentRecord.kind == kind).order_by(ConsentRecord.id.desc())).first()
+    """The newest answer by the time it was given (a text that arrives late but was sent earlier cannot undo a later STOP), then by arrival."""
+    row = session.scalars(select(ConsentRecord).where(ConsentRecord.phone == normalize_phone(phone), ConsentRecord.kind == kind).order_by(ConsentRecord.created_at.desc(), ConsentRecord.id.desc())).first()
     return row.status if row else None

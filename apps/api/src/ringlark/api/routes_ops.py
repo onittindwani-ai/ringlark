@@ -40,9 +40,9 @@ def decide_approval(approval_id: int, body: DecideIn, s: Session = Depends(db), 
         a = decide(s, approval_id, body.approve, u["user"], u["role"], body.note or None)
     except ApprovalError as exc:
         raise HTTPException(409, str(exc)) from exc
-    if a.action == "followup.send" and not body.approve and a.payload.get("followup_id"):
-        fu = s.get(FollowUp, int(a.payload["followup_id"]))
-        if fu:
+    if a.action == "followup.send" and a.status == "rejected" and a.payload.get("followup_id"):
+        fu = s.get(FollowUp, int(a.payload["followup_id"]))  # follows the decision that was really saved, not the request
+        if fu and fu.status == "pending":
             fu.status = "rejected"
     return {"status": a.status}
 
@@ -67,7 +67,7 @@ def integrations(ctx: Ctx = Depends(get_ctx)):
     for row in ctx.registry.describe():
         env = ENV_VARS.get((row["category"], row["name"]), [])
         out.append({**row, "selected": chosen.get(row["category"]) == row["name"], "env_vars": env, "configured": all(bool(getattr(st, v.lower(), "")) for v in env) if env else True})
-    return {"categories": list(CATEGORIES), "adapters": out, "demo_mode": st.demo_mode}
+    return {"categories": list(CATEGORIES), "adapters": out, "demo_mode": st.demo_shortcuts}
 
 
 @router.post("/integrations/{category}/test", summary="Test the selected adapter in a category")
@@ -81,7 +81,7 @@ def test_integration(category: str, ctx: Ctx = Depends(get_ctx), u: dict = Depen
 @router.get("/settings", summary="Mode, kill switch and config problems")
 def get_settings(s: Session = Depends(db), ctx: Ctx = Depends(get_ctx)):
     eff = ctx.effective(s)
-    return {"mode": ctx.settings.mode.value, "effective_mode": eff.mode.value, "kill_switch": eff.kill_switch, "demo_mode": ctx.settings.demo_mode, "problems": ctx.settings.problems(),
+    return {"mode": ctx.settings.mode.value, "effective_mode": eff.mode.value, "kill_switch": eff.kill_switch, "demo_mode": ctx.settings.demo_shortcuts, "problems": ctx.settings.problems(),
             "window": f"{ctx.settings.default_window_start:02d}:00 to {ctx.settings.default_window_end:02d}:00 callee local time", "follow_ups_need_approval": ctx.settings.follow_ups_need_approval,
             "llm": {"offline": "offline stand in", "fixture": "recorded answers"}.get(ctx.settings.effective_llm_backend.value, "live (UNVERIFIED)")}
 

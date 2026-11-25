@@ -47,5 +47,5 @@ def owner(request: Request) -> dict:
 
 
 def demo_only(request: Request) -> None:
-    if not request.app.state.ctx.settings.demo_mode:
+    if not request.app.state.ctx.settings.demo_shortcuts:  # an owner password hash switches every demo route off
         raise HTTPException(404, "Not found.")

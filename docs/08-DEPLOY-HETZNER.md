@@ -9,7 +9,7 @@
 3. Point two DNS names at the server's address: one for the web app (`app.yourdomain.com`) and one for the API (`api.yourdomain.com`).
 4. Optional: paste `deploy/hetzner/cloud-init.yaml` into the "Cloud config" box when creating the server. It installs Docker and Caddy. It holds **no secrets**; do not add any.
 5. Log in with SSH. Clone your repository to `/opt/ringlark`.
-6. `cp .env.example .env` and fill it in (see `04`). Set the two DNS names in `deploy/hetzner/Caddyfile`.
+6. `cp .env.example .env` and fill it in (see `04`, "The Docker path"): `DEMO_MODE=false`, a `SESSION_SECRET` of 32 or more random characters, an `OWNER_PASSWORD_HASH`, a `POSTGRES_PASSWORD` of letters and digits only (`openssl rand -hex 24`), and `COMPANY_NAME`. The API refuses to start if these are not safe. Set the two DNS names in `deploy/hetzner/Caddyfile`.
 7. `docker compose up -d --build`. Then `docker compose exec api alembic upgrade head`.
 8. Copy `deploy/hetzner/Caddyfile` to `/etc/caddy/Caddyfile` and `sudo systemctl reload caddy`.
 9. Open the web address and sign in.

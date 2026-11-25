@@ -11,7 +11,7 @@ export const outcome = (code: string) => OUTCOME[code] ?? { label: code ? code.r
 export const WHY: Record<string, string> = {
   ok: "Can be called now", outside_hours: "Closed in their time zone", do_not_call: "On the do not call list", consent_revoked: "Took back consent", bad_number: "Not a full phone number",
   unknown_timezone: "Time zone unknown", daily_cap: "Daily cap reached", max_attempts: "All attempts used", retry_same_day: "Already tried today", retry_too_soon: "Too soon to retry",
-  no_ai_disclosure: "Greeting lacks the AI notice", person_booked: "Already booked, no more calls", person_done: "Finished, no more calls", person_suppressed: "Never to be called", campaign_not_running: "Waiting for the campaign to start", kill_switch: "Kill switch is on", draft_mode: "Draft mode: nothing is dialled", call_in_progress: "A call is already running", no_consent_on_file: "No consent on file",
+  no_ai_disclosure: "Greeting lacks the AI notice", person_booked: "Already booked, no more calls", person_done: "Finished, no more calls", person_suppressed: "Never to be called", campaign_not_running: "Waiting for the campaign to start", kill_switch: "Kill switch is on", draft_mode: "Draft mode: nothing is dialled", call_in_progress: "A call is already running", no_consent_on_file: "No consent on file", premium_rate_number: "Premium rate number, never called", country_not_allowed: "Outside the countries you allow",
 };
 export const why = (r: string) => WHY[r] ?? r.replace(/_/g, " ");
 

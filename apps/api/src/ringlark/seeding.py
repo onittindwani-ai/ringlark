@@ -9,16 +9,16 @@ from pathlib import Path
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from ringlark import intake
+from ringlark import datadir, intake
 from ringlark.models import Agent, Call, Campaign, ConsentRecord, Flow, Number, PromptVersion, Target
 from ringlark.suppression import add_suppression
 from ringlark.util import normalize_phone
 
-DEFAULT_DATA = Path(__file__).resolve().parents[4] / "data"
+DEFAULT_DATA = datadir.CHECKOUT_DATA  # kept for tools/score_seed.py; the code below asks datadir each time
 
 
 def read_seed(data_dir: Path | None = None) -> dict:
-    return json.loads(((data_dir or DEFAULT_DATA) / "seed.json").read_text())
+    return json.loads(((data_dir or datadir.CHECKOUT_DATA) / "seed.json").read_text())
 
 
 def load_seed(session: Session, seed: dict, now: datetime, with_targets: bool = True) -> dict:

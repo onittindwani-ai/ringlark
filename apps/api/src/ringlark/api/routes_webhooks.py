@@ -33,11 +33,15 @@ async def telnyx(request: Request, s: Session = Depends(db), ctx: Ctx = Depends(
         raise HTTPException(401, "Bad signature.")
     try:
         d = json.loads(raw)["data"]
-        et, payload = d["event_type"], d.get("payload", {})
+        et, payload = d["event_type"], dict(d.get("payload", {}))
+        payload["_event_id"], payload["_occurred_at"] = str(d.get("id") or ""), d.get("occurred_at")
     except (ValueError, KeyError, TypeError):
         return {"ok": True, "ignored": True}
     try:
         result = live.handle_telnyx_event(s, ctx, ctx.effective(s), et, payload)
+    except live.CallNotFoundYet as exc:
+        # The call is named in the event but not saved yet: say so, and Telnyx sends the event again instead of it being lost.
+        raise HTTPException(503, "That call is not saved yet. Send the event again.") from exc
     except SafetyError as exc:
         record_event(s, "webhook.blocked", None, None, {"event": et, "why": type(exc).__name__})
         result = "blocked_by_safety"

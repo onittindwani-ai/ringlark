@@ -3,18 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Card, Field } from "@sendora/ui-kit";
 import { api } from "@/lib/api";
-
-/** The page the person asked for before being sent here, only when it is a path on this site. */
-function afterSignIn(): string {
-  try {
-    const next = new URLSearchParams(window.location.search).get("next") ?? "";
-    // Resolve it against this site: a value that lands on another origin (for example a slash, a tab, then a host name) is dropped.
-    const url = new URL(next, window.location.origin);
-    return next.startsWith("/") && url.origin === window.location.origin ? url.pathname + url.search + url.hash : "/";
-  } catch {
-    return "/";
-  }
-}
+import { afterSignIn } from "@/lib/next-path";
 
 export default function Login() {
   const router = useRouter();
@@ -31,7 +20,7 @@ export default function Login() {
       setError((e as Error).message);
       throw e;
     }
-    router.replace(afterSignIn());
+    router.replace(afterSignIn(window.location.search, window.location.origin));
     router.refresh();
   }
 

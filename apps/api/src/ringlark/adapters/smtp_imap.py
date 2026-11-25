@@ -5,15 +5,24 @@ from __future__ import annotations
 import email
 import imaplib
 import smtplib
+import ssl
 from email.message import EmailMessage
 from email.policy import default as default_policy
 from email.utils import make_msgid, parseaddr
 
 from ringlark.adapters.base import InboundEmail
-from ringlark.util import clean_header
+from ringlark.util import clean_header, is_valid_email
 from sendora_core.adapters import AdapterError
 from sendora_core.safety import write_action
 from sendora_core.settings import BaseAppSettings
+
+
+LOOPBACK = {"localhost", "127.0.0.1", "::1"}
+
+
+def _tls_context() -> ssl.SSLContext:
+    """Certificates and host names are checked. Python's own default for smtplib and imaplib does not check them."""
+    return ssl.create_default_context()
 
 
 class SmtpImapEmail:
@@ -27,29 +36,35 @@ class SmtpImapEmail:
 
     def _smtp(self) -> smtplib.SMTP:
         s = self.settings
-        c = smtplib.SMTP_SSL(s.smtp_host, s.smtp_port, timeout=20) if s.smtp_port == 465 else smtplib.SMTP(s.smtp_host, s.smtp_port, timeout=20)
+        if (s.smtp_port != 465 and not s.smtp_use_tls) and s.smtp_host not in LOOPBACK:
+            raise AdapterError("SMTP_USE_TLS=false sends the mailbox password in clear text, so it is only allowed for a mail server on this computer.")
+        c = smtplib.SMTP_SSL(s.smtp_host, s.smtp_port, timeout=20, context=_tls_context()) if s.smtp_port == 465 else smtplib.SMTP(s.smtp_host, s.smtp_port, timeout=20)
         if s.smtp_port != 465 and s.smtp_use_tls:
-            c.starttls()
+            c.starttls(context=_tls_context())
         if s.smtp_user:
             c.login(s.smtp_user, s.smtp_password)
         return c
 
     def _imap(self) -> imaplib.IMAP4:
         s = self.settings
-        c = imaplib.IMAP4_SSL(s.imap_host, s.imap_port) if s.imap_use_ssl else imaplib.IMAP4(s.imap_host, s.imap_port)
+        if not s.imap_use_ssl and s.imap_host not in LOOPBACK:
+            raise AdapterError("IMAP_USE_SSL=false sends the mailbox password in clear text, so it is only allowed for a mail server on this computer.")
+        c = imaplib.IMAP4_SSL(s.imap_host, s.imap_port, ssl_context=_tls_context()) if s.imap_use_ssl else imaplib.IMAP4(s.imap_host, s.imap_port)
         c.login(s.smtp_user, s.smtp_password)
         return c
 
     @write_action("email.send")
     def send(self, *, from_addr: str, to: str, subject: str, body: str) -> str:
         self._need("smtp_host")
+        if not is_valid_email(to):
+            raise AdapterError("The recipient must be one plain email address.")  # never a list: one booking email must not reach several people
         m = EmailMessage()
         m["From"], m["To"], m["Subject"] = clean_header(from_addr), clean_header(to), clean_header(subject)
         m["Message-ID"] = make_msgid(domain=from_addr.rsplit("@", 1)[-1] or "localhost")
         m.set_content(body)
         try:
             with self._smtp() as c:
-                c.send_message(m)
+                c.send_message(m, to_addrs=[to.strip()])
         except smtplib.SMTPAuthenticationError as exc:
             raise AdapterError("The mail server rejected the user name or password. For Gmail use an app password.") from exc
         except (smtplib.SMTPException, OSError) as exc:

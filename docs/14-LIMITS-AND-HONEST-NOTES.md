@@ -1,10 +1,10 @@
 # Limits and honest notes
 
-Read this before you trust Ringlark with real people. Everything here was run on the date shown (2026-11-23) unless it says UNVERIFIED.
+Read this before you trust Ringlark with real people. Everything here was run on the date shown (2026-11-23) unless it says UNVERIFIED. The Python test and coverage numbers were measured again on 2026-11-25 for version 1.0.1 (that run included the SQLite migration cycle). The Postgres migration cycle was skipped in that run (no `TEST_POSTGRES_URL`) and the browser tests were not run again either.
 
 ## What was run
 
-- <!--n:tests.passed-->236<!--/n--> Python tests pass and <!--n:tests.skipped-->1<!--/n--> is skipped (the Postgres cycle, which needs `TEST_POSTGRES_URL`). Line coverage of the `ringlark` package is <!--n:tests.coverage_percent-->87<!--/n--> percent (`pytest --cov=ringlark`). The weakest files are `worker.py` (41 percent) and `followups.py` (54 percent). <!--n:contract_tests-->12<!--/n--> contract tests check the adapters against saved excerpts of the vendors' public docs.
+- <!--n:tests.passed-->313<!--/n--> Python tests pass and <!--n:tests.skipped-->1<!--/n--> is skipped (the Postgres cycle, which needs `TEST_POSTGRES_URL`). Line coverage of the `ringlark` package is <!--n:tests.coverage_percent-->91<!--/n--> percent (`pytest --cov=ringlark`). The weakest files are `worker.py` (49 percent) and `adapters/smtp_imap.py` (57 percent). <!--n:contract_tests-->12<!--/n--> contract tests check the adapters against saved excerpts of the vendors' public docs.
 - Compliance property tests make thousands of random worlds and check that the dialer never calls outside the person's hours, never calls a do not call or revoked consent number, never goes over the cap, and never places a call without the AI disclosure. They run on the pure rules and on the real database path.
 - Browser tests (Playwright, Chrome) run the whole demo path, axe accessibility checks on all 11 pages in light and dark with zero serious or critical findings, keyboard use, reduced motion, 5,000 call rows, layout shift, console errors, and 8 screenshots states at 1440 by 900 and 390 by 844.
 - `tools/score_seed.py`: all 7 planted problem types are held back (19 rows).
@@ -16,7 +16,7 @@ Read this before you trust Ringlark with real people. Everything here was run on
 - **The Telnyx to Ultravox bridge.** Ringlark creates the Ultravox call with a Telnyx medium, dials with Telnyx Call Control, and joins the audio with a `streaming_start` action. The action paths for answer, streaming_start, speak, send_dtmf and hangup were written by symmetry with the documented ones. If the join does not work on your first test call, the documented alternative is a TeXML application that connects the call to the stream. This is the most likely thing to need a fix.
 - **The shape of Ultravox tool parameters** (`staticParameters`) and the Ultravox messages path.
 - **The Telnyx signed string for call events** (`timestamp|body`, as the vendor libraries do).
-- **Docker images and every deploy guide.** There was no Docker daemon, so `docker build` was never run. The compose file, Caddyfile and cloud-init were checked for valid syntax only.
+- **A real deployment.** The CI workflow in `.github/workflows/ci.yml` builds both Docker images and starts the compose stack on a GitHub runner, then checks that the API and the web sign in page answer. No deployment to a real host (Hetzner, Railway or Vercel) was done, and the three hosting guides were not followed on a real account. The Caddyfile and cloud-init were checked for valid syntax only.
 - **A language model on a real call.** The agent in the demo and in the persona suite is a set of rules that reads directives from your prompt text, and it is labelled "offline rules, not a language model" on every screen. A real model path exists (`LLM_BACKEND=anthropic`, see "The live model path" below). It has run only against a local fake of the Anthropic endpoint (request shape, schema, guards) and against recordings made from that fake. It has never been run with a real key, so how a real model behaves on a call is UNVERIFIED.
 - **How a voice sounds.** Nobody who built this can hear. Voice quality is for you to judge on a real test call.
 
@@ -47,6 +47,11 @@ These rules were decided as a safe starting point. They are not legal advice and
 ## Other limits
 
 - One campaign dials at a time per tick. It is a small dialer, not a call center.
+- On a live call the rules are in the voice model's prompt, not in code that listens (see `13`). The tool side and the after call checks are code. A person can be kept on the line by a model that ignores its prompt until the call ends and the transcript is read.
+- No email is read back: there is no inbox reader. A person who wants to stop email follow ups texts STOP (checked again at the moment an email is sent) or says so on a call (they go on the do not call list, which also stops emails). The email footer promises exactly that and no more: a STOP text ends texts and emails, it does not by itself put the number on the do not call list for calls.
+- A call saved before ringing that shows no sign of life for 30 minutes is settled by the dial tick. If the voice engine knows it (it has an Ultravox id) it is moved to in progress and its transcript is read back, so a stop request said on it is still recorded; if it never reached the voice engine it is marked failed. Either way its attempt counts, so nobody is called twice by accident. The Ultravox call made for a crashed attempt is not cancelled (the adapter has no cancel).
+- There is no unique database rule on (person, attempt). The in flight check and the saved row before ringing prevent a double dial, but a second worker started by mistake is not stopped by the database.
+- An inbound caller's number is whatever caller ID says, and caller ID can be faked. Inbound calls are capped (`MAX_INBOUND_CALLS`, `MAX_INBOUND_PER_NUMBER_HOUR`) and the agent never reads a name back to them; an inbound caller has no time zone on file, so the app never texts one (no text is sent without a known local time, whatever the caller replied).
 - No call recording or audio storage. The waveform in the screens is generated from turn times and says so.
 - English only in the prompts and persona suite.
 - SQLite is fine to try. Use Postgres for real use.

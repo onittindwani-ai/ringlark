@@ -26,9 +26,9 @@ Start at [docs/00-START-HERE.md](docs/00-START-HERE.md). The guides run from `00
 
 ## What was measured
 
-Numbers come from `data/counts.json` and the runs on 2026-11-23.
+Numbers come from `data/counts.json`, `data/measured.json` and the runs on 2026-11-23 (the Python test and coverage numbers were measured again on 2026-11-25 for version 1.0.1).
 
-- <!--n:tests.passed-->236<!--/n--> Python tests passed, <!--n:tests.skipped-->1<!--/n--> skipped (the Postgres cycle), <!--n:tests.coverage_percent-->87<!--/n--> percent line coverage of the `ringlark` package (measured by `tools/make_counts.py`, quoted from `data/measured.json`). <!--n:contract_tests-->12<!--/n--> of the tests are contract tests against saved excerpts of the vendors' public docs (`mock/contracts`).
+- <!--n:tests.passed-->313<!--/n--> Python tests passed, <!--n:tests.skipped-->1<!--/n--> skipped (the Postgres cycle), <!--n:tests.coverage_percent-->91<!--/n--> percent line coverage of the `ringlark` package (measured by `tools/make_counts.py`, quoted from `data/measured.json`). <!--n:contract_tests-->12<!--/n--> of the tests are contract tests against saved excerpts of the vendors' public docs (`mock/contracts`).
 - Compliance property tests on thousands of seeded random worlds: the dialer never called outside the person's hours, never called a do not call or revoked consent number, never went over the cap.
 - Database migrations up, down and up again on SQLite and on Postgres 17.7.
 - A fresh clone in a temporary folder is installed from nothing, built, tested and run through all the browser tests, then deleted (the last run is in `docs/14-LIMITS-AND-HONEST-NOTES.md`).
@@ -39,7 +39,7 @@ Numbers come from `data/counts.json` and the runs on 2026-11-23.
 
 ## Honest limits
 
-No adapter has been run against a real service. The way a Telnyx call joins an Ultravox call was written from the docs and never run live: it is the most likely thing to need a fix on your first test call. The agent in the demo is a set of rules, not a language model. Nobody who built this can hear a voice, so you judge the voice on a real test call. Docker images and the three hosting guides were not run. This is not legal advice about AI voice calls, consent or recording. Read [docs/14-LIMITS-AND-HONEST-NOTES.md](docs/14-LIMITS-AND-HONEST-NOTES.md) before real use.
+No adapter has been run against a real service. The way a Telnyx call joins an Ultravox call was written from the docs and never run live: it is the most likely thing to need a fix on your first test call. The agent in the demo is a set of rules, not a language model. Nobody who built this can hear a voice, so you judge the voice on a real test call. The CI workflow builds the Docker images and starts the compose stack on GitHub, but nothing was deployed to a real host (the three hosting guides were not followed on a real account). On a live call the safety rules are in the voice model's prompt, not in code that listens to the call (see [docs/13-SECURITY-AND-DATA.md](docs/13-SECURITY-AND-DATA.md)). This is not legal advice about AI voice calls, consent or recording. Read [docs/14-LIMITS-AND-HONEST-NOTES.md](docs/14-LIMITS-AND-HONEST-NOTES.md) before real use.
 
 ## Layout
 

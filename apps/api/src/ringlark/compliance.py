@@ -13,6 +13,20 @@ from datetime import datetime
 from ringlark.util import aware, is_e164, zone
 
 
+# Number ranges that cost the caller or the callee money or are never a person to sell to (not complete, see docs/13): US 900 and 976, UK 09, and the
+# shared international ranges. They are refused whatever countries are allowed.
+PREMIUM_PREFIXES = ("+1900", "+1976", "+449", "+882", "+883", "+979", "+870")
+
+
+def premium_rate(phone: str) -> bool:
+    return phone.startswith(PREMIUM_PREFIXES)
+
+
+def country_allowed(phone: str, codes: tuple[str, ...]) -> bool:
+    """An empty list means no country limit (the pure rules are tested without one); the dialer always passes ALLOWED_CALLING_COUNTRIES."""
+    return not codes or phone.startswith(codes)
+
+
 @dataclass(frozen=True)
 class Rules:
     window_start_hour: int = 9
@@ -40,6 +54,7 @@ class DialRequest:
     last_attempt_local_dates: tuple[str, ...] = field(default_factory=tuple)  # callee local dates of earlier attempts, YYYY-MM-DD
     last_attempt_utc: datetime | None = None
     in_flight: bool = False
+    allowed_codes: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -73,6 +88,10 @@ def evaluate(req: DialRequest) -> Decision:
         return Decision(False, "no_ai_disclosure")
     if not is_e164(req.phone):
         return Decision(False, "bad_number")
+    if premium_rate(req.phone):
+        return Decision(False, "premium_rate_number")
+    if not country_allowed(req.phone, req.allowed_codes):
+        return Decision(False, "country_not_allowed")
     if req.on_dnc_list:
         return Decision(False, "do_not_call")
     if req.call_consent == "revoked":

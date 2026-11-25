@@ -25,7 +25,7 @@
 
 ## Do not call
 
-- Ringlark keeps its own do not call list and adds a number the moment a person asks to stop. Honor the national and state registries too. Import them into Numbers and compliance. Ringlark does not look them up for you.
+- Ringlark keeps its own do not call list and adds a number the moment a person asks to stop. Honor the national and state registries too. Import them with the do not call import (`POST /api/suppressions/import`, steps in `10-USING-IT-FOR-A-CLIENT.md`) or one by one on the Numbers and compliance page. Ringlark does not look them up for you.
 
 ## Recording
 

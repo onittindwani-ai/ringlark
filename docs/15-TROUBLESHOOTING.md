@@ -6,7 +6,7 @@ Run `make check-env` first (it lists missing or half filled settings, names only
 |---|---|---|
 | Sign in says wrong email or password | Demo password used with `DEMO_MODE=false`, or hash pasted without quotes | Use your own password. Put `OWNER_PASSWORD_HASH='...'` in single quotes. |
 | Everything says 401 after a restart | `SESSION_SECRET` changed | Sign in again. |
-| 429 too many requests | Behind a proxy without `--proxy-headers` | Start uvicorn with `--proxy-headers --forwarded-allow-ips <proxy address>`. |
+| 429 too many requests | Behind a proxy without `--proxy-headers` | Start uvicorn with `--proxy-headers` and set `FORWARDED_ALLOW_IPS=<proxy address>` (the Docker image reads that variable). |
 | No calls are placed | Draft mode, kill switch, outside calling hours, weekend, daily cap, or no consent | Check the top strip, then the Overview held back list and the campaign table. |
 | One person is never called | Bad number, unknown time zone, do not call, revoked consent, duplicate, too many tries | Open the campaign table, read the reason. |
 | The call connects but nobody hears the agent | The Telnyx to Ultravox join (never run live here) | See `14`. Check the Telnyx webhook log and the Ultravox call log. Try the TeXML alternative. |

@@ -2,7 +2,7 @@
  "openapi": "3.1.0",
  "info": {
   "title": "Ringlark API",
-  "version": "1.0.0"
+  "version": "1.0.1"
  },
  "paths": {
   "/health": {
@@ -664,6 +664,99 @@
       }
      }
     }
+   },
+   "post": {
+    "tags": [
+     "data"
+    ],
+    "summary": "Create an agent with its first prompt version (owner only). The version is saved, not activated.",
+    "operationId": "create_agent_api_agents_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/AgentIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/numbers": {
+   "get": {
+    "tags": [
+     "data"
+    ],
+    "summary": "Numbers and their compliance checklist",
+    "operationId": "numbers_api_numbers_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "data"
+    ],
+    "summary": "Add a phone number you own (owner only). Its compliance checklist starts empty.",
+    "operationId": "create_number_api_numbers_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/NumberIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
    }
   },
   "/api/agents/{aid}/versions": {
@@ -1016,25 +1109,6 @@
     }
    }
   },
-  "/api/numbers": {
-   "get": {
-    "tags": [
-     "data"
-    ],
-    "summary": "Numbers and their compliance checklist",
-    "operationId": "numbers_api_numbers_get",
-    "responses": {
-     "200": {
-      "description": "Successful Response",
-      "content": {
-       "application/json": {
-        "schema": {}
-       }
-      }
-     }
-    }
-   }
-  },
   "/api/numbers/{nid}/checklist": {
    "post": {
     "tags": [
@@ -1215,6 +1289,45 @@
       "application/json": {
        "schema": {
         "$ref": "#/components/schemas/SuppIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/suppressions/import": {
+   "post": {
+    "tags": [
+     "data"
+    ],
+    "summary": "Import a do not call list: rows with a phone and an optional reason",
+    "operationId": "import_suppressions_api_suppressions_import_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/SuppImportIn"
        }
       }
      },
@@ -1883,6 +1996,58 @@
     ],
     "title": "AdvanceIn"
    },
+   "AgentIn": {
+    "properties": {
+     "name": {
+      "type": "string",
+      "maxLength": 80,
+      "minLength": 2,
+      "title": "Name"
+     },
+     "kind": {
+      "type": "string",
+      "pattern": "^(outbound|inbound)$",
+      "title": "Kind",
+      "default": "outbound"
+     },
+     "company": {
+      "type": "string",
+      "maxLength": 120,
+      "title": "Company",
+      "default": ""
+     },
+     "voice": {
+      "type": "string",
+      "maxLength": 80,
+      "title": "Voice",
+      "default": ""
+     },
+     "greeting": {
+      "type": "string",
+      "maxLength": 600,
+      "title": "Greeting",
+      "default": ""
+     },
+     "transfer_number": {
+      "type": "string",
+      "maxLength": 32,
+      "title": "Transfer Number",
+      "default": ""
+     },
+     "prompt": {
+      "type": "string",
+      "maxLength": 20000,
+      "minLength": 40,
+      "title": "Prompt"
+     }
+    },
+    "type": "object",
+    "required": [
+     "name",
+     "prompt"
+    ],
+    "title": "AgentIn"
+   },
    "CampaignIn": {
     "properties": {
      "name": {
@@ -1981,6 +2146,11 @@
       "maxLength": 4,
       "title": "Ivr Extension",
       "default": ""
+     },
+     "require_prior_consent": {
+      "type": "boolean",
+      "title": "Require Prior Consent",
+      "default": false
      }
     },
     "type": "object",
@@ -2045,10 +2215,12 @@
     "properties": {
      "email": {
       "type": "string",
+      "maxLength": 254,
       "title": "Email"
      },
      "password": {
       "type": "string",
+      "maxLength": 1024,
       "title": "Password"
      }
     },
@@ -2058,6 +2230,50 @@
      "password"
     ],
     "title": "Login"
+   },
+   "NumberIn": {
+    "properties": {
+     "e164": {
+      "type": "string",
+      "maxLength": 32,
+      "title": "E164"
+     },
+     "label": {
+      "type": "string",
+      "maxLength": 80,
+      "title": "Label",
+      "default": ""
+     },
+     "direction": {
+      "type": "string",
+      "pattern": "^(outbound|inbound|both)$",
+      "title": "Direction",
+      "default": "both"
+     },
+     "agent_id": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Agent Id"
+     },
+     "country": {
+      "type": "string",
+      "maxLength": 2,
+      "minLength": 2,
+      "title": "Country",
+      "default": "US"
+     }
+    },
+    "type": "object",
+    "required": [
+     "e164"
+    ],
+    "title": "NumberIn"
    },
    "SettingsIn": {
     "properties": {
@@ -2168,6 +2384,24 @@
      "version_id"
     ],
     "title": "SuiteIn"
+   },
+   "SuppImportIn": {
+    "properties": {
+     "rows": {
+      "items": {
+       "additionalProperties": true,
+       "type": "object"
+      },
+      "type": "array",
+      "maxItems": 5000,
+      "title": "Rows"
+     }
+    },
+    "type": "object",
+    "required": [
+     "rows"
+    ],
+    "title": "SuppImportIn"
    },
    "SuppIn": {
     "properties": {

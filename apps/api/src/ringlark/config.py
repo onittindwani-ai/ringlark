@@ -57,7 +57,6 @@ class Settings(BaseAppSettings):
     imap_use_ssl: bool = True
     email_from: str = "calls@example.test"
 
-    webhook_shared_secret: str = ""
     # Decided defaults: a safe starting point the implementer can change per client (docs 04 and 14).
     default_window_start: int = Field(default=9, ge=0, le=23)
     default_window_end: int = Field(default=17, ge=1, le=24)
@@ -70,8 +69,45 @@ class Settings(BaseAppSettings):
     handoff_dir: str = "./handoff"
     seed_dir: str = ""
 
+    # Who the messages come from. Every text and email the system writes names this business, so the placeholders below keep the system in draft mode (docs 04).
+    company_name: str = "Your Company"  # COMPANY_NAME: said in greetings, texts and emails
+    company_address: str = ""  # COMPANY_ADDRESS: the postal address printed under every email follow up
+    booking_url: str = ""  # BOOKING_URL: the page a "booking link" text points to. Empty means that text is not offered outside demo mode
+    appointment_name: str = ""  # APPOINTMENT_NAME: what the meeting is called in texts, for example "check up" or "consultation" (empty: "appointment")
+    tool_token_secret: str = ""  # TOOL_TOKEN_SECRET: key for the per call tool tokens. Empty means a key made from SESSION_SECRET
+    allowed_calling_countries: str = "+1"  # ALLOWED_CALLING_COUNTRIES: country calling codes the dialer may call, comma separated
+    allow_extended_hours: bool = False  # ALLOW_EXTENDED_HOURS: lets a campaign call before 08:00 or after 21:00 callee local time (off by default)
+    max_inbound_calls: int = Field(default=5, ge=1, le=100)  # MAX_INBOUND_CALLS: inbound calls answered at the same time
+    max_inbound_per_number_hour: int = Field(default=6, ge=1, le=100)  # MAX_INBOUND_PER_NUMBER_HOUR: inbound calls answered per caller number per hour
+
+    @property
+    def window_bounds(self) -> tuple[int, int]:
+        """The earliest start and latest end, in the callee's local hours, that a campaign may use."""
+        return (0, 24) if self.allow_extended_hours else (8, 21)
+
+    @property
+    def calling_codes(self) -> tuple[str, ...]:
+        return tuple(c.strip() for c in self.allowed_calling_countries.split(",") if c.strip().startswith("+"))
+
+    def identity_problems(self) -> list[str]:
+        """Business facts the messages need. While any is a placeholder outside demo mode the system stays in draft mode (see Ctx.effective)."""
+        if self.demo_mode:
+            return []
+        out: list[str] = []
+        if self.company_name.strip() in ("", "Your Company"):
+            out.append("COMPANY_NAME is still the placeholder, so texts and emails would not say who they are from. Set it to your business name.")
+        if self.email_adapter != "seed":
+            if not self.company_address.strip():
+                out.append("COMPANY_ADDRESS is empty. Every email follow up must carry a postal address.")
+            if self.email_from.endswith("example.test"):
+                out.append("EMAIL_FROM is still the example address.")
+        if self.sms_adapter != "seed" and not self.telnyx_from_number:
+            out.append("TELNYX_FROM_NUMBER is empty, so a text could not say which number to reply STOP to.")
+        return out
+
     def problems(self) -> list[str]:
         out = [p for p in super().problems() if not (self.demo_mode and p.startswith("MODE is live while DEMO_MODE"))]
+        out.extend(self.identity_problems())
         if not self.demo_mode and not self.owner_password_hash:
             out.append("OWNER_PASSWORD_HASH is empty. Create one with tools/hash_password.py and set it before you run outside demo mode.")
         if self.mode is Mode.LIVE and not self.demo_mode:

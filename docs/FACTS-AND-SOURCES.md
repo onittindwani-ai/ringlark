@@ -35,11 +35,11 @@ Tool comparison sources (pricing pages, licences, 2026-11-23): see `facts/compar
 
 ## The model path (2026-11-23)
 
-Ringlark reaches a model only through the shared wrapper in `packages/core-py`, which uses the Anthropic Messages API (`POST /v1/messages`, header `anthropic-version`, structured output with `output_config.format`). The facts it relies on, with the pages they came from, are in the hub file `docs/FACTS-AND-SOURCES.md` under "Anthropic Messages API (docs read 2026-11-23)". What Ringlark adds on top of them:
+Ringlark reaches a model only through the shared wrapper in `packages/core-py`, which uses the Anthropic Messages API (`POST /v1/messages`, header `anthropic-version`, structured output with `output_config.format`). The facts it relies on are the ones listed in `docs/facts/anthropic.md` plus the request shape the tests below assert. What Ringlark adds on top of them:
 
 | Fact | Status | How it was checked |
 |---|---|---|
 | The call agent, the caller reader and the summaries send the same request shape as the shared wrapper (path, `x-api-key`, `anthropic-version`, JSON schema in `output_config`, no `temperature`, `top_p`, `top_k`, `tools` or `tool_choice`) | VERIFIED against a local fake server that asserts each field | `apps/api/tests/test_model_path.py` |
-| The agent model is `claude-sonnet-5-5` and the reader and summaries use `claude-haiku-5-5` (settings `LLM_HARD_MODEL` and `LLM_BULK_MODEL`) | VERIFIED as settings defaults; model ids and prices on the vendor's page change | hub facts, 2026-11-23 |
+| The agent model is `claude-sonnet-5-5` and the reader and summaries use `claude-haiku-5-5` (settings `LLM_HARD_MODEL` and `LLM_BULK_MODEL`) | VERIFIED as settings defaults; model ids and prices on the vendor's page change | `apps/api/src/ringlark/config.py` and `packages/core-py/src/sendora_core/settings.py`, 2026-11-23 |
 | A real model follows the schema and the agent rules on a real call, within the time a voice call allows | UNVERIFIED live | never run with a real key. Run `python tools/eval_independent.py` with a model reader first |
 | Recorded answers in `data/llm_fixtures` | They are NOT model answers | made from a local fake server that answers with the offline rules (`tools/record_llm_fixtures.py`) |

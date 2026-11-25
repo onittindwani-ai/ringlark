@@ -8,15 +8,17 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ringlark import intents as I
-from ringlark import model_tasks, qa, suppression
+from ringlark import messages, model_tasks, qa, sms_rules, suppression
 from ringlark.caller_reader import asks_to_stop, revoked_consent
 from ringlark.adapters.base import PersonRecord
 from ringlark.models import Agent, Call, Disposition, FollowUp, QAScore, Target, Turn
+from ringlark.util import is_valid_email
 from ringlark.waveform import timing
+from sendora_core.adapters import AdapterError
 from sendora_core.approvals import request_approval
 from sendora_core.audit import record_audit
 from sendora_core.events import record_event
-from sendora_core.safety import SafetyError
+from sendora_core.safety import SafetyError, guard_write
 
 
 def fill_turns_from_voice(session: Session, ctx, call: Call) -> int:
@@ -48,17 +50,21 @@ def _already_waiting(session: Session, channel: str, to: str, body: str) -> bool
 
 
 def _followups(session: Session, ctx, call: Call, target: Target | None, code: str) -> int:
+    """Queue the texts and emails to approve after a call. The same rules that decide at send time are asked here, so a person who said
+    "do not text me" on this very call, or who is on the do not call list, never gets a follow up queued."""
     if target is None or code not in ("booked", "interested_callback"):
         return 0
+    settings, agent = ctx.settings, session.get(Agent, call.agent_id)
     n = 0
-    if target.sms_consent and not suppression.is_suppressed(session, call.peer_phone):
-        body = "Harbor Light Dental: your check up is booked. We will see you then. Reply STOP to opt out." if code == "booked" else "Harbor Light Dental: sorry we caught you at a busy time. We will call you back at a better time. Reply STOP to opt out."
-        if not _already_waiting(session, "sms", call.peer_phone, body):
+    if sms_rules.consent_decision(session, call.peer_phone, target):
+        kind = "confirmation" if code == "booked" else "callback"
+        body = messages.sms_text(settings, agent, kind)
+        if body and not _already_waiting(session, "sms", call.peer_phone, body):
             session.add(FollowUp(call_id=call.id, channel="sms", to=call.peer_phone, body=body, status="pending")); n += 1
-    if target.email and code == "booked":
-        email_body = "Hello,\n\nYour check up is booked. Reply to this email if you need to change it.\n\nHarbor Light Dental (a fictional practice)"
+    if target.email and code == "booked" and is_valid_email(target.email) and not suppression.is_suppressed(session, call.peer_phone):
+        subject, email_body = messages.booked_email(settings, agent)
         if not _already_waiting(session, "email", target.email, email_body):
-            session.add(FollowUp(call_id=call.id, channel="email", to=target.email, subject="Your check up at Harbor Light Dental", body=email_body, status="pending")); n += 1
+            session.add(FollowUp(call_id=call.id, channel="email", to=target.email, subject=subject, body=email_body, status="pending")); n += 1
     session.flush()
     if ctx.settings.follow_ups_need_approval:
         for fu in session.scalars(select(FollowUp).where(FollowUp.call_id == call.id, FollowUp.status == "pending", FollowUp.approval_id.is_(None))):
@@ -111,8 +117,9 @@ def process_call(session: Session, ctx, call: Call) -> dict:
         target.status = "done" if code != "interested_callback" else "contacted"
     if target and code == "booked":
         try:
+            guard_write(ctx.effective(session), "crm.upsert")  # the kill switch and "draft only" set in the app stop this write too, whatever MODE says
             ctx.adapters.crm.upsert_person(PersonRecord(first_name=target.first_name, last_name=target.last_name, phone=call.peer_phone, extra={"note": call.summary}))
-        except SafetyError:
+        except (SafetyError, AdapterError):
             pass
     call.status, call.processed = "completed", True
     record_audit(session, "postcall", "call.processed", f"call:{call.id}", {"disposition": code, "qa": s["score"], "followups": n})

@@ -116,6 +116,8 @@ def test_transfer_goes_only_to_the_configured_number_and_only_in_office_hours(se
         svc.now = closed
         assert not svc.run("transfer_to_human", {})["ok"]
     svc.now = datetime(2026, 12, 1, 14, 0, tzinfo=UTC)  # 09:00 in New York, open
+    assert not svc.run("transfer_to_human", {})["ok"]  # one hand over per call: the first one already happened
+    c.taken_over = False  # a new call for the rest of this check
     assert svc.run("transfer_to_human", {})["ok"]
 
 

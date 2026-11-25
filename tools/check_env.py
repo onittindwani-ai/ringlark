@@ -6,8 +6,9 @@ Usage: python3 tools/check_env.py [--example .env.example] [--env .env] [--stric
 What it checks, in plain words:
   1. Every variable in .env.example exists in your environment file or your shell (a missing one is listed).
   2. Core variables are not left on a placeholder when DEMO_MODE is off.
-  3. A group of settings (the comment line above them is the group name) that you started to fill in must be filled in completely.
-     A group you left empty is treated as switched off, which is fine.
+  3. A service group (its comment says "fill in together": phone, voice engine, calendar, CRM, email) that you started to fill in must be filled in
+     completely, except the few settings listed as optional below. A group you left empty is treated as switched off, which is fine.
+     Other groups (sign in, company details, rules, language model, Docker) hold settings that are optional on their own and are not checked this way.
   4. Names in your file that the example does not know are listed (a typo is the usual reason).
 
 Exit code 0 when nothing is wrong, 1 when there are problems. --strict also fails on unknown names.
@@ -23,24 +24,30 @@ from pathlib import Path
 
 PLACEHOLDER = re.compile(r"(change-?me|your[-_ ]|example|xxxx|replace)", re.I)
 CORE_REQUIRED_LIVE = ("SESSION_SECRET", "DATABASE_URL")
+TOGETHER_MARK = "fill in together"
+# Inside a service group these may stay empty: a booking webhook secret, an SMTP login for a relay that needs none, and the inbox that reads replies.
+OPTIONAL_IN_GROUP = frozenset({"CALCOM_WEBHOOK_SECRET", "SMTP_USER", "SMTP_PASSWORD", "IMAP_HOST"})
 LINE = re.compile(r"^([A-Z][A-Z0-9_]*)=(.*)$")
 
 
 def parse_example(text: str) -> list[tuple[str, str, str]]:
-    """Return (group, name, default) for each variable in the example file."""
-    group, out = "Core", []
+    """Return (group, name, default) for each variable in the example file. The group name is the last comment line above the variables,
+    and a group whose comment block says "fill in together" is marked by a trailing '*' so the group check knows it applies."""
+    group, together, out = "Core", False, []
     for raw in text.splitlines():
         line = raw.strip()
         if not line:
+            together = False
             continue
         if line.startswith("#"):
             comment = line.lstrip("# ").strip()
-            if comment and not comment.lower().startswith(("copy to", "make the hash", "which adapter")):
+            if comment and not comment.lower().startswith(("copy to", "make the hash")):
                 group = comment.split(".")[0][:60]
+                together = together or TOGETHER_MARK in comment.lower()
             continue
         m = LINE.match(line)
         if m:
-            out.append((group, m.group(1), m.group(2).strip().strip("'\"")))
+            out.append((group + ("*" if together else ""), m.group(1), m.group(2).strip().strip("'\"")))
     return out
 
 
@@ -73,9 +80,10 @@ def check(example_text: str, env_text: str | None, shell: dict[str, str] | None 
     for g, n, d in spec:
         groups.setdefault(g, []).append((n, d))
     for g, members in groups.items():
-        if g == "Core":
+        if not g.endswith("*"):
             continue
-        no_default = [n for n, d in members if not d]
+        g = g.rstrip("*")
+        no_default = [n for n, d in members if not d and n not in OPTIONAL_IN_GROUP]
         started = [n for n, d in members if values.get(n, "") and values.get(n, "") != d]
         if started and no_default:
             empty = [n for n in no_default if not values.get(n, "")]

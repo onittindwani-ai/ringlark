@@ -13,7 +13,8 @@ from ringlark.api.deps import db, get_ctx, owner, writer
 from ringlark.compliance import voicemail_allowed
 from ringlark.api.serializers import agent_row, call_row, campaign_row, followup_row, iso, target_row
 from ringlark.context import Ctx
-from ringlark.demo import PERSONA_DIR, replay_events
+from ringlark.datadir import persona_dir
+from ringlark.demo import replay_events
 from ringlark.models import Agent, Call, Campaign, FollowUp, Number, QAScore, Suppression, Target
 from ringlark.agent_factory import backend_factory, engine_label
 from ringlark.personas import load_personas, run_persona, run_suite
@@ -136,6 +137,7 @@ class CampaignIn(BaseModel):
     voicemail_text: str = Field(default="", max_length=600)
     ivr_policy: str = Field(default="hangup", pattern="^(hangup|press_once)$")
     ivr_extension: str = Field(default="", max_length=4)
+    require_prior_consent: bool = False  # True: only people with a granted call consent on file are called
 
 
 @router.post("/campaigns", summary="Create a campaign (starts as a draft, never running)")
@@ -147,6 +149,11 @@ def create_campaign(b: CampaignIn, s: Session = Depends(db), u: dict = Depends(w
     values["daily_cap"] = b.daily_cap if b.daily_cap is not None else st.default_daily_cap
     if values["window_end_hour"] <= values["window_start_hour"]:
         raise HTTPException(422, "The calling window must end after it starts.")
+    lo, hi = st.window_bounds
+    if values["window_start_hour"] < lo or values["window_end_hour"] > hi:
+        raise HTTPException(422, f"Calls may only be made between {lo:02d}:00 and {hi:02d}:00 where the person is. The owner can set ALLOW_EXTENDED_HOURS=true to change that.")
+    if st.allow_extended_hours and (values["window_start_hour"] < 8 or values["window_end_hour"] > 21):
+        record_audit(s, u["user"], "campaign.extended_hours", None, {"start": values["window_start_hour"], "end": values["window_end_hour"]})
     if s.get(Agent, b.agent_id) is None:
         raise HTTPException(404, "That agent does not exist.")
     if b.allow_voicemail and not voicemail_allowed(True, b.voicemail_text)[0]:
@@ -211,11 +218,67 @@ class TargetsIn(BaseModel):
 
 @router.post("/campaigns/{cid}/targets", summary="Import targets (a list of rows with phone and timezone)")
 def import_targets(cid: int, b: TargetsIn, s: Session = Depends(db), u: dict = Depends(writer)):
-    if s.get(Campaign, cid) is None:
+    camp = s.get(Campaign, cid)
+    if camp is None:
         raise HTTPException(404, "That campaign does not exist.")
+    if camp.status == "running" and u["role"] != "owner":
+        # Only the owner starts a campaign, so only the owner may add people to one that is already calling.
+        raise HTTPException(403, "Only the owner can add people to a running campaign. Ask the owner, or pause the campaign first.")
     rep = intake.import_targets(s, cid, b.rows)
-    record_audit(s, u["user"], "targets.imported", f"campaign:{cid}", {"created": rep.created, "duplicates": rep.duplicates})
-    return {"created": rep.created, "duplicates": rep.duplicates, "flagged": rep.flagged}
+    record_audit(s, u["user"], "targets.imported", f"campaign:{cid}", {"created": rep.created, "duplicates": rep.duplicates, "call_consents": rep.consents})
+    return {"created": rep.created, "duplicates": rep.duplicates, "call_consents": rep.consents, "flagged": rep.flagged}
+
+
+# ---- agents and numbers: how a real install gets them (the demo loads them from seed.json)
+class AgentIn(BaseModel):
+    name: str = Field(min_length=2, max_length=80)
+    kind: str = Field(default="outbound", pattern="^(outbound|inbound)$")
+    company: str = Field(default="", max_length=120)  # empty means COMPANY_NAME
+    voice: str = Field(default="", max_length=80)
+    greeting: str = Field(default="", max_length=600)
+    transfer_number: str = Field(default="", max_length=32)
+    prompt: str = Field(min_length=40, max_length=20000)  # the first prompt version, see docs/PROMPT-WRITING-GUIDE.md
+
+
+@router.post("/agents", summary="Create an agent with its first prompt version (owner only). The version is saved, not activated.")
+def create_agent(b: AgentIn, s: Session = Depends(db), u: dict = Depends(owner), ctx: Ctx = Depends(get_ctx)):
+    if s.scalar(select(Agent.id).where(Agent.name == b.name.strip())):
+        raise HTTPException(409, "An agent with that name exists.")
+    transfer = normalize_phone(b.transfer_number) if b.transfer_number else ""
+    if b.transfer_number and not transfer:
+        raise HTTPException(422, "The transfer number needs the country code, for example +14155550100.")
+    a = Agent(name=b.name.strip(), kind=b.kind, company=(b.company or ctx.settings.company_name).strip(), voice=b.voice, greeting=b.greeting, transfer_number=transfer)
+    s.add(a); s.flush()
+    try:
+        prompts.add_version(s, a, b.prompt, "First version", u["user"])
+    except prompts.PromptError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    record_audit(s, u["user"], "agent.created", f"agent:{a.id}", {"name": a.name})
+    return agent_row(a)
+
+
+class NumberIn(BaseModel):
+    e164: str = Field(max_length=32)
+    label: str = Field(default="", max_length=80)
+    direction: str = Field(default="both", pattern="^(outbound|inbound|both)$")
+    agent_id: int | None = None
+    country: str = Field(default="US", min_length=2, max_length=2)
+
+
+@router.post("/numbers", summary="Add a phone number you own (owner only). Its compliance checklist starts empty.")
+def create_number(b: NumberIn, s: Session = Depends(db), u: dict = Depends(owner)):
+    e164 = normalize_phone(b.e164)
+    if not e164:
+        raise HTTPException(422, "Use a full number with the country code, for example +14155550100.")
+    if s.scalar(select(Number.id).where(Number.e164 == e164)):
+        raise HTTPException(409, "That number is already added.")
+    if b.agent_id is not None and s.get(Agent, b.agent_id) is None:
+        raise HTTPException(404, "That agent does not exist.")
+    n = Number(e164=e164, label=b.label, direction=b.direction, agent_id=b.agent_id, country=b.country.upper(),
+               checklist={"caller_id_registered": False, "stir_shaken_attestation": False, "a2p_10dlc_brand": False, "a2p_10dlc_campaign": False, "recording_notice_reviewed": False})
+    s.add(n); s.flush()
+    record_audit(s, u["user"], "number.added", f"number:{n.id}", {"last4": e164[-4:]})
+    return {"id": n.id, "e164": n.e164, "label": n.label, "direction": n.direction, "agent_id": n.agent_id, "country": n.country, "checklist": n.checklist}
 
 
 # ---- agents, prompts, simulator
@@ -280,8 +343,8 @@ def diff(aid: int, a: int, b: int, s: Session = Depends(db)):
 
 
 @router.get("/personas", summary="The scripted callers of a persona set")
-def personas(set: str = Query("dev", pattern="^(dev|heldout|heldout2)$")):
-    return [{"id": p["id"], "category": p["category"], "title": p.get("title", ""), "caller": p["caller"], "expect": p["expect"], "setup": p.get("setup", {})} for p in load_personas(set, PERSONA_DIR)]
+def personas(set: str = Query("dev", pattern="^(dev|heldout|heldout2)$"), ctx: Ctx = Depends(get_ctx)):
+    return [{"id": p["id"], "category": p["category"], "title": p.get("title", ""), "caller": p["caller"], "expect": p["expect"], "setup": p.get("setup", {})} for p in load_personas(set, persona_dir(ctx.settings))]
 
 
 class SimIn(BaseModel):
@@ -294,7 +357,7 @@ class SimIn(BaseModel):
 def simulate(aid: int, b: SimIn, s: Session = Depends(db), ctx: Ctx = Depends(get_ctx), u: dict = Depends(writer)):
     ag = s.get(Agent, aid)
     ver = next((v for v in ag.versions if v.id == b.version_id), None)
-    per = next((p for p in load_personas(b.set, PERSONA_DIR) if p["id"] == b.persona_id), None)
+    per = next((p for p in load_personas(b.set, persona_dir(ctx.settings)) if p["id"] == b.persona_id), None)
     if ver is None or per is None:
         raise HTTPException(404, "Unknown version or persona.")
     from ringlark.personas import check_run
@@ -315,7 +378,7 @@ def persona_suite(aid: int, b: SuiteIn, s: Session = Depends(db), ctx: Ctx = Dep
     if ver is None:
         raise HTTPException(404, "Unknown version.")
     factory = backend_factory(ctx, s, ver.body)
-    r = run_suite(load_personas(b.set, PERSONA_DIR), ver.body, label=f"{ag.name} v{ver.version} on {b.set}", backend_factory=factory, engine=engine_label(ctx))
+    r = run_suite(load_personas(b.set, persona_dir(ctx.settings)), ver.body, label=f"{ag.name} v{ver.version} on {b.set}", backend_factory=factory, engine=engine_label(ctx))
     note = "Scored by an offline rule based stand in, not a language model." if factory is None else "The checks are code. The caller is scripted. The agent is a model: " + engine_label(ctx) + "."
     return {**{k: v for k, v in r.items() if k != "results"}, "note": note}
 
@@ -378,6 +441,26 @@ def suppressions(s: Session = Depends(db)):
 class SuppIn(BaseModel):
     phone: str
     reason: str = Field(default="Added by the owner", max_length=80)
+
+
+class SuppImportIn(BaseModel):
+    rows: list[dict] = Field(max_length=5000)  # each row: phone, and an optional reason
+
+
+@router.post("/suppressions/import", summary="Import a do not call list: rows with a phone and an optional reason")
+def import_suppressions(b: SuppImportIn, s: Session = Depends(db), u: dict = Depends(writer)):
+    added = skipped = bad = 0
+    for r in b.rows:
+        phone = str(r.get("phone", "")).strip()
+        if not normalize_phone(phone):
+            bad += 1
+            continue
+        if suppression.add_suppression(s, phone, str(r.get("reason") or "Imported list")[:80], "import", actor=u["user"]):
+            added += 1
+        else:
+            skipped += 1
+    record_audit(s, u["user"], "suppressions.imported", None, {"added": added, "already_listed": skipped, "bad": bad})
+    return {"added": added, "already_listed": skipped, "bad_number": bad}
 
 
 @router.post("/suppressions", summary="Add a number to the do not call list")

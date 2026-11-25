@@ -15,12 +15,17 @@ You run Ringlark for someone else's business. Keep each client in their own copy
 
 1. Do `02` and `US-CALLING-CHECKLIST.md` with the client.
 2. Set up the install (`05` to `08`). Use the client's address in `OWNER_EMAIL`.
-3. Write the agent prompt with `PROMPT-WRITING-GUIDE.md` and the templates in `prompts/`. Save it, then run the simulator and the persona suite. Fix what fails.
+3. Write the agent prompt with `PROMPT-WRITING-GUIDE.md` and the templates in `prompts/`. A real install starts with no agent, no number and no campaign (the demo loads them from a seed file). As the owner, with the `TOKEN` below and the headers `x-session: $TOKEN` and `x-ringlark: 1`:
+   - create the agent and its first prompt version: `POST /api/agents` with `{"name": "Sam", "company": "Their Business", "transfer_number": "+1...", "prompt": "<the prompt>"}` (a company left out becomes `COMPANY_NAME`);
+   - make that version the live one: `POST /api/agents/<agent id>/activate` with `{"version_id": <id from the answer>}` (also on the Agents page);
+   - add the phone number you own: `POST /api/numbers` with `{"e164": "+1...", "agent_id": <agent id>}`, then tick its checklist on the Numbers page as you finish each registration;
+   - create the campaign on the Campaigns page, or `POST /api/campaigns` (`require_prior_consent: true` calls only people with a granted consent on file).
+   Then run the simulator and the persona suite and fix what fails.
 4. Import their people. The easy way: open Campaigns, press **Import**, then **Choose a CSV file**. You see the row count and the first rows before anything is added, then press **Import**. The same steps by API:
    `TOKEN=$(curl -s -H "content-type: application/json" -d '{"email":"you@theirdomain.com","password":"..."}' https://api.theirdomain.com/api/auth/login | python3 -c "import sys,json;print(json.load(sys.stdin)['token'])")`
-   then post the CSV text to `/api/campaigns/<campaign id>/targets` with header `x-session: $TOKEN` and `x-ringlark: 1`. Columns: `first_name`, `last_name`, `phone`, `timezone`, `email`. A row with a bad number or an unknown time zone is kept and flagged and is never called, because hours cannot be checked. The reply says how many were added, how many were duplicates and what was flagged.
+   then post the CSV text to `/api/campaigns/<campaign id>/targets` with header `x-session: $TOKEN` and `x-ringlark: 1`. Columns: `first_name`, `last_name`, `phone`, `timezone`, `email`, `sms_consent`, `call_consent`. A clear yes (`yes`, `true`, `1`) in `sms_consent` allows texts to that person. A clear yes in `call_consent` records a granted call consent for that number, which a campaign with `require_prior_consent` needs before it will call anyone. Anything else counts as no, and a `call_consent` never overrides a number that is on the do not call list or whose consent was withdrawn (that row is flagged `consent_not_recorded_refused_before`). A row with a bad number or an unknown time zone is kept and flagged and is never called, because hours cannot be checked. An email that is not one plain address (for example two addresses with a comma) is dropped and flagged `bad_email`. A number already in any campaign counts as a duplicate. Once a campaign is running only the owner can add people to it. Only `+1` numbers are called unless `ALLOWED_CALLING_COUNTRIES` says more. The reply says how many were added, how many were duplicates and what was flagged.
 5. Look at the flags in the campaign table.
-6. Add the client's existing do not call numbers.
+6. Add the client's existing do not call numbers before the campaign starts: one list with `POST /api/suppressions/import` and `{"rows": [{"phone": "+14155550100", "reason": "their old list"}, ...]}` (up to 5,000 rows a time; the reply counts added, already listed and bad numbers), or one at a time on the Numbers and compliance page.
 
 ## What to charge for
 
@@ -36,7 +41,7 @@ This guide gives no price figures. It gives the shape of the offer, so you can p
 1. Business basics check (`02`) and the calling checklist signed off by the client.
 2. Client created their own phone, voice, calendar and CRM accounts and gave you access.
 3. Caller ID and texting registration done in the client's business name (the checklist on the Numbers page shows what is still open).
-4. Install running with its own database, backups on (`13`), `make doctor` clean.
+4. Install running with its own database, backups on (`11`), `make doctor` clean.
 5. Their people imported with consent records, flags read, existing do not call numbers added.
 6. Agent prompt written with the client, simulator and persona suite run and read.
 7. Voicemail left off unless the client wants it and has approved the exact message. Phone menus: hang up, or one configured key.
@@ -45,7 +50,7 @@ This guide gives no price figures. It gives the shape of the offer, so you can p
 
 ## Handover
 
-When you finish or the client takes it over: give them the owner login, the list of every account and who owns it, the location of the backups and the restore steps (`13`), the prompt versions and templates as files, and the audit log export. Ask them to change every password and key while you watch, then remove your access. Keep nothing of theirs on your machines.
+When you finish or the client takes it over: give them the owner login, the list of every account and who owns it, the location of the backups and the restore steps (`11`), the prompt versions and templates as files, and what the Audit page shows (there is no audit export button, so copy what the client needs). Ask them to change every password and key while you watch, then remove your access. Keep nothing of theirs on your machines.
 
 ## What to put in the client contract
 
@@ -57,4 +62,4 @@ The Overview and Metrics pages show counts from the database, not promises. Do n
 
 ## When the client leaves
 
-Export what they own, delete their install and database, and revoke every key they gave you. See `13`.
+Give them a database backup (`11`) and the CSV files you imported, then delete their install and database and revoke every key they gave you. See `13`.

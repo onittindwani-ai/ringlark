@@ -10,11 +10,11 @@ Vercel hosts only the **web** part. The API and worker need a server that stays 
 6. Set environment variable `API_BASE_URL` to your API address (no trailing slash).
 7. Do **not** set `INSECURE_COOKIES` or `NEXT_PUBLIC_DEMO_HINT`.
 8. Deploy. Open the address, sign in.
-9. On the API server, make sure uvicorn runs with `--proxy-headers` and `--forwarded-allow-ips` set to your proxy, so rate limits see the real visitor and not Vercel.
+9. On the API server, make sure uvicorn runs with `--proxy-headers` and the environment variable `FORWARDED_ALLOW_IPS` set to your proxy's address (the Docker image reads it; never `*`), so rate limits see the real visitor and not Vercel.
 
 ## Webhooks
 
-Telnyx, Ultravox and Cal.com must call the **API** directly (`https://api.yourdomain.com/api/webhooks/...`), and Ultravox reaches the agent tool endpoints at `https://api.yourdomain.com/api/tools/...`. Not the Vercel address. The web app deliberately refuses to forward `webhooks` and `auth/login`.
+Telnyx, Ultravox and Cal.com must call the **API** directly (`https://api.yourdomain.com/api/webhooks/...`), and Ultravox reaches the agent tool endpoints at `https://api.yourdomain.com/api/tools/...`. Not the Vercel address. The web app deliberately forwards only the API paths its pages use, so `webhooks`, `tools` and `auth/login` are refused there.
 
 ## If the build fails
 

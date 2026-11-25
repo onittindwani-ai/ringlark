@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from datetime import UTC, datetime
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -19,6 +20,7 @@ INTERVALS = {"dial_tick": 60, "postcall": 30, "followups": 60, "crm_sync": 600, 
 
 def job_dial_tick(session: Session, ctx: Ctx) -> dict:
     r = dialer.dial_tick(session, ctx.effective(session), ctx.adapters, ctx.now(session))
+    set_state(session, "last_dial_at", datetime.now(UTC).isoformat())
     set_state(session, "last_dial", json.dumps({"placed": r.placed, "drafted": r.drafted, "reasons": r.reasons}))
     return {"placed": r.placed, "drafted": r.drafted, "blocked": r.blocked, "halted": r.halted, "reasons": r.reasons}
 

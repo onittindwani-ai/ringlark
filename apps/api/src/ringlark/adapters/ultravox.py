@@ -35,7 +35,10 @@ def verify_ultravox_webhook(secret: str, body: bytes, signature_header: str, tim
     except ValueError:
         return False
     want = sign_ultravox(secret, body, timestamp)
-    return any(hmac.compare_digest(want, s.strip().lower()) for s in signature_header.split(","))
+    try:  # compared as bytes: a header with odd characters is a plain no
+        return any(hmac.compare_digest(want.encode(), s.strip().lower().encode()) for s in signature_header.split(","))
+    except (TypeError, UnicodeError):
+        return False
 
 
 def tool_definitions(public_base_url: str, call_id: int, token: str) -> list[dict]:

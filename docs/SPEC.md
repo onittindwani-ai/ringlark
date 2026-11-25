@@ -21,7 +21,7 @@ dial_tick (place due calls), postcall (process ended calls), followups (queue an
 Telnyx (A, calls and texts, against a mock written from the docs), Ultravox (A, against a mock), Cal.com (A), Twenty (A), email SMTP (B), offline seed adapters for every category.
 
 ## Endpoints (summary, full list in docs/openapi.json)
-Auth, overview, calls (list, detail, replay, waveform, take over, transfer), campaigns (list, create, start, pause), targets, agents, prompt versions (create, activate, diff, split), simulator (run, persona suite), numbers and compliance checklist, QA, follow ups (approve, reject), integrations, settings, approvals, audit, metrics, demo helpers, signed webhooks (Telnyx, Ultravox), tool endpoints for the agent during a call.
+Auth, overview, calls (list, detail, replay, waveform, take over, transfer), campaigns (list, create, start, pause), targets, agents (list, create), prompt versions (create, activate, diff, split), simulator (run, persona suite), numbers (list, add) and compliance checklist, do not call list (add, import), QA, follow ups (approve, reject), integrations, settings, approvals, audit, metrics, demo helpers, signed webhooks (Telnyx, Ultravox), tool endpoints for the agent during a call.
 
 ## Evals
 Persona suite (dev set and held out set, first runs saved), compliance property tests with seeded random worlds, QA scorer checks, answer key for the seed data.

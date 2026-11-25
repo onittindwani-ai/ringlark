@@ -18,7 +18,7 @@ Press **Pause all** (the kill switch). It stops all dialing and sending at once.
 ## Backups
 
 - **SQLite:** stop the app, copy the `.sqlite3` file. Or `sqlite3 ringlark.sqlite3 ".backup backup.sqlite3"` while it runs.
-- **Postgres:** `pg_dump --format=custom "$DATABASE_URL_PLAIN" > ringlark.dump` (use the plain `postgresql://` form of the address). `deploy/hetzner/backup.sh` does this for you.
+- **Postgres:** `pg_dump --format=custom "$DATABASE_URL_PLAIN" > ringlark.dump`, where `DATABASE_URL_PLAIN` is your `DATABASE_URL` with `+psycopg` removed (for example `export DATABASE_URL_PLAIN="${DATABASE_URL/+psycopg/}"`). `deploy/hetzner/backup.sh` does this for you with Docker Compose: it works from cron, writes the dump readable by its owner only, keeps nothing when the dump fails, and can encrypt (`BACKUP_AGE_RECIPIENT`) and copy to another place (`BACKUP_COPY_TO`). Those two are yours to set up. The `handoff` Docker volume only holds the offline demo mailbox and needs no backup.
 - Also keep a copy of your prompt versions (they are in the database, and you can copy the active one from Agents and prompts).
 
 ## Restore (test this once before you need it)

@@ -13,15 +13,13 @@ from sqlalchemy.orm import Session
 
 from ringlark import clock
 from ringlark.agent_offline import OfflineAgent
+from ringlark.datadir import persona_dir
 from ringlark.models import Agent, Call, Campaign, PromptVersion, Target
 from ringlark.personas import DEFAULT_CTX, load_personas
 from ringlark.postcall import process_call, store_turns
 from ringlark.seeding import load_seed, read_seed
 from ringlark.tools import ToolService
 from sendora_core.events import record_event
-
-PERSONA_DIR = Path(__file__).resolve().parents[4] / "data" / "personas"
-
 
 def demo_start(real_now: datetime) -> datetime:
     """The next weekday at 17:00 UTC: lunchtime in New York and morning in Los Angeles, so some people can be called and some must wait."""
@@ -86,7 +84,7 @@ def play_call(session: Session, ctx, call: Call, persona: dict) -> None:
 
 def simulate_placed(session: Session, ctx) -> int:
     """After the dialer placed calls, let the fictional people answer. Each target has a persona that decides how the call goes."""
-    personas = {p["id"]: p for p in load_personas("dev", PERSONA_DIR)}
+    personas = {p["id"]: p for p in load_personas("dev", persona_dir(ctx.settings))}
     n = 0
     for call in session.scalars(select(Call).where(Call.status == "placed", Call.direction == "outbound").order_by(Call.id)):
         t = session.get(Target, call.target_id) if call.target_id else None
@@ -119,7 +117,7 @@ def reset(session: Session, ctx) -> dict:
 def seed_history(session: Session, ctx, info: dict, now: datetime) -> int:
     """Past calls for the call log, QA review and metrics: the dev personas, played on earlier days, through the real post call code."""
     seed = read_seed(Path(ctx.settings.seed_dir) if ctx.settings.seed_dir else None)
-    personas = {p["id"]: p for p in load_personas("dev", PERSONA_DIR)}
+    personas = {p["id"]: p for p in load_personas("dev", persona_dir(ctx.settings))}
     camp = session.get(Campaign, info["campaign_id"])
     targets = list(session.scalars(select(Target).where(Target.campaign_id == camp.id, Target.status == "new").order_by(Target.id)))
     agent = session.get(Agent, camp.agent_id)

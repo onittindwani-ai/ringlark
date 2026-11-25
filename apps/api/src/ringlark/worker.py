@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import os
 import signal
 import time
 
@@ -23,7 +24,8 @@ def run_once(ctx: Ctx, worker: Worker) -> int:
 
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
-    settings = Settings()
+    settings = Settings(_env_file=os.environ.get("ENV_FILE", ".env"))  # the same file the API reads
+    settings.check_runtime()  # the worker refuses an unsafe configuration too, not only the API
     engine = make_engine(settings.database_url)
     import ringlark.models  # noqa: F401
     from sendora_core import models as _c  # noqa: F401

@@ -13,6 +13,10 @@ on the call are code that runs around it, and no word the person says can switch
 5. anything wrong (a bad answer, the kill switch, the budget, an error) ends the call politely and marks it "needs review". It never keeps talking unguarded.
 
 There is no tool for placing a call, so a caller cannot make the agent dial anyone: the schema has no such name.
+
+WHERE THIS RUNS: the text simulator, the persona suite and tests. It does NOT run inside a real Ultravox phone call, where the voice engine talks to the person
+directly. A real call is given the same rules as words in its prompt (`live_prompt.py`) and is guarded in code only by what its six tools accept
+(`tools.py`) and by what is done with the transcript afterwards (`postcall.py`).
 """
 
 from __future__ import annotations

@@ -12,19 +12,17 @@ from zoneinfo import ZoneInfo
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from ringlark import suppression
+from ringlark import messages, sms_rules, suppression
 from ringlark.models import DISPOSITIONS, Agent, Call, ConsentRecord, Disposition, FollowUp, Target
-from ringlark.util import aware, normalize_phone
+from ringlark.util import aware, is_valid_email, normalize_phone
+from sendora_core.adapters import AdapterError
+from sendora_core.models import Event
 from sendora_core.audit import record_audit
 from sendora_core.events import record_event
 from sendora_core.safety import SafetyError, guard_write
 
-SMS_TEXT = {
-    "booking_link": "Hi from Harbor Light Dental. Here is where to manage your booking: https://example.test/book (fictional demo link). Reply STOP to opt out.",
-    "confirmation": "Harbor Light Dental: your check up is booked. We will see you then. Reply STOP to opt out.",
-    "callback": "Harbor Light Dental: sorry we caught you at a busy time. We will call you back at a better time. Reply STOP to opt out.",
-}
-STOP_LINE = "Reply STOP to opt out."
+STOP_LINE = messages.STOP_LINE
+BOOK_AHEAD = timedelta(days=14)  # the agent may only book a time the calendar itself offers inside this window
 
 
 class ToolService:
@@ -44,7 +42,7 @@ class ToolService:
             out = fn(args or {})
         except SafetyError as exc:
             record_event(self.s, "tool.blocked", "call", str(self.call.id), {"tool": tool, "why": type(exc).__name__})
-            return {"ok": False, "blocked": True, "say": "I have noted that and someone from the practice will follow up."}
+            return {"ok": False, "blocked": True, "say": "I have noted that, and someone will follow up with you."}
         record_event(self.s, "tool.used", "call", str(self.call.id), {"tool": tool, "ok": bool(out.get("ok"))})
         return out
 
@@ -60,14 +58,33 @@ class ToolService:
             except ValueError:
                 return {"ok": False, "say": "I did not catch which time you want."}
         email = (a.get("email") or (self.target.email if self.target else "") or "").strip()
-        if not email:
-            return {"ok": False, "say": "I need an email address to send the booking to."}
-        guard_write(self.settings, "calendar.book")
+        if not email or not is_valid_email(email):
+            return {"ok": False, "say": "I need one email address to send the booking to."}
+        guard_write(self.settings, "calendar.book")  # first: draft mode and the kill switch answer before anything else
+        if self._happened("meeting.booked"):
+            return {"ok": False, "say": "This call already has a booking."}
+        if slot not in self.slot_map and not self._offered(when):
+            return {"ok": False, "say": "That time is not one I can book. I will offer the times that are open."}
         b = self.ctx.adapters.calendar.book(start=when, name=name, email=email, timezone=(self.target.timezone if self.target else "") or "UTC")
         record_event(self.s, "meeting.booked", "call", str(self.call.id), {"at": aware(b.starts_at).isoformat()})
         return {"ok": True, "booking_id": b.external_id, "starts_at": aware(b.starts_at).isoformat()}
 
+    def _happened(self, kind: str) -> bool:
+        """True when this tool already did its one job for this call (kind is the event it records)."""
+        return self.s.scalar(select(Event.id).where(Event.kind == kind, Event.entity_id == str(self.call.id)).limit(1)) is not None
+
+    def _offered(self, when: datetime) -> bool:
+        """Is this time one the calendar offers? The prompt only asks the agent to use offered times, so the code checks it."""
+        try:
+            slots = self.ctx.adapters.calendar.slots(self.now, self.now + BOOK_AHEAD)
+        except AdapterError:
+            return False
+        return any(aware(x) == aware(when) for x in slots)
+
     def t_lookup_crm(self, a: dict) -> dict:
+        if self.call.direction == "inbound":
+            # An inbound caller is whoever the caller ID says, and caller ID can be faked: no name is read back to them.
+            return {"ok": True, "found": False, "first_name": "", "last_name": ""}
         p = self.ctx.adapters.crm.find_by_phone(self.call.peer_phone)
         if p is None and self.target is not None:
             return {"ok": True, "found": True, "first_name": self.target.first_name, "last_name": self.target.last_name}
@@ -85,6 +102,8 @@ class ToolService:
             return {"ok": False, "say": "No one is set up to take transfers, so I will arrange a call back."}
         if not self._office_open():
             return {"ok": False, "say": "The office is closed right now, so I will arrange a call back."}
+        if self.call.taken_over:
+            return {"ok": False, "say": "The call is already being handed over."}
         guard_write(self.settings, "call.transfer")
         self.ctx.adapters.telephony.transfer(self.call.telnyx_call_id, number)  # the only number it can ever go to
         self.call.taken_over = True
@@ -92,31 +111,26 @@ class ToolService:
         return {"ok": True}
 
     def _sms_allowed(self) -> tuple[bool, str]:
-        phone = self.call.peer_phone
-        if suppression.is_suppressed(self.s, phone):
-            return False, "suppressed"
-        latest = suppression.latest_consent(self.s, phone, "sms")
-        if latest == "revoked":
-            return False, "sms_revoked"
-        if latest != "granted" and not (self.target and self.target.sms_consent):
-            return False, "no_sms_consent"
-        loc = aware(self.now).astimezone(ZoneInfo(self.target.timezone)) if self.target and self.target.timezone else None
-        if loc is not None and not (self.settings.sms_window_start <= loc.hour < self.settings.sms_window_end):
-            return False, "sms_quiet_hours"
-        return True, "ok"
+        d = sms_rules.sms_decision(self.s, self.settings, self.call.peer_phone, self.target, self.now)
+        return d.allowed, d.reason
 
     def t_send_sms(self, a: dict) -> dict:
         kind = str(a.get("kind") or "")
-        if kind not in SMS_TEXT:
+        if kind not in messages.SMS_KINDS:
             return {"ok": False, "say": "I can send a booking link, a confirmation or a callback note."}
+        text = messages.sms_text(self.settings, self.agent, kind)
+        if text is None:
+            return {"ok": False, "say": "I do not have a link to send, so someone will follow up."}
+        if self.s.scalar(select(FollowUp.id).where(FollowUp.call_id == self.call.id, FollowUp.channel == "sms", FollowUp.body == text, FollowUp.status.in_(("sent", "pending", "drafted"))).limit(1)):
+            return {"ok": False, "say": "I have already sent that text."}  # one text of each kind per call, however often the model asks
         ok, why = self._sms_allowed()
-        fu = FollowUp(call_id=self.call.id, channel="sms", to=self.call.peer_phone, body=SMS_TEXT[kind], status="blocked" if not ok else "pending", blocked_reason="" if ok else why)
+        fu = FollowUp(call_id=self.call.id, channel="sms", to=self.call.peer_phone, body=text, status="blocked" if not ok else "pending", blocked_reason="" if ok else why)
         self.s.add(fu)
         self.s.flush()
         if not ok:
             return {"ok": False, "say": "I will not text you unless you have agreed to texts."}
         guard_write(self.settings, "sms.send")
-        self.ctx.adapters.sms.send(to=self.call.peer_phone, text=SMS_TEXT[kind])
+        self.ctx.adapters.sms.send(to=self.call.peer_phone, text=text)
         fu.status = "sent"
         return {"ok": True}
 
