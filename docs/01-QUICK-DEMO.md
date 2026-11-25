@@ -9,7 +9,7 @@ You need Python 3.12 or newer (or uv), Node 22 or newer, pnpm (`corepack enable`
 ## Steps
 
 1. Open a terminal in the project folder.
-2. Make a Python environment and install: `python3.12 -m venv .venv`, then `.venv/bin/pip install -e packages/core-py -e "apps/api[dev]"`. No python3.12 on your Mac? Use uv instead: `uv venv --python 3.12 .venv`, then `uv pip install --python .venv/bin/python -e packages/core-py -e "apps/api[dev]"`. Or just run `make install`.
+2. Make a Python environment and install: `python3.12 -m venv .venv`, then `.venv/bin/pip install -c constraints.txt -e packages/core-py -e "apps/api[dev]"`. No python3.12 on your Mac? Use uv instead: `uv venv --python 3.12 .venv`, then `uv pip install --python .venv/bin/python -c constraints.txt -e packages/core-py -e "apps/api[dev]"`. Or just run `make install`.
 3. Install and build the web part: `pnpm install`, then `pnpm build`. If you change code later, build again, because the start command serves the last build.
 4. Start the API in demo mode. In one terminal run:
    `MODE=live DEMO_MODE=true DATABASE_URL=sqlite:///./demo.sqlite3 SESSION_SECRET=demo-secret-not-for-real-use-1234 .venv/bin/python -m uvicorn ringlark.api.app:app_from_env --factory --port 8000 --proxy-headers`
