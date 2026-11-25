@@ -1,6 +1,6 @@
 PY=.venv/bin/python
 
-.PHONY: e2e install test seed-check doctor check-env api worker web demo-note
+.PHONY: e2e install test test-web constraints seed-check doctor check-env api worker web demo-note
 
 install:
 	@if command -v uv >/dev/null 2>&1; then \
@@ -15,6 +15,12 @@ install:
 
 test:
 	$(PY) -m pytest
+
+test-web:
+	pnpm --filter web test:unit
+
+constraints:
+	python3 tools/make_constraints.py .
 
 seed-check:
 	$(PY) tools/score_seed.py

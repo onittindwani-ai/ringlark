@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime, timedelta
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -11,8 +12,10 @@ from ringlark import intents as I
 from ringlark import messages, model_tasks, qa, sms_rules, suppression
 from ringlark.caller_reader import asks_to_stop, revoked_consent
 from ringlark.adapters.base import PersonRecord
-from ringlark.models import Agent, Call, Disposition, FollowUp, QAScore, Target, Turn
-from ringlark.util import is_valid_email
+from ringlark.context import set_state
+from ringlark.models import Agent, Call, Disposition, FollowUp, QAScore, State, Target, Turn
+from ringlark.tools import happened
+from ringlark.util import aware, is_valid_email
 from ringlark.waveform import timing
 from sendora_core.adapters import AdapterError
 from sendora_core.approvals import request_approval
@@ -73,6 +76,26 @@ def _followups(session: Session, ctx, call: Call, target: Target | None, code: s
     return n
 
 
+EMPTY_TRANSCRIPT_WAIT = timedelta(minutes=3)  # how long an answered call may show no transcript before a person is asked to look at it
+
+
+def _empty_transcript_wait(session: Session, ctx, call: Call) -> bool:
+    """A live call a person answered must have words in it. A transcript that is empty right after the call ended may just not be ready, so the call is
+    left unprocessed and read again on the next runs. Returns True while that wait lasts and False once it is over (then the call goes to a person)."""
+    now = ctx.now(session)
+    key = f"postcall_empty:{call.id}"
+    row = session.get(State, key)
+    if row is None:
+        set_state(session, key, now.isoformat())
+        session.flush()
+        return True
+    try:
+        first = aware(datetime.fromisoformat(row.value))
+    except ValueError:
+        return False
+    return aware(now) - first < EMPTY_TRANSCRIPT_WAIT
+
+
 def process_call(session: Session, ctx, call: Call) -> dict:
     if call.processed:
         return {"skipped": True}
@@ -80,12 +103,20 @@ def process_call(session: Session, ctx, call: Call) -> dict:
         fill_turns_from_voice(session, ctx, call)
     except Exception:  # the voice engine may be down: leave the call unprocessed and retry on the next run
         return {"skipped": True, "reason": "transcript_unavailable"}
+    no_words = False
+    if not call.turns and call.answered_by == "human" and call.external_id and not ctx.settings.demo_mode and session.scalar(select(Disposition.id).where(Disposition.call_id == call.id)) is None:
+        if _empty_transcript_wait(session, ctx, call):
+            return {"skipped": True, "reason": "transcript_empty"}
+        no_words = True  # the wait is over and still nothing: it is not "no answer", a person looks at it
     turns = [{"speaker": t.speaker, "text": t.text, "start_ms": t.start_ms, "end_ms": t.end_ms} for t in call.turns]
     target = session.get(Target, call.target_id) if call.target_id else None
     row = session.scalar(select(Disposition).where(Disposition.call_id == call.id))
-    code = row.code if row else rule_disposition(turns)
+    code = row.code if row else ("needs_review" if no_words else rule_disposition(turns))
     if row is None:
-        session.add(Disposition(call_id=call.id, code=code, note="Set by rules from the transcript", set_by="rules"))
+        session.add(Disposition(call_id=call.id, code=code, note="No transcript came back from the voice engine, so nothing could be checked for a request to stop. Read the call before calling again." if no_words else "Set by rules from the transcript", set_by="rules"))
+    elif code == "booked" and row.set_by == "agent" and not happened(session, call.id, "meeting.booked"):
+        code, row.code = "needs_review", "needs_review"  # an older row or another path said booked with no booking behind it
+        row.note = ("Said booked but no booking was made on this call. " + row.note).strip()[:300]
     caller_text = " ".join(t["text"] for t in turns if t["speaker"] == "caller")
     caller_lines = [t["text"] for t in turns if t["speaker"] == "caller" and t["text"]]
     asked_stop = any(asks_to_stop(t) for t in caller_lines)
@@ -108,8 +139,11 @@ def process_call(session: Session, ctx, call: Call) -> dict:
     s = qa.score_call(turns, code, row.code if row is not None and row.set_by == "agent" else "")
     if missed_stop:
         s["flagged"], s["flag_note"] = True, (s["flag_note"] + " The person asked to stop and the agent did not record it; the rules did.").strip()
+    if no_words:
+        s["flagged"], s["flag_note"] = True, "No transcript came back, so a request to stop could not be checked. A person should read this call."
     if session.scalar(select(QAScore).where(QAScore.call_id == call.id)) is None:
-        session.add(QAScore(call_id=call.id, score=s["score"], checks=s["checks"], flagged=s["flagged"], flag_note=s["flag_note"], sampled=s["flagged"] or qa.sampled(call.id)))
+        # A call that ended as needs_review is always queued for a person (the dialer holds the person until it is read).
+        session.add(QAScore(call_id=call.id, score=s["score"], checks=s["checks"], flagged=s["flagged"], flag_note=s["flag_note"], sampled=s["flagged"] or code == "needs_review" or qa.sampled(call.id)))
     n = _followups(session, ctx, call, target, code)
     if target and code in ("booked",) :
         target.status = "booked"

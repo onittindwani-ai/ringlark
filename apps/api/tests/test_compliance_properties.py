@@ -12,7 +12,7 @@ from ringlark.models import Agent, Call, Campaign, ConsentRecord, Number, Suppre
 from ringlark.util import aware, zone
 from ringlark.seeding import load_seed
 from sendora_core.models import Event  # noqa: F401
-from conftest import NOW, DATA, make_settings
+from testkit import NOW, DATA, make_settings
 from ringlark.seeding import read_seed
 
 ZONES = ["America/New_York", "America/Chicago", "America/Los_Angeles", "Europe/London", "Asia/Kolkata", "Australia/Sydney", "Pacific/Auckland", "Mars/Olympus", ""]

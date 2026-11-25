@@ -14,7 +14,7 @@ Do not skip items. Tick each one. Going live means real calls reach real people,
 - [ ] You listened to the test call and you like the voice. Nobody who built this can hear it.
 - [ ] The agent's first sentence says it is an AI. Ask it "are you a person" and check it says no.
 - [ ] Say "stop calling me" on the test call. Confirm the number appears on the do not call list.
-- [ ] Your people list was imported with consent records. Open Campaigns and look at "why they can or cannot be called now" for every row.
+- [ ] Your people list was imported with consent records (a `call_consent` yes for each person: a new campaign calls nobody without one). Open Campaigns and look at "why they can or cannot be called now" for every row.
 - [ ] Your older do not call list is imported (`POST /api/suppressions/import`, see `10`, or one by one on the Numbers and compliance page). Do it before you start the campaign.
 - [ ] Voicemail is off, or the message says who is calling and why (the dialer refuses a vague message).
 - [ ] You know who takes a transferred call and in which hours.

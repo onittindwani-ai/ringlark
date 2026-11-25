@@ -17,7 +17,7 @@ from ringlark.adapters.calcom import CalcomCalendar
 from ringlark.adapters.crm import TwentyCrm
 from ringlark.adapters.telnyx import TelnyxCalls, TelnyxSms, decode_state, encode_state, parse_inbound_sms, verify_telnyx_webhook
 from ringlark.adapters.ultravox import UltravoxVoice, sign_ultravox, tool_definitions, verify_ultravox_webhook
-from conftest import make_settings
+from testkit import make_settings
 from sendora_core.adapters import AdapterError
 from sendora_core.safety import DraftModeError
 

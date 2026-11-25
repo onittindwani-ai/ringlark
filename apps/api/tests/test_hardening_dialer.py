@@ -6,12 +6,13 @@ from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import select
 
-from conftest import NOW
+from testkit import NOW
 from ringlark import dialer, live
 from ringlark.adapters.telnyx import encode_state
 from ringlark.context import set_state
 from ringlark.models import Agent, Call, Campaign, Disposition, Number, Target
 from ringlark.postcall import process_call, store_turns
+from sendora_core.events import record_event
 from sendora_core.safety import SafetyError
 from spies import SpyCrm, SpySms, SpyTelephony, SpyVoice
 from test_api import client, telnyx_post  # noqa: F401  (the API test client and the signed Telnyx post)
@@ -21,6 +22,7 @@ def live_ctx(ctx):
     """Outside demo mode, with the business name set, as a real install runs."""
     ctx.settings.demo_mode = False
     ctx.settings.company_name = "Harbor Light Dental"
+    ctx.settings.public_base_url = "https://ringlark.example.test"  # outside demo mode a call needs the address its tools are reached at
     ctx.adapters.telephony, ctx.adapters.voice, ctx.adapters.crm, ctx.adapters.sms = SpyTelephony(), SpyVoice(ctx.factory), SpyCrm(), SpySms()
     return ctx
 
@@ -31,6 +33,7 @@ def booked_call(session, seeded):
     c = Call(campaign_id=camp.id, target_id=t.id, agent_id=camp.agent_id, peer_phone=t.phone, status="in_progress", telnyx_call_id="seed-cc-9")
     session.add(c); session.flush()
     session.add(Disposition(call_id=c.id, code="booked", set_by="agent"))
+    record_event(session, "meeting.booked", "call", str(c.id), {})  # a call is only booked after the booking tool recorded the booking
     store_turns(session, c, [("agent", "Hi, this is Casey, an AI assistant."), ("caller", "Yes, Tuesday works."), ("agent", "Booked.")])
     return c
 

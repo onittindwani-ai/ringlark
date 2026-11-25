@@ -35,7 +35,7 @@ class Rules:
     daily_cap: int = 50
     max_attempts: int = 3
     retry_gap_days: int = 1
-    require_prior_consent: bool = False
+    require_prior_consent: bool = False  # the pure rules start open; every campaign passes its own value, and a new campaign defaults to True
 
 
 @dataclass(frozen=True)
@@ -54,6 +54,7 @@ class DialRequest:
     last_attempt_local_dates: tuple[str, ...] = field(default_factory=tuple)  # callee local dates of earlier attempts, YYYY-MM-DD
     last_attempt_utc: datetime | None = None
     in_flight: bool = False
+    awaiting_review: bool = False  # the last call ended as needs_review and no person has read it yet, so nobody redials until they have
     allowed_codes: tuple[str, ...] = ()
 
 
@@ -104,6 +105,8 @@ def evaluate(req: DialRequest) -> Decision:
         return Decision(False, "outside_hours")
     if req.in_flight:
         return Decision(False, "call_in_progress")
+    if req.awaiting_review:
+        return Decision(False, "awaiting_review")
     if req.calls_today >= r.daily_cap:
         return Decision(False, "daily_cap")
     if req.attempts_before >= r.max_attempts:

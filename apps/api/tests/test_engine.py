@@ -12,7 +12,7 @@ from ringlark.postcall import process_call, rule_disposition, store_turns
 from ringlark.toolauth import check_token, tool_token
 from ringlark.tools import ToolService
 from sendora_core.models import Approval
-from conftest import DATA, NOW
+from testkit import DATA, NOW
 
 STRONG = next(a for a in json.loads((DATA / "seed.json").read_text())["agents"] if a["name"] == "Casey")["versions"][1]["body"]
 WEAK = next(a for a in json.loads((DATA / "seed.json").read_text())["agents"] if a["name"] == "Casey")["versions"][0]["body"]
@@ -142,11 +142,32 @@ def test_booking_needs_a_name_and_an_email_and_is_blocked_in_draft_mode(session,
     assert out["ok"] is False and out["blocked"] is True
 
 
+def test_end_call_booked_without_a_booking_is_sent_to_a_person_instead(session, ctx, seeded):
+    c, t = a_call(session, seeded)
+    t.sms_consent = True
+    out = ToolService(session, ctx, c).run("end_call", {"disposition": "booked", "note": "caller pushed"})
+    assert out["ok"] and out["disposition"] == "needs_review" and c.disposition == "needs_review"
+    row = session.scalars(select(Disposition).where(Disposition.call_id == c.id)).one()
+    assert row.code == "needs_review" and "no booking" in row.note
+    store_turns(session, c, [("agent", "Hi, this is Casey, an AI assistant. This call may be recorded."), ("caller", "Yes"), ("agent", "Booked.")])
+    r = process_call(session, ctx, c)
+    assert r["disposition"] == "needs_review" and r["followups"] == 0  # no "your appointment is booked" text or email is queued
+    assert t.status != "booked" and not session.scalars(select(FollowUp).where(FollowUp.call_id == c.id)).first()
+
+
+def test_postcall_does_not_trust_an_old_booked_row_with_no_booking_behind_it(session, ctx, seeded):
+    c, t = a_call(session, seeded)
+    session.add(Disposition(call_id=c.id, code="booked", set_by="agent"))
+    store_turns(session, c, [("agent", "Hi, this is Casey, an AI assistant. This call may be recorded."), ("caller", "Yes")])
+    assert process_call(session, ctx, c)["disposition"] == "needs_review" and t.status != "booked"
+
+
 # ---- post call, QA, follow ups
 def test_postcall_sets_disposition_qa_followups_and_approval(session, ctx, seeded):
     c, t = a_call(session, seeded)
     t.sms_consent = True
     store_turns(session, c, [("agent", "Hi, this is Casey, an AI assistant calling for Harbor Light Dental. This call may be recorded and transcribed. Is now okay?"), ("caller", "Yes please"), ("agent", "Great, booked.")])
+    ToolService(session, ctx, c, {"Tuesday at 3 pm": NOW + timedelta(days=1)}).run("book_meeting", {"slot": "Tuesday at 3 pm", "name": "Ava Alder"})  # "booked" needs a real booking first
     ToolService(session, ctx, c).run("end_call", {"disposition": "booked"})
     r = process_call(session, ctx, c)
     assert r["disposition"] == "booked" and r["qa"] == 100 and r["followups"] >= 1

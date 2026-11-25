@@ -15,7 +15,7 @@ Every outside fact this project relies on, with where it came from and when it w
 | Telnyx answer and hangup action paths | UNVERIFIED | Hangup page returned 404; answer not read |
 | Where the Telnyx public key and connection id live in the portal | UNVERIFIED | A third party guide |
 | Cal.com books with `POST /v2/bookings`, header `cal-api-version: 2026-02-25` | VERIFIED | https://cal.com/docs/api-reference/v2 |
-| Cal.com slots version header, webhook signature, key location | UNVERIFIED | Sources disagree or were third party |
+| Cal.com slots version header, key location (Ringlark does not receive Cal.com webhooks, so there is no webhook signature to check) | UNVERIFIED | Sources disagree or were third party |
 | Twenty CRM takes GraphQL at `/graphql` with a Bearer key | VERIFIED (shape) | https://docs.twenty.com |
 | Twenty field names for people and notes | UNVERIFIED | Introspection can be turned off for API keys |
 | The FCC ruled in February 2024 that AI generated voices count as artificial voices under the US TCPA, so calls with them need prior express consent | VERIFIED from law firm summaries, not from the ruling itself | https://www.cooley.com/news/insight/2024/2024-02-15-fcc-ai-generated-robocalls-illegal-under-the-tcpa and https://www.wiley.law/alert-FCC-Extends-Regulatory-Reach-Over-AI-Announces-TCPA-Restrictions-Cover-AI-Generated-Voices-in-Outbound-Calls |

@@ -9,6 +9,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
+import httpx
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -21,6 +22,7 @@ from sendora_core.audit import record_audit
 from sendora_core.events import record_event
 from sendora_core.safety import SafetyError, guard_write
 
+VENDOR_ERRORS = (AdapterError, httpx.HTTPError, OSError)  # a refused request, a timeout or a dropped connection at Cal.com, Telnyx, the CRM or Ultravox
 STOP_LINE = messages.STOP_LINE
 BOOK_AHEAD = timedelta(days=14)  # the agent may only book a time the calendar itself offers inside this window
 
@@ -43,6 +45,10 @@ class ToolService:
         except SafetyError as exc:
             record_event(self.s, "tool.blocked", "call", str(self.call.id), {"tool": tool, "why": type(exc).__name__})
             return {"ok": False, "blocked": True, "say": "I have noted that, and someone will follow up with you."}
+        except VENDOR_ERRORS as exc:
+            # A vendor that is slow or down must not turn into a 500: the voice engine would retry the tool and could book or text twice.
+            record_event(self.s, "tool.failed", "call", str(self.call.id), {"tool": tool, "why": type(exc).__name__})
+            return {"ok": False, "failed": True, "say": "I could not finish that just now, and someone will follow up with you."}
         record_event(self.s, "tool.used", "call", str(self.call.id), {"tool": tool, "ok": bool(out.get("ok"))})
         return out
 
@@ -63,21 +69,28 @@ class ToolService:
         guard_write(self.settings, "calendar.book")  # first: draft mode and the kill switch answer before anything else
         if self._happened("meeting.booked"):
             return {"ok": False, "say": "This call already has a booking."}
+        if self._happened("meeting.unconfirmed"):
+            return {"ok": False, "say": "I could not confirm a booking on this call, so someone will follow up with you to be sure."}
         if slot not in self.slot_map and not self._offered(when):
             return {"ok": False, "say": "That time is not one I can book. I will offer the times that are open."}
-        b = self.ctx.adapters.calendar.book(start=when, name=name, email=email, timezone=(self.target.timezone if self.target else "") or "UTC")
+        try:
+            b = self.ctx.adapters.calendar.book(start=when, name=name, email=email, timezone=(self.target.timezone if self.target else "") or "UTC")
+        except (httpx.HTTPError, OSError) as exc:
+            # Cal.com may have saved the booking before the answer was lost. Booking again could book twice, so this call tries once and a person confirms.
+            record_event(self.s, "meeting.unconfirmed", "call", str(self.call.id), {"why": type(exc).__name__})
+            return {"ok": False, "failed": True, "say": "I could not confirm that booking, so someone will follow up with you to be sure."}
         record_event(self.s, "meeting.booked", "call", str(self.call.id), {"at": aware(b.starts_at).isoformat()})
         return {"ok": True, "booking_id": b.external_id, "starts_at": aware(b.starts_at).isoformat()}
 
     def _happened(self, kind: str) -> bool:
         """True when this tool already did its one job for this call (kind is the event it records)."""
-        return self.s.scalar(select(Event.id).where(Event.kind == kind, Event.entity_id == str(self.call.id)).limit(1)) is not None
+        return happened(self.s, self.call.id, kind)
 
     def _offered(self, when: datetime) -> bool:
         """Is this time one the calendar offers? The prompt only asks the agent to use offered times, so the code checks it."""
         try:
             slots = self.ctx.adapters.calendar.slots(self.now, self.now + BOOK_AHEAD)
-        except AdapterError:
+        except VENDOR_ERRORS:
             return False
         return any(aware(x) == aware(when) for x in slots)
 
@@ -121,7 +134,8 @@ class ToolService:
         text = messages.sms_text(self.settings, self.agent, kind)
         if text is None:
             return {"ok": False, "say": "I do not have a link to send, so someone will follow up."}
-        if self.s.scalar(select(FollowUp.id).where(FollowUp.call_id == self.call.id, FollowUp.channel == "sms", FollowUp.body == text, FollowUp.status.in_(("sent", "pending", "drafted"))).limit(1)):
+        same = (FollowUp.status.in_(("sent", "pending", "drafted"))) | (FollowUp.blocked_reason == "send_unconfirmed")
+        if self.s.scalar(select(FollowUp.id).where(FollowUp.call_id == self.call.id, FollowUp.channel == "sms", FollowUp.body == text, same).limit(1)):
             return {"ok": False, "say": "I have already sent that text."}  # one text of each kind per call, however often the model asks
         ok, why = self._sms_allowed()
         fu = FollowUp(call_id=self.call.id, channel="sms", to=self.call.peer_phone, body=text, status="blocked" if not ok else "pending", blocked_reason="" if ok else why)
@@ -130,7 +144,14 @@ class ToolService:
         if not ok:
             return {"ok": False, "say": "I will not text you unless you have agreed to texts."}
         guard_write(self.settings, "sms.send")
-        self.ctx.adapters.sms.send(to=self.call.peer_phone, text=text)
+        try:
+            self.ctx.adapters.sms.send(to=self.call.peer_phone, text=text)
+        except AdapterError:
+            fu.status, fu.blocked_reason = "blocked", "send_failed"  # the vendor refused it: nothing went out
+            raise
+        except (httpx.HTTPError, OSError):
+            fu.status, fu.blocked_reason = "blocked", "send_unconfirmed"  # it may have gone out: the same text is not tried again on this call
+            raise
         fu.status = "sent"
         return {"ok": True}
 
@@ -151,12 +172,17 @@ class ToolService:
         return {"ok": True}
 
     def t_end_call(self, a: dict) -> dict:
-        code = str(a.get("disposition") or "")
+        code, note = str(a.get("disposition") or ""), str(a.get("note") or "")[:300]
         if code not in DISPOSITIONS:
             code = "needs_review"
+        if code == "booked" and not self._happened("meeting.booked"):
+            # "Booked" is true only after a booking that passed the checks. A model error or a caller's push must not close the person, write the CRM or queue a
+            # "your appointment is booked" text, so the call goes to a person to read instead.
+            code, note = "needs_review", ("Said booked but no booking was made on this call. " + note).strip()[:300]
+            record_event(self.s, "tool.downgraded", "call", str(self.call.id), {"tool": "end_call", "from": "booked", "to": "needs_review"})
         row = self.s.scalar(select(Disposition).where(Disposition.call_id == self.call.id))
         if row is None:
-            self.s.add(Disposition(call_id=self.call.id, code=code, note=str(a.get("note") or "")[:300], set_by="agent"))
+            self.s.add(Disposition(call_id=self.call.id, code=code, note=note, set_by="agent"))
         self.call.disposition = code
         if code in ("do_not_call", "wrong_number"):
             suppression.add_suppression(self.s, self.call.peer_phone, "Said so on the call" if code == "do_not_call" else "Wrong number", f"call:{self.call.id}", actor="agent")
@@ -165,10 +191,15 @@ class ToolService:
         if self.call.telnyx_call_id:
             try:
                 self.ctx.adapters.telephony.hangup(self.call.telnyx_call_id)
-            except SafetyError:
-                pass
+            except (SafetyError, *VENDOR_ERRORS):
+                pass  # the outcome is saved either way; a call that is still up ends when the voice engine hangs up
         self.s.flush()
         return {"ok": True, "disposition": code}
+
+
+def happened(session: Session, call_id: int, kind: str) -> bool:
+    """True when an event of this kind was recorded for this call (for example `meeting.booked`, which only a booking that passed the checks writes)."""
+    return session.scalar(select(Event.id).where(Event.kind == kind, Event.entity_id == str(call_id)).limit(1)) is not None
 
 
 def revoke_sms(session: Session, phone: str, source: str) -> None:

@@ -9,6 +9,8 @@ import hashlib
 import hmac
 import time
 
+from sendora_core.adapters import AdapterError
+
 TOKEN_TTL_S = 20 * 60  # a call lasts at most 10 minutes (max_seconds); the rest is margin for a slow start
 _LABEL = b"ringlark-tool-token-v1"
 
@@ -36,6 +38,15 @@ def check_token(secret: str, call_id: int, token: str | None, now: float | None 
         return hmac.compare_digest(_sign(secret, call_id, expires).encode(), sig.encode())
     except (ValueError, TypeError, UnicodeError):
         return False
+
+
+def tool_base_url(settings) -> str:
+    """Where the voice engine reaches the tool endpoints. Outside demo mode an empty PUBLIC_BASE_URL is an error, never a made up address."""
+    if settings.public_base_url:
+        return settings.public_base_url
+    if settings.demo_mode:
+        return "https://example.test"  # the offline demo never calls it
+    raise AdapterError("PUBLIC_BASE_URL is empty, so the voice engine could not reach the tool endpoints. Set it to the public https address of the API.")
 
 
 def secret_for(settings) -> str:

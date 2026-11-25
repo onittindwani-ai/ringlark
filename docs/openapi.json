@@ -2150,7 +2150,7 @@
      "require_prior_consent": {
       "type": "boolean",
       "title": "Require Prior Consent",
-      "default": false
+      "default": true
      }
     },
     "type": "object",

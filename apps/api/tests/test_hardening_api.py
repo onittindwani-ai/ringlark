@@ -11,7 +11,7 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import select
 
-from conftest import DATA, NOW, make_settings
+from testkit import DATA, NOW, make_settings
 from ringlark import dialer, datadir, demo
 from ringlark.adapters.smtp_imap import SmtpImapEmail
 from ringlark.adapters.ultravox import verify_ultravox_webhook
@@ -32,6 +32,7 @@ PASSWORD = "test-only-owner-password"
 
 def real_client(tmp_path, **kw):
     """A real install: demo mode off, an owner password, the business named, drafts allowed to go live."""
+    kw.setdefault("public_base_url", "https://ringlark.example.test")  # outside demo mode a call needs the address its tools are reached at
     st = make_settings(tmp_path, demo_mode=False, session_secret=STRONG, owner_password_hash=hash_password(PASSWORD), company_name="Acme Dental", **kw)
     eng = make_engine(st.database_url)
     Base.metadata.create_all(eng)
@@ -212,8 +213,8 @@ def test_a_real_install_can_make_an_agent_a_number_a_campaign_and_place_a_call(t
     assert n.status_code == 200 and n.json()["e164"] == "+14155550190" and n.json()["checklist"]["caller_id_registered"] is False
     assert c.post("/api/numbers", headers=h, json={"e164": "+14155550190"}).status_code == 409
     camp = c.post("/api/campaigns", headers=h, json={"name": "First", "agent_id": agent["id"], "number_id": n.json()["id"]}).json()
-    rep = c.post(f"/api/campaigns/{camp['id']}/targets", headers=h, json={"rows": [{"phone": "+14155550101", "first_name": "Ava", "timezone": "America/New_York"}]}).json()
-    assert rep["created"] == 1
+    rep = c.post(f"/api/campaigns/{camp['id']}/targets", headers=h, json={"rows": [{"phone": "+14155550101", "first_name": "Ava", "timezone": "America/New_York", "call_consent": "yes"}]}).json()
+    assert rep["created"] == 1 and rep["call_consents"] == 1  # a campaign made with no flag requires a call consent, so the import gives one
     assert c.post(f"/api/campaigns/{camp['id']}/start", headers=h).status_code == 200
     with c.ctx.factory() as s:
         res = dialer.dial_tick(s, c.ctx.effective(s), c.ctx.adapters, NOW)

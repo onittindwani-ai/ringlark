@@ -39,7 +39,6 @@ class Settings(BaseAppSettings):
 
     calcom_api_key: str = ""
     calcom_event_type_id: int = 0
-    calcom_webhook_secret: str = ""
     calcom_base_url: str = "https://api.cal.com"
     calcom_slots_version: str = "2024-09-04"
     calcom_bookings_version: str = "2026-02-25"
@@ -89,8 +88,13 @@ class Settings(BaseAppSettings):
     def calling_codes(self) -> tuple[str, ...]:
         return tuple(c.strip() for c in self.allowed_calling_countries.split(",") if c.strip().startswith("+"))
 
+    @property
+    def real_calling(self) -> bool:
+        """True when a real phone or voice adapter is selected (not the offline seed ones)."""
+        return self.telephony_adapter != "seed" or self.voice_adapter != "seed"
+
     def identity_problems(self) -> list[str]:
-        """Business facts the messages need. While any is a placeholder outside demo mode the system stays in draft mode (see Ctx.effective)."""
+        """Business facts and addresses the live path needs. While any is missing outside demo mode the system stays in draft mode (see Ctx.effective)."""
         if self.demo_mode:
             return []
         out: list[str] = []
@@ -103,6 +107,14 @@ class Settings(BaseAppSettings):
                 out.append("EMAIL_FROM is still the example address.")
         if self.sms_adapter != "seed" and not self.telnyx_from_number:
             out.append("TELNYX_FROM_NUMBER is empty, so a text could not say which number to reply STOP to.")
+        if self.mode is Mode.LIVE and self.real_calling:
+            # Without these a live call would carry tool addresses that point nowhere, and its webhooks would be refused: stay in draft until they are set.
+            if not self.telnyx_public_key:
+                out.append("TELNYX_PUBLIC_KEY is empty, so Telnyx webhooks are refused. Calls stay in draft mode until it is set.")
+            if not self.ultravox_webhook_secret:
+                out.append("ULTRAVOX_WEBHOOK_SECRET is empty, so Ultravox webhooks are refused. Calls stay in draft mode until it is set.")
+            if not self.public_base_url.startswith("https://"):
+                out.append("PUBLIC_BASE_URL is empty or not an https address, so Ultravox cannot reach the tool endpoints. Calls stay in draft mode until it is set.")
         return out
 
     def problems(self) -> list[str]:
@@ -115,10 +127,4 @@ class Settings(BaseAppSettings):
                 out.append("MODE is live but TELEPHONY_ADAPTER is seed, so no real call can be placed. Set TELEPHONY_ADAPTER=telnyx.")
             if self.voice_adapter == "seed":
                 out.append("MODE is live but VOICE_ADAPTER is seed. Set VOICE_ADAPTER=ultravox.")
-            if not self.telnyx_public_key:
-                out.append("TELNYX_PUBLIC_KEY is empty, so Telnyx webhooks are refused.")
-            if not self.ultravox_webhook_secret:
-                out.append("ULTRAVOX_WEBHOOK_SECRET is empty, so Ultravox webhooks are refused.")
-            if not self.public_base_url:
-                out.append("PUBLIC_BASE_URL is empty, so Ultravox cannot reach the tool endpoints.")
         return out

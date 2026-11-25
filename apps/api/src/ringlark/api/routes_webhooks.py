@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Request
+from fastapi.concurrency import run_in_threadpool
 from sqlalchemy.orm import Session
 
 from ringlark import live
@@ -38,7 +39,8 @@ async def telnyx(request: Request, s: Session = Depends(db), ctx: Ctx = Depends(
     except (ValueError, KeyError, TypeError):
         return {"ok": True, "ignored": True}
     try:
-        result = live.handle_telnyx_event(s, ctx, ctx.effective(s), et, payload)
+        # Answering an inbound call talks to Ultravox and Telnyx (up to 20 and 15 seconds). That runs on a worker thread so the event loop keeps serving.
+        result = await run_in_threadpool(live.handle_telnyx_event, s, ctx, ctx.effective(s), et, payload)
     except live.CallNotFoundYet as exc:
         # The call is named in the event but not saved yet: say so, and Telnyx sends the event again instead of it being lost.
         raise HTTPException(503, "That call is not saved yet. Send the event again.") from exc
@@ -58,4 +60,4 @@ async def ultravox(request: Request, s: Session = Depends(db), ctx: Ctx = Depend
         event, call = ev["event"], ev.get("call", {})
     except (ValueError, KeyError, TypeError):
         return {"ok": True, "ignored": True}
-    return {"ok": True, "result": live.handle_ultravox_event(s, event, call)}
+    return {"ok": True, "result": await run_in_threadpool(live.handle_ultravox_event, s, event, call)}

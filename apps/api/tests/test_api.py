@@ -14,7 +14,7 @@ from ringlark.context import Ctx
 from ringlark.models import Agent, Call, Campaign, ConsentRecord, Disposition, Number, Suppression, Target
 from ringlark.toolauth import tool_token
 from sendora_core.db import utcnow  # noqa: F401
-from conftest import make_settings
+from testkit import make_settings
 
 TX, UV = TelnyxMock(), UltravoxMock()
 

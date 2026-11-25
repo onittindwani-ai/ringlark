@@ -4,13 +4,14 @@ from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import select
 
-from conftest import NOW
+from testkit import NOW
 from ringlark import followups, live, sms_rules
 from ringlark.models import Agent, Call, Campaign, ConsentRecord, Disposition, FollowUp, Target
 from ringlark.postcall import process_call, store_turns
 from ringlark.suppression import add_suppression, latest_consent
 from ringlark.tools import ToolService
 from sendora_core.approvals import decide
+from sendora_core.events import record_event
 from sendora_core.models import Approval
 from spies import SpyEmail, SpySms
 
@@ -21,6 +22,7 @@ def booked_call(session, seeded, line="Yes, Tuesday works. Thank you."):
     c = Call(campaign_id=camp.id, target_id=t.id, agent_id=camp.agent_id, peer_phone=t.phone, status="in_progress", telnyx_call_id="seed-cc-9")
     session.add(c); session.flush()
     session.add(Disposition(call_id=c.id, code="booked", set_by="agent"))
+    record_event(session, "meeting.booked", "call", str(c.id), {})  # a call is only booked after the booking tool recorded the booking
     store_turns(session, c, [("agent", "Hi, this is Casey, an AI assistant."), ("caller", line), ("agent", "Great, you are booked.")])
     return c, t
 

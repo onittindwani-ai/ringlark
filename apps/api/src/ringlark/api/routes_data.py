@@ -137,7 +137,7 @@ class CampaignIn(BaseModel):
     voicemail_text: str = Field(default="", max_length=600)
     ivr_policy: str = Field(default="hangup", pattern="^(hangup|press_once)$")
     ivr_extension: str = Field(default="", max_length=4)
-    require_prior_consent: bool = False  # True: only people with a granted call consent on file are called
+    require_prior_consent: bool = True  # True (the default): only people with a granted call consent on file are called. False needs the owner (see create_campaign).
 
 
 @router.post("/campaigns", summary="Create a campaign (starts as a draft, never running)")
@@ -160,6 +160,10 @@ def create_campaign(b: CampaignIn, s: Session = Depends(db), u: dict = Depends(w
         raise HTTPException(422, "A voicemail message must say it is an AI, who is calling and why (for example: \"this is Casey, an AI assistant, calling for Harbor Light Dental about your check up\"). Add that or turn voicemail off.")
     if b.ivr_policy == "press_once" and not re.fullmatch(r"[0-9*#]", b.ivr_extension):
         raise HTTPException(422, "Press once needs the single key to press (0 to 9, star or pound). Choose hang up if there is no such key.")
+    if not b.require_prior_consent:
+        if u["role"] != "owner":
+            raise HTTPException(403, "Only the owner can create a campaign that calls people with no call consent on file.")
+        record_audit(s, u["user"], "campaign.consent_not_required", None, {"name": b.name})
     c = Campaign(**values, status="draft")
     s.add(c); s.flush()
     record_audit(s, u["user"], "campaign.created", f"campaign:{c.id}", {"name": c.name})
@@ -281,6 +285,13 @@ def create_number(b: NumberIn, s: Session = Depends(db), u: dict = Depends(owner
     return {"id": n.id, "e164": n.e164, "label": n.label, "direction": n.direction, "agent_id": n.agent_id, "country": n.country, "checklist": n.checklist}
 
 
+def _agent_or_404(s: Session, aid: int) -> Agent:
+    a = s.get(Agent, aid)
+    if a is None:
+        raise HTTPException(404, "That agent does not exist.")
+    return a
+
+
 # ---- agents, prompts, simulator
 @router.get("/agents", summary="Agents with every prompt version")
 def agents(s: Session = Depends(db)):
@@ -294,9 +305,7 @@ class VersionIn(BaseModel):
 
 @router.post("/agents/{aid}/versions", summary="Save a new prompt version (never edits an old one)")
 def add_version(aid: int, b: VersionIn, s: Session = Depends(db), u: dict = Depends(writer)):
-    a = s.get(Agent, aid)
-    if a is None:
-        raise HTTPException(404, "That agent does not exist.")
+    a = _agent_or_404(s, aid)
     try:
         v = prompts.add_version(s, a, b.body, b.note, u["user"])
     except prompts.PromptError as exc:
@@ -310,10 +319,10 @@ class ActivateIn(BaseModel):
 
 @router.post("/agents/{aid}/activate", summary="Make a version the one used for new calls (owner only)")
 def activate(aid: int, b: ActivateIn, s: Session = Depends(db), u: dict = Depends(owner)):
-    a = s.get(Agent, aid)
+    a = _agent_or_404(s, aid)
     try:
         prompts.activate(s, a, b.version_id, u["user"])
-    except (prompts.PromptError, AttributeError) as exc:
+    except prompts.PromptError as exc:
         raise HTTPException(422, str(exc)) from exc
     return agent_row(a)
 
@@ -325,7 +334,7 @@ class SplitIn(BaseModel):
 
 @router.post("/agents/{aid}/split", summary="Send a share of calls to a candidate version (owner only)")
 def split(aid: int, b: SplitIn, s: Session = Depends(db), u: dict = Depends(owner)):
-    a = s.get(Agent, aid)
+    a = _agent_or_404(s, aid)
     try:
         prompts.set_split(s, a, b.candidate_id, b.share_b, u["user"])
     except prompts.PromptError as exc:
@@ -335,7 +344,7 @@ def split(aid: int, b: SplitIn, s: Session = Depends(db), u: dict = Depends(owne
 
 @router.get("/agents/{aid}/diff", summary="Line by line difference between two versions")
 def diff(aid: int, a: int, b: int, s: Session = Depends(db)):
-    ag = s.get(Agent, aid)
+    ag = _agent_or_404(s, aid)
     by = {v.id: v for v in ag.versions}
     if a not in by or b not in by:
         raise HTTPException(404, "Unknown version.")
@@ -355,7 +364,7 @@ class SimIn(BaseModel):
 
 @router.post("/agents/{aid}/simulate", summary="Run one scripted caller against a prompt version as text. No voice, no network.")
 def simulate(aid: int, b: SimIn, s: Session = Depends(db), ctx: Ctx = Depends(get_ctx), u: dict = Depends(writer)):
-    ag = s.get(Agent, aid)
+    ag = _agent_or_404(s, aid)
     ver = next((v for v in ag.versions if v.id == b.version_id), None)
     per = next((p for p in load_personas(b.set, persona_dir(ctx.settings)) if p["id"] == b.persona_id), None)
     if ver is None or per is None:
@@ -373,7 +382,7 @@ class SuiteIn(BaseModel):
 
 @router.post("/agents/{aid}/persona-suite", summary="Run a whole persona set against a prompt version and score it")
 def persona_suite(aid: int, b: SuiteIn, s: Session = Depends(db), ctx: Ctx = Depends(get_ctx), u: dict = Depends(writer)):
-    ag = s.get(Agent, aid)
+    ag = _agent_or_404(s, aid)
     ver = next((v for v in ag.versions if v.id == b.version_id), None)
     if ver is None:
         raise HTTPException(404, "Unknown version.")

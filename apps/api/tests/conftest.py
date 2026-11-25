@@ -1,25 +1,13 @@
 import json
-from datetime import UTC, datetime
-from pathlib import Path
 
 import pytest
 from sqlalchemy.orm import Session
 
-from ringlark.config import Settings
 from ringlark.context import Ctx
 from ringlark.seeding import load_seed, read_seed
 from sendora_core import models as _core  # noqa: F401
 from sendora_core.db import Base, make_engine, make_session_factory
-
-DATA = Path(__file__).resolve().parents[3] / "data"
-# A Tuesday, 17:00 UTC: 12:00 New York, 09:00 Los Angeles (open), 17:00 London and 22:30 Kolkata (closed).
-NOW = datetime(2026, 12, 1, 17, 0, tzinfo=UTC)
-
-
-def make_settings(tmp_path, **kw) -> Settings:
-    base = dict(database_url=f"sqlite:///{tmp_path / 'rm.sqlite3'}", mode="live", demo_mode=True, handoff_dir=str(tmp_path / "handoff"), seed_dir=str(DATA), session_secret="test-only-secret-test-only-secret-1")
-    base.update(kw)
-    return Settings(_env_file=None, **base)
+from testkit import DATA, NOW, make_settings  # noqa: F401  (re-exported for the tests that import it from here)
 
 
 @pytest.fixture

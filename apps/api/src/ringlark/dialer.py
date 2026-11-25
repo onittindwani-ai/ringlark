@@ -16,10 +16,10 @@ from ringlark.compliance import DialRequest, Rules
 from ringlark.disclosure import build_greeting, has_disclosure
 from ringlark.live_prompt import live_system_prompt
 from ringlark.messages import appointment
-from ringlark.models import Agent, Call, Campaign, Number, PromptVersion, State, Target
+from ringlark.models import Agent, Call, Campaign, Number, PromptVersion, QAScore, State, Target
 from ringlark.prompts import choose_version
 from ringlark.suppression import is_suppressed, latest_consent
-from ringlark.toolauth import secret_for, tool_token
+from ringlark.toolauth import secret_for, tool_base_url, tool_token
 from ringlark.util import aware, normalize_phone, zone
 from sendora_core.adapters import AdapterError
 from sendora_core.events import record_event
@@ -78,6 +78,14 @@ def history(session: Session, target: Target, tz: str):
     return len(rows), dates, (aware(rows[-1].created_at) if rows else None)
 
 
+def awaiting_review(session: Session, target: Target) -> bool:
+    """True when a call to this person ended as needs_review and no person has marked it as read. The only code that reads a call for a stop
+    request is a pattern reader that misses some wording, so an unclear call is looked at by a human before the person is dialled again."""
+    stmt = (select(func.count()).select_from(Call).join(QAScore, QAScore.call_id == Call.id)
+            .where(_calls_to(target), Call.status == "completed", Call.disposition == "needs_review", QAScore.reviewed.is_(False)))
+    return (session.scalar(stmt) or 0) > 0
+
+
 def decide(session: Session, settings, c: Campaign, agent: Agent, t: Target, now: datetime, today: int) -> compliance.Decision:
     n, dates, last = history(session, t, t.timezone)
     phone = normalize_phone(t.phone) or t.phone
@@ -86,7 +94,7 @@ def decide(session: Session, settings, c: Campaign, agent: Agent, t: Target, now
     return compliance.evaluate(DialRequest(
         phone=phone, timezone=t.timezone, now_utc=now, rules=rules_for(c, settings), kill_switch=settings.kill_switch, draft_mode=not would_write(settings) and not settings.kill_switch,
         greeting_has_disclosure=has_disclosure(greeting_for(agent, settings)), on_dnc_list=is_suppressed(session, phone), call_consent=consent, calls_today=today, attempts_before=n,
-        last_attempt_local_dates=dates, last_attempt_utc=last, in_flight=in_flight, allowed_codes=settings.calling_codes))
+        last_attempt_local_dates=dates, last_attempt_utc=last, in_flight=in_flight, awaiting_review=awaiting_review(session, t), allowed_codes=settings.calling_codes))
 
 
 def place(session: Session, settings, adapters, c: Campaign, agent: Agent, t: Target, number: Number | None, now: datetime, attempt: int) -> Call:
@@ -105,7 +113,7 @@ def place(session: Session, settings, adapters, c: Campaign, agent: Agent, t: Ta
     session.commit()
     try:
         vc = adapters.voice.create_call(system_prompt=live_system_prompt(version.body if version else "", t.first_name), voice=agent.voice, first_message=greeting_for(agent, settings),
-                                        tools=tool_definitions(settings.public_base_url or "https://example.test", call_id, tool_token(secret_for(settings), call_id)), max_seconds=600)
+                                        tools=tool_definitions(tool_base_url(settings), call_id, tool_token(secret_for(settings), call_id)), max_seconds=600)
         call.external_id = vc.call_id
         session.commit()  # an event from the voice engine can now find this call by its id
         if _early_end_seen(session, vc.call_id):

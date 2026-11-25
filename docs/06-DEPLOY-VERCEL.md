@@ -14,7 +14,7 @@ Vercel hosts only the **web** part. The API and worker need a server that stays 
 
 ## Webhooks
 
-Telnyx, Ultravox and Cal.com must call the **API** directly (`https://api.yourdomain.com/api/webhooks/...`), and Ultravox reaches the agent tool endpoints at `https://api.yourdomain.com/api/tools/...`. Not the Vercel address. The web app deliberately forwards only the API paths its pages use, so `webhooks`, `tools` and `auth/login` are refused there.
+Telnyx and Ultravox must call the **API** directly (`https://api.yourdomain.com/api/webhooks/...`), and Ultravox reaches the agent tool endpoints at `https://api.yourdomain.com/api/tools/...`. Not the Vercel address. The web app deliberately forwards only the API paths its pages use, so `webhooks`, `tools` and `auth/login` are refused there.
 
 ## If the build fails
 

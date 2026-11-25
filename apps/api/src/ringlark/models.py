@@ -89,7 +89,7 @@ class Campaign(Base):
     voicemail_text: Mapped[str] = mapped_column(Text, default="")
     ivr_policy: Mapped[str] = mapped_column(String(10), default="hangup")  # hangup or press_once
     ivr_extension: Mapped[str] = mapped_column(String(8), default="")
-    require_prior_consent: Mapped[bool] = mapped_column(Boolean, default=False)
+    require_prior_consent: Mapped[bool] = mapped_column(Boolean, default=True)  # outbound AI calls need a granted call consent on file unless the owner turns this off
     created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
 
 

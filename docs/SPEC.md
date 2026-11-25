@@ -6,7 +6,7 @@ Ringlark is an AI SDR setup system. It helps an implementer or a business set up
 1. Keeps a versioned prompt library for each agent, with a diff view and a split test (A and B).
 2. Runs a text mode simulator: a scripted caller persona talks to an agent prompt with no voice and no network. The offline stand in is rules, not a language model.
 3. Runs a persona suite (hostile, rushed, wrong number, stop calling me, voicemail, phone menu, asks if it is a robot, and more) with an answer key and an honest score.
-4. Dials outbound campaigns inside compliance gates: calling hours in the contact's timezone, do not call list, revoked consent, daily caps, retry limits, voicemail setting, kill switch, draft mode.
+4. Dials outbound campaigns inside compliance gates: calling hours in the contact's timezone, do not call list, consent on file (required by default), revoked consent, a call nobody has read yet, daily caps, retry limits, voicemail setting, kill switch, draft mode.
 5. Creates the Ultravox call (agent prompt, voice, tools) and lets Telnyx carry it. Tool endpoints let the agent book, look up the CRM, transfer, send a text and end the call with a disposition.
 6. After each call: transcript, summary, disposition, QA score, follow ups (text and email, through approval), CRM update.
 7. Shows it in a dashboard with a live call console and a call scrubber.

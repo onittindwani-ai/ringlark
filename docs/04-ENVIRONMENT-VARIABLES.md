@@ -63,7 +63,7 @@ Every text and email the system writes on its own names the business. While `COM
 |---|---|---|
 | telnyx | `TELNYX_API_KEY`, `TELNYX_PUBLIC_KEY`, `TELNYX_CONNECTION_ID`, `TELNYX_FROM_NUMBER`, `TELNYX_BASE_URL` | Telnyx portal: create an API key; find the account public key; create a Call Control application and copy its connection id; buy a number. Menu names UNVERIFIED (`facts/telnyx.md`). |
 | ultravox | `ULTRAVOX_API_KEY`, `ULTRAVOX_WEBHOOK_SECRET`, `ULTRAVOX_BASE_URL` | Ultravox console: create an API key; add a webhook and copy its secret (`facts/ultravox.md`). |
-| calcom | `CALCOM_API_KEY`, `CALCOM_EVENT_TYPE_ID`, `CALCOM_WEBHOOK_SECRET`, `CALCOM_BASE_URL`, `CALCOM_SLOTS_VERSION`, `CALCOM_BOOKINGS_VERSION` | Cal.com settings: make an API key; open the event type and read its id from the address. Menu names UNVERIFIED. |
+| calcom | `CALCOM_API_KEY`, `CALCOM_EVENT_TYPE_ID`, `CALCOM_BASE_URL`, `CALCOM_SLOTS_VERSION`, `CALCOM_BOOKINGS_VERSION` | Cal.com settings: make an API key; open the event type and read its id from the address. Menu names UNVERIFIED. |
 | twenty | `TWENTY_BASE_URL`, `TWENTY_API_KEY` | Your Twenty workspace settings, API keys. |
 | smtp_imap | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_USE_TLS`, `IMAP_HOST`, `IMAP_PORT`, `IMAP_USE_SSL`, `EMAIL_FROM` | Your mail provider's settings page. |
 

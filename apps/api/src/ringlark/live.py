@@ -18,7 +18,7 @@ from ringlark.context import set_state
 from ringlark.disclosure import build_greeting
 from ringlark.live_prompt import live_system_prompt
 from ringlark.models import Agent, Call, Campaign, ConsentRecord, Disposition, Number, PromptVersion
-from ringlark.toolauth import secret_for, tool_token
+from ringlark.toolauth import secret_for, tool_base_url, tool_token
 from ringlark.util import aware, normalize_phone
 from sendora_core.adapters import AdapterError
 from sendora_core.audit import record_audit
@@ -157,7 +157,7 @@ def handle_inbound(session: Session, ctx, settings, payload: dict) -> str:
     session.commit()  # saved before the voice engine or the phone company is told, like an outbound call
     try:
         vc: VoiceCall = ctx.adapters.voice.create_call(system_prompt=live_system_prompt(version.body if version else ""), voice=agent.voice, first_message=inbound_greeting(agent, settings),
-                                                        tools=tool_definitions(settings.public_base_url or "https://example.test", call_id, tool_token(secret_for(settings), call_id)), max_seconds=600)
+                                                        tools=tool_definitions(tool_base_url(settings), call_id, tool_token(secret_for(settings), call_id)), max_seconds=600)
         call.external_id = vc.call_id
         session.commit()
         ctx.adapters.telephony.answer(cid)

@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import hashlib
-import hmac
 from datetime import UTC, datetime, timedelta
 
 import httpx
@@ -11,13 +9,6 @@ import httpx
 from ringlark.adapters.base import Booking, safe_base_url
 from sendora_core.adapters import AdapterError
 from sendora_core.safety import write_action
-
-
-def verify_calcom_webhook(secret: str, body: bytes, header_value: str) -> bool:
-    """HMAC SHA256 of the raw body, hex. With no secret set Cal.com sends a placeholder, so an empty secret never verifies."""
-    if not secret or not header_value or header_value == "no-secret-provided":
-        return False
-    return hmac.compare_digest(hmac.new(secret.encode(), body, hashlib.sha256).hexdigest(), header_value.lower())
 
 
 def _iso(d: datetime) -> str:

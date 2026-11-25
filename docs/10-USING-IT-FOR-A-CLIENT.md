@@ -19,7 +19,7 @@ You run Ringlark for someone else's business. Keep each client in their own copy
    - create the agent and its first prompt version: `POST /api/agents` with `{"name": "Sam", "company": "Their Business", "transfer_number": "+1...", "prompt": "<the prompt>"}` (a company left out becomes `COMPANY_NAME`);
    - make that version the live one: `POST /api/agents/<agent id>/activate` with `{"version_id": <id from the answer>}` (also on the Agents page);
    - add the phone number you own: `POST /api/numbers` with `{"e164": "+1...", "agent_id": <agent id>}`, then tick its checklist on the Numbers page as you finish each registration;
-   - create the campaign on the Campaigns page, or `POST /api/campaigns` (`require_prior_consent: true` calls only people with a granted consent on file).
+   - create the campaign on the Campaigns page, or `POST /api/campaigns` (it requires a granted call consent on file by default, so import each person with `call_consent` set to yes; only the owner can send `require_prior_consent: false`).
    Then run the simulator and the persona suite and fix what fails.
 4. Import their people. The easy way: open Campaigns, press **Import**, then **Choose a CSV file**. You see the row count and the first rows before anything is added, then press **Import**. The same steps by API:
    `TOKEN=$(curl -s -H "content-type: application/json" -d '{"email":"you@theirdomain.com","password":"..."}' https://api.theirdomain.com/api/auth/login | python3 -c "import sys,json;print(json.load(sys.stdin)['token'])")`

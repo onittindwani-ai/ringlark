@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Request
+from fastapi.concurrency import run_in_threadpool
 from sqlalchemy.orm import Session
 
 from ringlark.api.deps import db, get_ctx
@@ -26,9 +27,6 @@ async def run_tool(call_id: int, tool: str, request: Request, s: Session = Depen
         request.app.state.tool_bucket.check(f"call:{call_id}")  # a model that repeats a tool call in a loop is slowed down
     except RateLimitExceeded as exc:
         raise HTTPException(429, str(exc)) from exc
-    call = s.get(Call, call_id)
-    if call is None or call.status not in ("placed", "in_progress"):
-        raise HTTPException(409, "That call is not in progress.")
     raw = await request.body()  # already limited to 20 000 bytes by PerRouteBodyLimit before it is read
     if len(raw) > 20_000:
         raise HTTPException(413, "Body too large.")
@@ -36,4 +34,13 @@ async def run_tool(call_id: int, tool: str, request: Request, s: Session = Depen
         args = await request.json() if raw else {}
     except ValueError:
         args = {}
-    return ToolService(s, ctx, call).run(tool, args if isinstance(args, dict) else {})
+    # The tools call Cal.com, Telnyx or the CRM and wait for them (up to 15 seconds each). That wait happens on a worker thread, so the one event loop
+    # stays free for the dashboard, the kill switch and the other calls' tools.
+    return await run_in_threadpool(_run_tool, s, ctx, call_id, tool, args if isinstance(args, dict) else {})
+
+
+def _run_tool(s: Session, ctx: Ctx, call_id: int, tool: str, args: dict) -> dict:
+    call = s.get(Call, call_id)
+    if call is None or call.status not in ("placed", "in_progress"):
+        raise HTTPException(409, "That call is not in progress.")
+    return ToolService(s, ctx, call).run(tool, args)

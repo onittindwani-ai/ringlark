@@ -24,7 +24,7 @@ Switch one at a time. After each, run `python tools/doctor.py` (add `--live` to 
 ## Calendar (Tier A: calcom)
 
 1. Make a Cal.com event type for the meeting. Make an API key.
-2. Set `CALENDAR_ADAPTER=calcom`, `CALCOM_API_KEY`, `CALCOM_EVENT_TYPE_ID`, `CALCOM_WEBHOOK_SECRET`.
+2. Set `CALENDAR_ADAPTER=calcom`, `CALCOM_API_KEY`, `CALCOM_EVENT_TYPE_ID`.
 
 ## CRM (Tier A: twenty)
 

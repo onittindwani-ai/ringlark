@@ -7,7 +7,7 @@ from pathlib import Path
 
 from sqlalchemy import select
 
-from conftest import NOW
+from testkit import NOW
 from ringlark import followups, live
 from ringlark.models import Call, Campaign, FollowUp, Number, Target
 from spies import SpyEmail, SpySms, SpyTelephony, SpyVoice

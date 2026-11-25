@@ -15,7 +15,7 @@ export interface ReplayEvent { t: number; type: "state" | "word" | "tool"; state
 export interface Replay { call_id: number; synthetic_waveform: boolean; events: ReplayEvent[] }
 export interface Campaign {
   id: number; name: string; agent: string; agent_id: number; number_id: number | null; status: string; window_start_hour: number; window_end_hour: number; weekdays_only: boolean; daily_cap: number; max_attempts: number;
-  retry_gap_days: number; allow_voicemail: boolean; voicemail_text: string; ivr_policy: string; ivr_extension: string; targets: Record<string, number>; calls_today: number;
+  retry_gap_days: number; allow_voicemail: boolean; voicemail_text: string; ivr_policy: string; ivr_extension: string; require_prior_consent: boolean; targets: Record<string, number>; calls_today: number;
 }
 export interface TargetRow { id: number; name: string; phone: string; timezone: string; status: string; sms_consent: boolean; persona: string; can_call_now: boolean; why: string }
 export interface PromptVersion { id: number; version: number; note: string; created_by: string; created_at: string; body: string }
