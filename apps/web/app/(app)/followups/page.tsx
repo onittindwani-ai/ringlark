@@ -16,6 +16,9 @@ export default function FollowupsPage() {
   const fu = useQuery({ queryKey: ["followups"], queryFn: () => get<FollowUp[]>("/followups") });
   const ap = useQuery({ queryKey: ["approvals"], queryFn: () => get<ApprovalRow[]>("/approvals") });
   const decide = useMutation({ mutationFn: (v: { id: number; approve: boolean }) => post(`/approvals/${v.id}/decide`, { approve: v.approve }), onSuccess: (_r, v) => { notify.success(v.approve ? "Approved. It is sent on the next run, if the rules allow." : "Rejected. It will not be sent."); qc.invalidateQueries({ predicate: (x) => x.queryKey[0] !== "me" }); }, onError: (e: Error) => notify.error("Could not decide", e.message) });
+  const resolve = useMutation({ mutationFn: (v: { id: number; sent: boolean }) => post(`/followups/${v.id}/resolve`, { sent: v.sent }), onSuccess: () => { notify.success("Recorded."); qc.invalidateQueries({ predicate: (x) => x.queryKey[0] !== "me" }); }, onError: (e: Error) => notify.error("Could not record it", e.message) });
+  // A send that timed out may or may not have gone out. It is never sent again by itself: a person checks with the carrier or the mail server and says what happened.
+  const unconfirmed = (f: FollowUp) => f.status === "sending" || (f.status === "blocked" && f.blocked_reason === "send_unconfirmed");
   if (fu.isError) return <div className="rm-page"><PageHead title="Follow ups and approvals" /><LoadError error={fu.error} onRetry={() => fu.refetch()} what="follow ups" /></div>;
   if (ap.isError) return <div className="rm-page"><PageHead title="Follow ups and approvals" /><LoadError error={ap.error} onRetry={() => ap.refetch()} what="approvals" /></div>;
   const pending = (ap.data ?? []).filter((a) => a.status === "pending");
@@ -43,7 +46,7 @@ export default function FollowupsPage() {
               </Card>);
           })}</div>) },
         { value: "all", label: "All follow ups", content: !fu.data ? <ListSkeleton /> : fu.data.length === 0 ? <Card><EmptyState title="No follow ups yet" body="They appear after calls that end in a booking or a callback." /></Card> : (
-          <Card title="Follow ups"><ul className="rm-list">{fu.data.map((f) => <li key={f.id} className="rm-item" style={{ cursor: "default" }}><span className="rm-item__top"><strong>{CHANNEL[f.channel] ?? f.channel} to {f.name || f.to}</strong><Badge tone={tone(f.status)}>{label(f)}</Badge></span><span className="rm-item__line">{f.body}</span></li>)}</ul></Card>) },
+          <Card title="Follow ups"><ul className="rm-list">{fu.data.map((f) => <li key={f.id} className="rm-item" style={{ cursor: "default" }}><span className="rm-item__top"><strong>{CHANNEL[f.channel] ?? f.channel} to {f.name || f.to}</strong><Badge tone={tone(f.status)}>{label(f)}</Badge></span><span className="rm-item__line">{f.body}</span>{unconfirmed(f) ? <span className="sx-row"><span className="rm-mini">It may or may not have gone out. It will not be sent again by itself. Check, then say what happened.</span><Button size="sm" disabled={!canWrite} disabledReason="Viewers cannot do this" onClick={async () => { await resolve.mutateAsync({ id: f.id, sent: true }); }}>It was sent</Button><Button size="sm" disabled={!canWrite} disabledReason="Viewers cannot do this" onClick={async () => { await resolve.mutateAsync({ id: f.id, sent: false }); }}>It was not sent</Button></span> : null}</li>)}</ul></Card>) },
       ]} />
     </div>
   );

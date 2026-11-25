@@ -17,7 +17,7 @@ import httpx
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
 
-from ringlark.adapters.base import InboundSms, PlacedCall, safe_base_url
+from ringlark.adapters.base import InboundSms, PlacedCall, UnknownOutcome, safe_base_url
 from sendora_core.adapters import AdapterError
 from sendora_core.safety import write_action
 
@@ -65,6 +65,8 @@ def _client(settings, client):
 def _fail(r: httpx.Response, what: str) -> None:
     if r.status_code == 401:
         raise AdapterError("Telnyx rejected the API key.")
+    if r.status_code >= 500:
+        raise UnknownOutcome(f"Telnyx could not {what}: it answered {r.status_code}, so the result is not known.")  # the text or call may have gone out before the error
     if r.status_code >= 400:
         try:
             err = (r.json().get("errors") or [{}])[0]

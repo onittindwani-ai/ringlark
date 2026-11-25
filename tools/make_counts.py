@@ -33,6 +33,13 @@ def run_tests() -> dict:
     return {"passed": grab("passed"), "skipped": grab("skipped"), "failed": grab("failed"), "coverage_percent": pct}
 
 
+def core_tests() -> int:
+    """How many tests the shared core package has (collected, not run: this is cheap)."""
+    p = subprocess.run([PY, "-m", "pytest", "-o", "addopts=", "--collect-only", "-q", "-p", "no:cacheprovider", "packages/core-py/tests"], cwd=ROOT, capture_output=True, text=True)
+    m = re.search(r"(\d+) tests? collected", p.stdout) or re.search(r"^(\d+)/\d+ tests collected|^(\d+) tests", p.stdout, re.M)
+    return int(next(g for g in m.groups() if g)) if m else sum(1 for line in p.stdout.splitlines() if "::" in line)
+
+
 def adapters() -> int:
     sys.path.insert(0, str(ROOT / "apps" / "api" / "src"))
     from ringlark.config import Settings
@@ -66,6 +73,7 @@ def main(argv: list[str]) -> int:
     data = {
         "measured_on": date.today().isoformat(),
         "tests": old.get("tests") if "--fast" in argv else run_tests(),
+        "core_tests": core_tests(),
         "browser_tests": int(mm.group(1)) if mm else old.get("browser_tests"),
         "screenshots": len(list((ROOT / "docs" / "screenshots").glob("*.png"))),
         "adapters_registered": adapters(),
@@ -75,7 +83,7 @@ def main(argv: list[str]) -> int:
         "reader": reader(),
     }
     OUT.write_text(json.dumps(data, indent=1) + "\n")
-    print("OK wrote", OUT.relative_to(ROOT), json.dumps({k: data[k] for k in ("tests", "browser_tests", "screenshots", "adapters_registered", "contract_tests")}))
+    print("OK wrote", OUT.relative_to(ROOT), json.dumps({k: data[k] for k in ("tests", "core_tests", "browser_tests", "screenshots", "adapters_registered", "contract_tests")}))
     return 0
 
 

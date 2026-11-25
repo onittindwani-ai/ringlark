@@ -14,6 +14,9 @@ def get_ctx(request: Request) -> Ctx:
 
 
 def db(request: Request) -> Iterator[Session]:
+    """One session per request. Every route asks for it with `Depends(db, scope="function")`: the commit then runs BEFORE the answer is sent. With the default scope
+    FastAPI runs it after the body has gone out, so a save that failed would already have been answered "ok" (a STOP text the sender never repeats, a booking the
+    voice engine thinks was saved). `tests/test_round3.py` fails on any route that asks for it without the scope."""
     s = request.app.state.ctx.factory()
     try:
         yield s

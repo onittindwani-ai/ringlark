@@ -19,12 +19,12 @@ router = APIRouter(prefix="/api", tags=["operations"])
 
 
 @router.get("/overview", summary="Numbers for the overview page")
-def overview(s: Session = Depends(db), ctx: Ctx = Depends(get_ctx)):
+def overview(s: Session = Depends(db, scope="function"), ctx: Ctx = Depends(get_ctx)):
     return metrics.overview(s, ctx.now(s))
 
 
 @router.get("/approvals", summary="Pending and recent approvals")
-def approvals(s: Session = Depends(db)):
+def approvals(s: Session = Depends(db, scope="function")):
     rows = list(s.scalars(select(Approval).order_by(Approval.id.desc()).limit(100)))
     return [{"id": a.id, "action": a.action, "summary": a.summary, "risk": a.risk, "status": a.status, "requested_by": a.requested_by, "decided_by": a.decided_by, "note": a.decision_note, "created_at": iso(a.created_at), "payload": a.payload} for a in rows]
 
@@ -35,7 +35,7 @@ class DecideIn(BaseModel):
 
 
 @router.post("/approvals/{approval_id}/decide", summary="Approve or reject")
-def decide_approval(approval_id: int, body: DecideIn, s: Session = Depends(db), u: dict = Depends(writer)):
+def decide_approval(approval_id: int, body: DecideIn, s: Session = Depends(db, scope="function"), u: dict = Depends(writer)):
     try:
         a = decide(s, approval_id, body.approve, u["user"], u["role"], body.note or None)
     except ApprovalError as exc:
@@ -48,13 +48,13 @@ def decide_approval(approval_id: int, body: DecideIn, s: Session = Depends(db), 
 
 
 @router.get("/audit", summary="Audit log, newest first")
-def audit(limit: int = Query(100, ge=1, le=1000), s: Session = Depends(db)):
+def audit(limit: int = Query(100, ge=1, le=1000), s: Session = Depends(db, scope="function")):
     rows = s.scalars(select(AuditEntry).order_by(AuditEntry.id.desc()).limit(limit))
     return [{"id": e.id, "actor": e.actor, "action": e.action, "target": e.target, "detail": e.detail, "at": e.created_at} for e in rows]
 
 
 @router.get("/audit/verify", summary="Check the audit chain has not been edited")
-def audit_verify(s: Session = Depends(db)):
+def audit_verify(s: Session = Depends(db, scope="function")):
     ok, bad = verify_audit_chain(s)
     return {"ok": ok, "first_bad_id": bad}
 
@@ -79,7 +79,7 @@ def test_integration(category: str, ctx: Ctx = Depends(get_ctx), u: dict = Depen
 
 
 @router.get("/settings", summary="Mode, kill switch and config problems")
-def get_settings(s: Session = Depends(db), ctx: Ctx = Depends(get_ctx)):
+def get_settings(s: Session = Depends(db, scope="function"), ctx: Ctx = Depends(get_ctx)):
     eff = ctx.effective(s)
     return {"mode": ctx.settings.mode.value, "effective_mode": eff.mode.value, "kill_switch": eff.kill_switch, "demo_mode": ctx.settings.demo_shortcuts, "problems": ctx.settings.problems(),
             "window": f"{ctx.settings.default_window_start:02d}:00 to {ctx.settings.default_window_end:02d}:00 callee local time", "follow_ups_need_approval": ctx.settings.follow_ups_need_approval,
@@ -92,7 +92,7 @@ class SettingsIn(BaseModel):
 
 
 @router.post("/settings", summary="Turn the kill switch or draft mode on or off (owner only). The app can never switch live calling on.")
-def post_settings(body: SettingsIn, s: Session = Depends(db), ctx: Ctx = Depends(get_ctx), u: dict = Depends(owner)):
+def post_settings(body: SettingsIn, s: Session = Depends(db, scope="function"), ctx: Ctx = Depends(get_ctx), u: dict = Depends(owner)):
     if body.kill_switch is not None:
         set_state(s, "kill_switch", "1" if body.kill_switch else "0")
         record_audit(s, u["user"], "settings.kill_switch", None, {"on": body.kill_switch})
@@ -104,7 +104,7 @@ def post_settings(body: SettingsIn, s: Session = Depends(db), ctx: Ctx = Depends
 
 
 @router.get("/metrics/versions", summary="How each prompt version did: calls, booked share and average QA score")
-def version_metrics(s: Session = Depends(db)):
+def version_metrics(s: Session = Depends(db, scope="function")):
     from sqlalchemy import func
 
     from ringlark.models import Agent, Call, PromptVersion, QAScore

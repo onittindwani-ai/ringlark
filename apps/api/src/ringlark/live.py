@@ -15,7 +15,7 @@ from ringlark.adapters.ultravox import tool_definitions
 from ringlark.caller_reader import asks_to_stop, revoked_consent
 from ringlark.compliance import voicemail_allowed
 from ringlark.context import set_state
-from ringlark.disclosure import build_greeting
+from ringlark.disclosure import build_greeting, greeting_problems
 from ringlark.live_prompt import live_system_prompt
 from ringlark.models import Agent, Call, Campaign, ConsentRecord, Disposition, Number, PromptVersion
 from ringlark.toolauth import secret_for, tool_base_url, tool_token
@@ -35,8 +35,13 @@ class CallNotFoundYet(LookupError):
 
 
 def inbound_greeting(agent: Agent, settings=None) -> str:
+    """What the answering agent says first. A custom greeting is used only when it says it is an AI and (unless RECORDING_NOTICE_REQUIRED is off) that the call may be recorded;
+    otherwise the standard greeting is used, so a greeting typed or imported without those words never reaches a caller."""
     company = (agent.company or (settings.company_name if settings is not None else "") or "us").strip()
-    return agent.greeting or f"Thanks for calling {company}. This is {agent.name}, an AI assistant. This call may be recorded and transcribed. How can I help?"
+    standard = f"Thanks for calling {company}. This is {agent.name}, an AI assistant. This call may be recorded and transcribed. How can I help?"
+    if agent.greeting and not greeting_problems(agent.greeting, True if settings is None else settings.recording_notice_required):
+        return agent.greeting
+    return standard
 
 
 def _find(session: Session, payload: dict) -> Call | None:

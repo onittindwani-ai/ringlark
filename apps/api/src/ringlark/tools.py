@@ -10,11 +10,13 @@ from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 import httpx
-from sqlalchemy import select
+from sqlalchemy import delete, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from ringlark import messages, sms_rules, suppression
-from ringlark.models import DISPOSITIONS, Agent, Call, ConsentRecord, Disposition, FollowUp, Target
+from ringlark.adapters.base import UNKNOWN_OUTCOME
+from ringlark.models import DISPOSITIONS, Agent, Call, CallAction, ConsentRecord, Disposition, FollowUp, Target
 from ringlark.util import aware, is_valid_email, normalize_phone
 from sendora_core.adapters import AdapterError
 from sendora_core.models import Event
@@ -52,9 +54,26 @@ class ToolService:
         record_event(self.s, "tool.used", "call", str(self.call.id), {"tool": tool, "ok": bool(out.get("ok"))})
         return out
 
+    def _claim(self, kind: str) -> bool:
+        """Take the one time right to do `kind` on this call, and SAVE it before the vendor is asked. Two requests that arrive together both pass the "has it
+        happened" check, because nothing is written until the vendor answers; this row is what stops the second one (a unique key on call and kind)."""
+        try:
+            self.s.add(CallAction(call_id=self.call.id, kind=kind))
+            self.s.flush()
+        except IntegrityError:
+            self.s.rollback()  # nothing else is pending at this point: every caller claims before it writes anything of its own
+            return False
+        return True
+
+    def _release(self, kind: str) -> None:
+        """Give the right back after a vendor that definitely did nothing (a refusal), so the agent may try again. A timeout or a 5xx never comes here."""
+        self.s.execute(delete(CallAction).where(CallAction.call_id == self.call.id, CallAction.kind == kind))
+        self.s.commit()
+
     # ---- the six tools
     def t_book_meeting(self, a: dict) -> dict:
-        name, slot = str(a.get("name") or "").strip(), str(a.get("slot") or "")
+        name, slot = a.get("name"), str(a.get("slot") or "")
+        name = name.strip() if isinstance(name, str) else ""
         if not name:
             return {"ok": False, "say": "I need a name to book."}
         when = self.slot_map.get(slot)
@@ -63,7 +82,10 @@ class ToolService:
                 when = datetime.fromisoformat(slot.replace("Z", "+00:00"))
             except ValueError:
                 return {"ok": False, "say": "I did not catch which time you want."}
-        email = (a.get("email") or (self.target.email if self.target else "") or "").strip()
+        given = a.get("email")
+        if given is not None and not isinstance(given, str):
+            return {"ok": False, "say": "I need one email address to send the booking to."}  # a number or a list from the model is not an address, and must not become a 500
+        email = (given or (self.target.email if self.target else "") or "").strip()
         if not email or not is_valid_email(email):
             return {"ok": False, "say": "I need one email address to send the booking to."}
         guard_write(self.settings, "calendar.book")  # first: draft mode and the kill switch answer before anything else
@@ -73,13 +95,21 @@ class ToolService:
             return {"ok": False, "say": "I could not confirm a booking on this call, so someone will follow up with you to be sure."}
         if slot not in self.slot_map and not self._offered(when):
             return {"ok": False, "say": "That time is not one I can book. I will offer the times that are open."}
+        if not self._claim("book_meeting"):
+            return {"ok": False, "say": "This call already has a booking."}  # another request for this call got there first
+        self.s.commit()  # the right to book is saved BEFORE Cal.com is asked
         try:
             b = self.ctx.adapters.calendar.book(start=when, name=name, email=email, timezone=(self.target.timezone if self.target else "") or "UTC")
-        except (httpx.HTTPError, OSError) as exc:
-            # Cal.com may have saved the booking before the answer was lost. Booking again could book twice, so this call tries once and a person confirms.
+        except UNKNOWN_OUTCOME as exc:
+            # Cal.com may have saved the booking before the answer was lost (a timeout, a dropped line or a 5xx). Booking again could book twice, so this call tries once and a person confirms.
             record_event(self.s, "meeting.unconfirmed", "call", str(self.call.id), {"why": type(exc).__name__})
+            self.s.commit()
             return {"ok": False, "failed": True, "say": "I could not confirm that booking, so someone will follow up with you to be sure."}
+        except (AdapterError, SafetyError):
+            self._release("book_meeting")  # a refusal: nothing was booked, the agent may offer another time
+            raise
         record_event(self.s, "meeting.booked", "call", str(self.call.id), {"at": aware(b.starts_at).isoformat()})
+        self.s.commit()  # visible to the next request (end_call "booked") before this answer is sent
         return {"ok": True, "booking_id": b.external_id, "starts_at": aware(b.starts_at).isoformat()}
 
     def _happened(self, kind: str) -> bool:
@@ -118,7 +148,16 @@ class ToolService:
         if self.call.taken_over:
             return {"ok": False, "say": "The call is already being handed over."}
         guard_write(self.settings, "call.transfer")
-        self.ctx.adapters.telephony.transfer(self.call.telnyx_call_id, number)  # the only number it can ever go to
+        if not self._claim("transfer"):
+            return {"ok": False, "say": "The call is already being handed over."}
+        self.s.commit()
+        try:
+            self.ctx.adapters.telephony.transfer(self.call.telnyx_call_id, number)  # the only number it can ever go to
+        except UNKNOWN_OUTCOME:
+            raise  # it may have gone through: not tried again on this call
+        except (AdapterError, SafetyError):
+            self._release("transfer")
+            raise
         self.call.taken_over = True
         record_audit(self.s, "agent", "call.transferred", f"call:{self.call.id}", {"reason": str(a.get("reason", ""))[:120]})
         return {"ok": True}
@@ -134,25 +173,33 @@ class ToolService:
         text = messages.sms_text(self.settings, self.agent, kind)
         if text is None:
             return {"ok": False, "say": "I do not have a link to send, so someone will follow up."}
-        same = (FollowUp.status.in_(("sent", "pending", "drafted"))) | (FollowUp.blocked_reason == "send_unconfirmed")
+        same = (FollowUp.status.in_(("sent", "sending", "pending", "drafted"))) | (FollowUp.blocked_reason == "send_unconfirmed")
         if self.s.scalar(select(FollowUp.id).where(FollowUp.call_id == self.call.id, FollowUp.channel == "sms", FollowUp.body == text, same).limit(1)):
             return {"ok": False, "say": "I have already sent that text."}  # one text of each kind per call, however often the model asks
         ok, why = self._sms_allowed()
-        fu = FollowUp(call_id=self.call.id, channel="sms", to=self.call.peer_phone, body=text, status="blocked" if not ok else "pending", blocked_reason="" if ok else why)
-        self.s.add(fu)
-        self.s.flush()
         if not ok:
+            self.s.add(FollowUp(call_id=self.call.id, channel="sms", to=self.call.peer_phone, body=text, status="blocked", blocked_reason=why))
+            self.s.flush()
             return {"ok": False, "say": "I will not text you unless you have agreed to texts."}
         guard_write(self.settings, "sms.send")
+        if not self._claim(f"sms:{kind}"):
+            return {"ok": False, "say": "I have already sent that text."}  # another request for this call got there first
+        fu = FollowUp(call_id=self.call.id, channel="sms", to=self.call.peer_phone, body=text, status="sending")
+        self.s.add(fu)
+        self.s.commit()  # the claim and the row are saved BEFORE Telnyx is asked, so a second request sees them
         try:
             self.ctx.adapters.sms.send(to=self.call.peer_phone, text=text)
-        except AdapterError:
-            fu.status, fu.blocked_reason = "blocked", "send_failed"  # the vendor refused it: nothing went out
-            raise
-        except (httpx.HTTPError, OSError):
+        except UNKNOWN_OUTCOME:
             fu.status, fu.blocked_reason = "blocked", "send_unconfirmed"  # it may have gone out: the same text is not tried again on this call
+            self.s.commit()
+            raise
+        except (AdapterError, SafetyError):
+            fu.status, fu.blocked_reason = "blocked", "send_failed"  # the vendor refused it: nothing went out
+            self.s.commit()
+            self._release(f"sms:{kind}")
             raise
         fu.status = "sent"
+        self.s.commit()
         return {"ok": True}
 
     def t_press_digit(self, a: dict) -> dict:
@@ -167,7 +214,16 @@ class ToolService:
         if self.s.scalar(select(Event.id).where(Event.kind == "call.dtmf", Event.entity_id == str(self.call.id))):
             return {"ok": False, "say": "Already pressed once."}
         guard_write(self.settings, "call.dtmf")
-        self.ctx.adapters.telephony.send_dtmf(self.call.telnyx_call_id, digit)
+        if not self._claim("dtmf"):
+            return {"ok": False, "say": "Already pressed once."}
+        self.s.commit()
+        try:
+            self.ctx.adapters.telephony.send_dtmf(self.call.telnyx_call_id, digit)
+        except UNKNOWN_OUTCOME:
+            raise
+        except (AdapterError, SafetyError):
+            self._release("dtmf")
+            raise
         record_event(self.s, "call.dtmf", "call", str(self.call.id), {"digit": digit})
         return {"ok": True}
 

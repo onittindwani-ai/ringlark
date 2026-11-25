@@ -2,7 +2,7 @@
 
 An environment variable is a named setting you give the program before it starts, instead of typing it in a file the program ships with. Names are listed here. Never put real values in a file you commit. Copy `.env.example` to `.env` and fill it in. `.env` is ignored by git.
 
-Check your setup any time. `make check-env` (same as `python3 tools/check_env.py`) compares your `.env` with `.env.example` and lists what is missing, still a placeholder, or half filled in (a phone, voice, calendar, CRM or email group you started and did not finish; optional settings such as `SEED_DIR`, a second login or `IMAP_HOST` may stay empty). `python tools/doctor.py` goes one step further and tests that each service you filled in actually answers. Both print names, never values.
+Check your setup any time. `make check-env` (same as `python3 tools/check_env.py`) compares your `.env` with `.env.example` and lists what is missing, still a placeholder, or half filled in (a phone, voice, calendar, CRM or email group you started and did not finish; optional settings such as `SEED_DIR`, a second login or `IMAP_HOST` may stay empty). `.venv/bin/python tools/doctor.py` goes one step further and tests that each service you filled in actually answers. Both print names, never values.
 
 ## How to set them
 
@@ -40,7 +40,7 @@ Every text and email the system writes on its own names the business. While `COM
 
 ## Sign in (steps)
 
-1. Run `python tools/hash_password.py`. Type a password twice (it is hidden).
+1. Run `.venv/bin/python tools/hash_password.py` (after `make install` has made the `.venv` folder; plain `python3 tools/hash_password.py` also works when the libraries are installed), or `docker compose run --rm --no-deps api python /app/tools/hash_password.py` on the Docker path. Type a password twice (it is hidden). The tool puts the shared packages on its own path, so it works on a fresh clone; if your plain `python3` lacks the libraries it says so and prints the `.venv/bin/python` command to use.
 2. It prints a line like `OWNER_PASSWORD_HASH='...'`. Put that line in `.env`. The quotes matter, because the hash contains `$` characters.
 3. Set `OWNER_EMAIL` to your email.
 4. Optionally make a second person who can only approve: repeat with `APPROVER_EMAIL` and `APPROVER_PASSWORD_HASH`. For someone who may only look (an accountant, a client who watches), repeat with `VIEWER_EMAIL` and `VIEWER_PASSWORD_HASH`: that login can open every page and change nothing.
@@ -83,9 +83,11 @@ These are the shipped defaults, decided as a safe starting point. They are not l
 | `SMS_WINDOW_START`, `SMS_WINDOW_END` | Hours for follow up texts, in the person's time zone. | 8, 21 |
 | `LOGIN_BURST` | Sign in tries in a row from one address and email before a short wait (one more every 12 seconds). One address trying many accounts gets 4 times this, and one account tried from many addresses gets 2 times. Leave it at 5 outside tests. | `5` |
 | `ALLOW_EXTENDED_HOURS` | Campaign calling hours are held to 08:00 to 21:00 in the person's time zone. `true` lets the owner choose wider hours (each such campaign is written to the audit log). | `false` |
-| `ALLOWED_CALLING_COUNTRIES` | Country calling codes the dialer may call, comma separated. Premium rate ranges (US 900 and 976, UK 09 and some international ranges) are never called. | `+1` |
+| `ALLOWED_CALLING_COUNTRIES` | Country calling codes the dialer may call, comma separated. Premium rate ranges (US 900 and 976, UK 09 and some international ranges) are never called. `+1` does not let the Caribbean numbers through (area codes 242, 246, 264, 268, 284, 345, 441, 473, 649, 664, 721, 758, 767, 784, 809, 829, 849, 868, 869 and 876), because they are other countries and some are used for one ring call back fraud: allow one by naming its area code, for example `+1,+1876`. Puerto Rico and the other US territories are covered by `+1`. A `+1` number that is not exactly ten digits after the `+1` is refused as a bad number. | `+1` |
 | `MAX_INBOUND_CALLS` | Inbound calls answered at the same time. More are hung up on. | `5` |
 | `MAX_INBOUND_PER_NUMBER_HOUR` | Inbound calls answered per caller number per hour. | `6` |
+| `RECORDING_NOTICE_REQUIRED` | While `true`, a custom greeting must say the call may be recorded or transcribed (and always that it is an AI). A greeting without that is refused when the agent is saved, never used on an inbound call (the standard greeting is used) and holds the outbound dialer. Transcripts are always stored, so leave it on unless your own counsel says no notice is needed. | `true` |
+| `RETENTION_DAYS` | A daily job deletes the transcripts, summaries and follow up messages of finished calls older than this many days. The call row, its outcome, the number and the do not call and consent records stay. `0` keeps everything for ever. Demo mode never deletes. To remove one person completely, use the erase route in guide 13. | `365` |
 | `TOOL_TOKEN_SECRET` | Key for the per call tool tokens (20 minute life). Empty means a key derived from `SESSION_SECRET`. | empty |
 
 New campaigns start with the first three hours and cap values above unless you set their own. The demo campaign uses a cap of 25.
@@ -143,8 +145,8 @@ These names are all optional. The model path is off unless you set `LLM_BACKEND=
 
 ## The Docker path, in one place
 
-`cp .env.example .env`, then set: `DEMO_MODE=false`; a real `SESSION_SECRET` (32 or more random characters); an `OWNER_PASSWORD_HASH` (`python tools/hash_password.py`); a `POSTGRES_PASSWORD` (`openssl rand -hex 24`); `COMPANY_NAME`. Then `docker compose up -d --build`. The API refuses to start with an example secret, or with `DEMO_MODE=true` on Postgres.
+`cp .env.example .env`, then set: `DEMO_MODE=false`; a real `SESSION_SECRET` (32 or more random characters); an `OWNER_PASSWORD_HASH` (with Docker and nothing installed on the host: `docker compose run --rm --no-deps api python /app/tools/hash_password.py`, which uses the API image's own Python; otherwise `.venv/bin/python tools/hash_password.py` after `make install`); a `POSTGRES_PASSWORD` (`openssl rand -hex 24`); `COMPANY_NAME`. Then `docker compose up -d --build`. The API refuses to start with an example secret, or with `DEMO_MODE=true` on Postgres.
 
 ## Going live changes four things
 
-`MODE=live`, `DEMO_MODE=false`, a real `OWNER_PASSWORD_HASH`, and a `SESSION_SECRET` you made. `python tools/doctor.py` lists what is still missing.
+`MODE=live`, `DEMO_MODE=false`, a real `OWNER_PASSWORD_HASH`, and a `SESSION_SECRET` you made. `.venv/bin/python tools/doctor.py` lists what is still missing.

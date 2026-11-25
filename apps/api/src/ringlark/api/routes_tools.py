@@ -18,7 +18,7 @@ TOOLS = {"book_meeting", "lookup_crm", "transfer_to_human", "send_sms", "press_d
 
 
 @router.post("/{call_id}/{tool}", summary="Run one agent tool for one call")
-async def run_tool(call_id: int, tool: str, request: Request, s: Session = Depends(db), ctx: Ctx = Depends(get_ctx), x_tool_token: str | None = Header(default=None)):
+async def run_tool(call_id: int, tool: str, request: Request, s: Session = Depends(db, scope="function"), ctx: Ctx = Depends(get_ctx), x_tool_token: str | None = Header(default=None)):
     if not check_token(secret_for(ctx.settings), call_id, x_tool_token):
         raise HTTPException(401, "Bad tool token.")
     if tool not in TOOLS:
@@ -43,4 +43,6 @@ def _run_tool(s: Session, ctx: Ctx, call_id: int, tool: str, args: dict) -> dict
     call = s.get(Call, call_id)
     if call is None or call.status not in ("placed", "in_progress"):
         raise HTTPException(409, "That call is not in progress.")
-    return ToolService(s, ctx, call).run(tool, args)
+    out = ToolService(s, ctx, call).run(tool, args)
+    s.commit()  # saved before the answer goes back: the voice engine's next tool call (end_call "booked") must see this one's booking
+    return out

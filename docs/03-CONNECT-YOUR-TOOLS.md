@@ -2,7 +2,7 @@
 
 Ringlark talks to outside services through adapters. Each category (calls, voice, texts, calendar, CRM, email) has a safe offline adapter called `seed`, and real ones you can switch on. **None of the real ones has been tested against a real account.** Tier A adapters are tested against local copies written from the public docs. Tier B are written from the docs and not run. Tier C are recipe prompts only.
 
-Switch one at a time. After each, run `python tools/doctor.py` (add `--live` to test the real connection; it places no call).
+Switch one at a time. After each, run `.venv/bin/python tools/doctor.py` (add `--live` to test the real connection; it places no call).
 
 ## Calls and texts: Telnyx (Tier A)
 

@@ -38,8 +38,14 @@ def is_free_mail(value: str) -> bool:
     return email_domain(value) in FREE_MAIL_DOMAINS
 
 
+def _nanp_ok(number: str) -> bool:
+    """A +1 number is +1 and exactly ten more digits, and the area code does not start with 0 or 1. Anything else with +1 in front is a typo, an extension or a trap."""
+    return not number.startswith("+1") or (len(number) == 12 and number[2] not in "01")
+
+
 def is_e164(value: str) -> bool:
-    return bool(E164_RE.match((value or "").strip()))
+    v = (value or "").strip()
+    return bool(E164_RE.match(v)) and _nanp_ok(v)
 
 
 def zone(name: str) -> ZoneInfo | None:
@@ -63,8 +69,14 @@ def clean_header(value: str) -> str:
     return re.sub(r"[\r\n]+", " ", value or "").strip()
 
 
+PHONE_TEXT_RE = re.compile(r"^\+?[0-9 ()\-.]+$")
+
+
 def normalize_phone(value: str) -> str:
-    """Keep a leading plus and digits only. Returns an empty string when the result is not E.164."""
+    """Keep a leading plus and digits only. Returns an empty string when the result is not E.164, when the text holds anything but digits and the usual separators
+    (a word like "ext", an "x" or a "#" means an extension: "+1 415 555 0100 ext 22" must never become +1415555010022), or when a +1 number is not ten digits long."""
     v = (value or "").strip()
+    if not PHONE_TEXT_RE.match(v):
+        return ""
     out = ("+" if v.startswith("+") else "") + re.sub(r"\D", "", v)
-    return out if E164_RE.match(out) else ""
+    return out if E164_RE.match(out) and _nanp_ok(out) else ""

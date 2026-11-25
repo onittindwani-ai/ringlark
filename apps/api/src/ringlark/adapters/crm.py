@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import httpx
 
-from ringlark.adapters.base import PersonRecord, safe_base_url
+from ringlark.adapters.base import PersonRecord, UnknownOutcome, safe_base_url
 from sendora_core.adapters import AdapterError
 from sendora_core.safety import write_action
 
@@ -21,13 +21,19 @@ class TwentyCrm:
         else:
             if not settings.twenty_base_url or not settings.twenty_api_key:
                 raise AdapterError("TWENTY_BASE_URL and TWENTY_API_KEY must both be set.")
-            self.client = httpx.Client(base_url=safe_base_url(settings.twenty_base_url), timeout=15, headers={"Authorization": f"Bearer {settings.twenty_api_key}"})
+            self.client = httpx.Client(base_url=safe_base_url(settings.twenty_base_url), timeout=httpx.Timeout(8.0, connect=4.0),  # short on purpose: a hung CRM must not hold up post call work (crmsync.py)
+                                        headers={"Authorization": f"Bearer {settings.twenty_api_key}"})
 
     def _gql(self, op: str, query: str, variables: dict) -> dict:
         r = self.client.post("/graphql", json={"operationName": op, "query": query, "variables": variables})
         if r.status_code == 401:
             raise AdapterError("Twenty rejected the API key.")
-        body = r.json()
+        if r.status_code >= 500:
+            raise UnknownOutcome(f"Twenty answered {r.status_code}, so it is not known whether the write was saved.")
+        try:
+            body = r.json()
+        except ValueError as exc:
+            raise AdapterError("Twenty sent an answer that is not JSON.") from exc
         if body.get("errors"):
             raise AdapterError(f"Twenty said: {body['errors'][0].get('message', 'unknown error')}")
         return body["data"]

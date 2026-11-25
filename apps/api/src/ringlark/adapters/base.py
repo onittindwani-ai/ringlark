@@ -9,7 +9,18 @@ from datetime import datetime
 from typing import Protocol
 from urllib.parse import urlparse
 
+import httpx
+
 from sendora_core.adapters import AdapterError
+
+
+class UnknownOutcome(AdapterError):
+    """The vendor answered with a server error (5xx): it may or may not have done the thing. Still an AdapterError for the code that only needs "it did not work",
+    but every place that writes to the outside world catches this one FIRST and never sends the same thing again by itself."""
+
+
+# Everything that means "we cannot tell whether it went through": a server error, a timeout, a dropped connection. A person decides what happens next.
+UNKNOWN_OUTCOME = (UnknownOutcome, httpx.HTTPError, OSError)
 
 
 @dataclass

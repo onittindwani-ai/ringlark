@@ -6,7 +6,7 @@ from datetime import UTC, datetime, timedelta
 
 import httpx
 
-from ringlark.adapters.base import Booking, safe_base_url
+from ringlark.adapters.base import Booking, UnknownOutcome, safe_base_url
 from sendora_core.adapters import AdapterError
 from sendora_core.safety import write_action
 
@@ -28,6 +28,8 @@ class CalcomCalendar:
     def _check(self, r: httpx.Response, what: str) -> dict:
         if r.status_code == 401:
             raise AdapterError("Cal.com rejected the API key.")
+        if r.status_code >= 500:
+            raise UnknownOutcome(f"Cal.com could not {what}: it answered {r.status_code}, so the result is not known.")  # it may have saved the booking before it failed
         if r.status_code >= 400:
             msg = (r.json().get("error") or {}).get("message", r.status_code) if r.headers.get("content-type", "").startswith("application/json") else r.status_code
             raise AdapterError(f"Cal.com could not {what}: {msg}")

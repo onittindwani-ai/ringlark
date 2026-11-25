@@ -4,8 +4,12 @@ from __future__ import annotations
 
 import getpass
 
-import _common  # noqa: F401
-from sendora_core.auth import hash_password
+import _common
+
+try:
+    from sendora_core.auth import hash_password
+except ImportError as exc:
+    raise _common.need_libraries(exc) from exc
 
 
 def main() -> None:

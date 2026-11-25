@@ -11,7 +11,7 @@ export const outcome = (code: string) => OUTCOME[code] ?? { label: code ? code.r
 export const WHY: Record<string, string> = {
   ok: "Can be called now", outside_hours: "Closed in their time zone", do_not_call: "On the do not call list", consent_revoked: "Took back consent", bad_number: "Not a full phone number",
   unknown_timezone: "Time zone unknown", daily_cap: "Daily cap reached", max_attempts: "All attempts used", retry_same_day: "Already tried today", retry_too_soon: "Too soon to retry",
-  no_ai_disclosure: "Greeting lacks the AI notice", person_booked: "Already booked, no more calls", person_done: "Finished, no more calls", person_suppressed: "Never to be called", campaign_not_running: "Waiting for the campaign to start", kill_switch: "Kill switch is on", draft_mode: "Draft mode: nothing is dialled", call_in_progress: "A call is already running", no_consent_on_file: "No consent on file", awaiting_review: "Last call waits for a person to read it", premium_rate_number: "Premium rate number, never called", country_not_allowed: "Outside the countries you allow",
+  no_ai_disclosure: "Greeting lacks the AI notice", person_booked: "Already booked, no more calls", person_done: "Finished, no more calls", person_suppressed: "Never to be called", campaign_not_running: "Waiting for the campaign to start", kill_switch: "Kill switch is on", draft_mode: "Draft mode: nothing is dialled", call_in_progress: "A call is already running", no_consent_on_file: "No consent on file", awaiting_review: "Last call waits for a person to read it", premium_rate_number: "Premium rate number, never called", country_not_allowed: "Outside the countries you allow", no_recording_notice: "Greeting lacks the recording notice",
 };
 export const why = (r: string) => WHY[r] ?? r.replace(/_/g, " ");
 
@@ -37,7 +37,7 @@ export const AUDIT_ACTION: Record<string, string> = {
   "call.processed": "Call finished and scored", "call.taken_over": "Call taken over", "call.taken_over_practice": "Take over clicked on a replay", "call.transfer_practice": "Transfer clicked on a replay", "call.transferred": "Call transferred",
   "campaign.created": "Campaign created", "campaign.consent_not_required": "Campaign made without the consent check", "campaign.start": "Campaign started", "campaign.pause": "Campaign paused", "number.checklist": "Number checklist changed", "prompt.activated": "Prompt version activated",
   "prompt.split_set": "Split test changed", "prompt.version_added": "Prompt version saved", "qa.reviewed": "Call marked as read", "settings.force_draft": "Draft mode changed", "settings.kill_switch": "Kill switch changed",
-  "sms.opt_out": "Text opt out recorded", "suppression.added": "Number added to the do not call list", "targets.imported": "People imported", "approval.requested": "Approval asked for", "approval.approved": "Approved", "approval.rejected": "Rejected",
+  "sms.opt_out": "Text opt out recorded", "suppression.added": "Number added to the do not call list", "suppression.removed": "Number taken off the do not call list", "person.erased": "Person erased", "consent.imported": "Consent imported for a person already listed", "followup.resolved": "Unconfirmed follow up resolved", "retention.run": "Old call content deleted", "targets.imported": "People imported", "approval.requested": "Approval asked for", "approval.approved": "Approved", "approval.rejected": "Rejected",
 };
 export const auditAction = (a: string) => AUDIT_ACTION[a] ?? a.replace(/[._]/g, " ");
 /** "call:74" as "Call 74". Anything else is shown as it is. */
@@ -56,4 +56,4 @@ export const SOURCE_LABEL = (src: string) => (src === "seed" ? "Starting list" :
 export const PERSON_STATUS: Record<string, string> = { new: "Not called yet", queued: "Queued", contacted: "Called, may be tried again", booked: "Booked", done: "Finished, no more calls", suppressed: "Never to be called" };
 export const PERSON_CHIP: Record<string, string> = { new: "not called yet", queued: "queued", contacted: "called", booked: "booked", done: "finished", suppressed: "never to call" };
 /** A follow up's state: "pending" is not a word an owner uses. */
-export const FOLLOWUP_STATUS: Record<string, string> = { pending: "waiting", sent: "sent", drafted: "saved as a draft", blocked: "not sent", rejected: "rejected" };
+export const FOLLOWUP_STATUS: Record<string, string> = { pending: "waiting", sending: "sending, not confirmed", sent: "sent", drafted: "saved as a draft", blocked: "not sent", rejected: "rejected", failed: "not sent" };

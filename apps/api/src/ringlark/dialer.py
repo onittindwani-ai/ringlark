@@ -13,7 +13,7 @@ from ringlark import compliance
 from ringlark.adapters.telnyx import encode_state
 from ringlark.adapters.ultravox import tool_definitions
 from ringlark.compliance import DialRequest, Rules
-from ringlark.disclosure import build_greeting, has_disclosure
+from ringlark.disclosure import build_greeting, has_disclosure, has_recording_notice
 from ringlark.live_prompt import live_system_prompt
 from ringlark.messages import appointment
 from ringlark.models import Agent, Call, Campaign, Number, PromptVersion, QAScore, State, Target
@@ -91,9 +91,10 @@ def decide(session: Session, settings, c: Campaign, agent: Agent, t: Target, now
     phone = normalize_phone(t.phone) or t.phone
     consent = latest_consent(session, phone, "call")
     in_flight = session.scalar(select(func.count()).select_from(Call).where(_calls_to(t, False), Call.status.in_(IN_FLIGHT))) > 0
+    greeting = greeting_for(agent, settings)
     return compliance.evaluate(DialRequest(
         phone=phone, timezone=t.timezone, now_utc=now, rules=rules_for(c, settings), kill_switch=settings.kill_switch, draft_mode=not would_write(settings) and not settings.kill_switch,
-        greeting_has_disclosure=has_disclosure(greeting_for(agent, settings)), on_dnc_list=is_suppressed(session, phone), call_consent=consent, calls_today=today, attempts_before=n,
+        greeting_has_disclosure=has_disclosure(greeting), greeting_has_recording_notice=has_recording_notice(greeting) or not settings.recording_notice_required, on_dnc_list=is_suppressed(session, phone), call_consent=consent, calls_today=today, attempts_before=n,
         last_attempt_local_dates=dates, last_attempt_utc=last, in_flight=in_flight, awaiting_review=awaiting_review(session, t), allowed_codes=settings.calling_codes))
 
 

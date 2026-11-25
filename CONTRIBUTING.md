@@ -10,4 +10,4 @@
 
 Setup: `make install` (see `docs/05-RUN-LOCALLY.md`; on Windows use WSL 2 with Ubuntu). A test fails when a setting is missing from `.env.example` or `docs/04-ENVIRONMENT-VARIABLES.md`, so add it to both.
 
-Issues: describe what you did, what you expected and what happened. Paste `python tools/doctor.py` output (it prints no secrets).
+Issues: describe what you did, what you expected and what happened. Paste `.venv/bin/python tools/doctor.py` output (it prints no secrets).

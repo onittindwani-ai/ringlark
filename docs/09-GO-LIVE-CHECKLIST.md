@@ -8,15 +8,17 @@ Do not skip items. Tick each one. Going live means real calls reach real people,
 - [ ] `DEMO_MODE=false`, a real `OWNER_PASSWORD_HASH`, a `SESSION_SECRET` of 32 or more random characters, and `PUBLIC_BASE_URL` set to your https address. With Docker also a `POSTGRES_PASSWORD` made with `openssl rand -hex 24`. `make check-env` reports no problem.
 - [ ] `COMPANY_NAME` is your business name. If you send email follow ups, `COMPANY_ADDRESS` is your postal address and `EMAIL_FROM` is a real address of yours. The Overview shows no problem about them (until they are set a real install stays in draft mode). If you text a booking link, `BOOKING_URL` is set.
 - [ ] You made the agent, the number and the campaign in your own install (`10`, "Setting up"): a real install starts empty.
-- [ ] `python tools/doctor.py --live` reports no FAIL.
+- [ ] `.venv/bin/python tools/doctor.py --live` reports no FAIL.
 - [ ] The Integrations page **Test** button passes for every category you switched on, and the Telnyx and Ultravox webhook addresses are set at those services.
 - [ ] **The bridge works.** Place one test call to your own phone (`VOICE-OPTIONS.md`, test call steps) and confirm you hear the agent and the agent hears you. The Telnyx to Ultravox join has never been run live by this project.
 - [ ] You listened to the test call and you like the voice. Nobody who built this can hear it.
 - [ ] The agent's first sentence says it is an AI. Ask it "are you a person" and check it says no.
 - [ ] Say "stop calling me" on the test call. Confirm the number appears on the do not call list.
-- [ ] Your people list was imported with consent records (a `call_consent` yes for each person: a new campaign calls nobody without one). Open Campaigns and look at "why they can or cannot be called now" for every row.
+- [ ] Your people list was imported **by the owner** with consent records (a `call_consent` yes for each person: a new campaign calls nobody without one; an approver's import with that column is refused). Fill `consent_date`, `consent_source` and `consent_note` for each person so the record is evidence. Open Campaigns and look at "why they can or cannot be called now" for every row.
 - [ ] Your older do not call list is imported (`POST /api/suppressions/import`, see `10`, or one by one on the Numbers and compliance page). Do it before you start the campaign.
 - [ ] Voicemail is off, or the message says who is calling and why (the dialer refuses a vague message).
+- [ ] `RETENTION_DAYS` is what you decided (default 365: transcripts, summaries and follow up messages older than that are deleted every day), and you know how to erase one person on request (`13`, "Personal data") and what that does not reach (other services, backups).
+- [ ] A custom greeting, if you wrote one, says it is an AI and that the call may be recorded (the app refuses one that does not).
 - [ ] You know who takes a transferred call and in which hours.
 - [ ] Two people know where the kill switch is.
 

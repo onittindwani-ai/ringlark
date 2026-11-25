@@ -7,10 +7,11 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
-from ringlark import dialer, intake, prompts, qa as qamod, suppression, waveform
+from ringlark import dialer, erasure, intake, prompts, qa as qamod, suppression, waveform
 from ringlark.agent_offline import prompt_flags
 from ringlark.api.deps import db, get_ctx, owner, writer
 from ringlark.compliance import voicemail_allowed
+from ringlark.disclosure import greeting_problems
 from ringlark.api.serializers import agent_row, call_row, campaign_row, followup_row, iso, target_row
 from ringlark.context import Ctx
 from ringlark.datadir import persona_dir
@@ -28,7 +29,7 @@ FINISHED_STATUSES = ("booked", "done", "suppressed")  # the dialer never calls t
 
 # ---- calls
 @router.get("/calls", summary="Call log")
-def calls(status: str = "", disposition: str = "", q: str = "", limit: int = Query(200, ge=1, le=5000), s: Session = Depends(db)):
+def calls(status: str = "", disposition: str = "", q: str = "", limit: int = Query(200, ge=1, le=5000), s: Session = Depends(db, scope="function")):
     stmt = select(Call).where(Call.status != "blocked").order_by(Call.created_at.desc(), Call.id.desc()).limit(limit)
     if status:
         stmt = stmt.where(Call.status == status)
@@ -50,7 +51,7 @@ def calls(status: str = "", disposition: str = "", q: str = "", limit: int = Que
 
 
 @router.get("/calls/{call_id}", summary="One call with its transcript, QA score and follow ups")
-def call_detail(call_id: int, s: Session = Depends(db)):
+def call_detail(call_id: int, s: Session = Depends(db, scope="function")):
     c = s.get(Call, call_id)
     if c is None:
         raise HTTPException(404, "That call does not exist.")
@@ -64,7 +65,7 @@ def call_detail(call_id: int, s: Session = Depends(db)):
 
 
 @router.get("/calls/{call_id}/replay", summary="A recorded call as timed events, for the live console demo")
-def replay(call_id: int, s: Session = Depends(db)):
+def replay(call_id: int, s: Session = Depends(db, scope="function")):
     c = s.get(Call, call_id)
     if c is None:
         raise HTTPException(404, "That call does not exist.")
@@ -86,7 +87,7 @@ def _is_live(c: Call, ctx: Ctx) -> bool:
 
 
 @router.post("/calls/{call_id}/take-over", summary="A person takes over the call (owner or approver)")
-def take_over(call_id: int, s: Session = Depends(db), ctx: Ctx = Depends(get_ctx), u: dict = Depends(writer)):
+def take_over(call_id: int, s: Session = Depends(db, scope="function"), ctx: Ctx = Depends(get_ctx), u: dict = Depends(writer)):
     c = s.get(Call, call_id)
     if c is None:
         raise HTTPException(404, "That call does not exist.")
@@ -98,7 +99,7 @@ def take_over(call_id: int, s: Session = Depends(db), ctx: Ctx = Depends(get_ctx
 
 
 @router.post("/calls/{call_id}/transfer", summary="Send the live call to the agent's human number (owner or approver)")
-def transfer(call_id: int, body: TransferIn, s: Session = Depends(db), ctx: Ctx = Depends(get_ctx), u: dict = Depends(writer)):
+def transfer(call_id: int, body: TransferIn, s: Session = Depends(db, scope="function"), ctx: Ctx = Depends(get_ctx), u: dict = Depends(writer)):
     from ringlark.tools import ToolService
 
     c = s.get(Call, call_id)
@@ -115,7 +116,7 @@ def transfer(call_id: int, body: TransferIn, s: Session = Depends(db), ctx: Ctx 
 
 # ---- campaigns and targets
 @router.get("/campaigns", summary="Campaigns with target counts")
-def campaigns(s: Session = Depends(db), ctx: Ctx = Depends(get_ctx)):
+def campaigns(s: Session = Depends(db, scope="function"), ctx: Ctx = Depends(get_ctx)):
     out = []
     for c in s.scalars(select(Campaign).order_by(Campaign.id)):
         counts = {k: v for k, v in s.execute(select(Target.status, __import__("sqlalchemy").func.count()).where(Target.campaign_id == c.id).group_by(Target.status)).all()}
@@ -141,7 +142,7 @@ class CampaignIn(BaseModel):
 
 
 @router.post("/campaigns", summary="Create a campaign (starts as a draft, never running)")
-def create_campaign(b: CampaignIn, s: Session = Depends(db), u: dict = Depends(writer), ctx: Ctx = Depends(get_ctx)):
+def create_campaign(b: CampaignIn, s: Session = Depends(db, scope="function"), u: dict = Depends(writer), ctx: Ctx = Depends(get_ctx)):
     st = ctx.settings
     values = b.model_dump()
     values["window_start_hour"] = b.window_start_hour if b.window_start_hour is not None else st.default_window_start
@@ -187,17 +188,17 @@ def _campaign_action(s: Session, u: dict, cid: int, action: str):
 
 
 @router.post("/campaigns/{cid}/start", summary="Start a campaign (owner only)")
-def campaign_start(cid: int, s: Session = Depends(db), u: dict = Depends(writer)):
+def campaign_start(cid: int, s: Session = Depends(db, scope="function"), u: dict = Depends(writer)):
     return _campaign_action(s, u, cid, "start")
 
 
 @router.post("/campaigns/{cid}/pause", summary="Pause a campaign")
-def campaign_pause(cid: int, s: Session = Depends(db), u: dict = Depends(writer)):
+def campaign_pause(cid: int, s: Session = Depends(db, scope="function"), u: dict = Depends(writer)):
     return _campaign_action(s, u, cid, "pause")
 
 
 @router.get("/campaigns/{cid}/targets", summary="Targets of a campaign, with the reason each one can or cannot be called right now")
-def targets(cid: int, s: Session = Depends(db), ctx: Ctx = Depends(get_ctx), limit: int = Query(500, ge=1, le=5000)):
+def targets(cid: int, s: Session = Depends(db, scope="function"), ctx: Ctx = Depends(get_ctx), limit: int = Query(500, ge=1, le=5000)):
     c = s.get(Campaign, cid)
     if c is None:
         raise HTTPException(404, "That campaign does not exist.")
@@ -221,16 +222,19 @@ class TargetsIn(BaseModel):
 
 
 @router.post("/campaigns/{cid}/targets", summary="Import targets (a list of rows with phone and timezone)")
-def import_targets(cid: int, b: TargetsIn, s: Session = Depends(db), u: dict = Depends(writer)):
+def import_targets(cid: int, b: TargetsIn, s: Session = Depends(db, scope="function"), u: dict = Depends(writer)):
     camp = s.get(Campaign, cid)
     if camp is None:
         raise HTTPException(404, "That campaign does not exist.")
     if camp.status == "running" and u["role"] != "owner":
         # Only the owner starts a campaign, so only the owner may add people to one that is already calling.
         raise HTTPException(403, "Only the owner can add people to a running campaign. Ask the owner, or pause the campaign first.")
-    rep = intake.import_targets(s, cid, b.rows)
-    record_audit(s, u["user"], "targets.imported", f"campaign:{cid}", {"created": rep.created, "duplicates": rep.duplicates, "call_consents": rep.consents})
-    return {"created": rep.created, "duplicates": rep.duplicates, "call_consents": rep.consents, "flagged": rep.flagged}
+    if u["role"] != "owner" and intake.wants_call_consent(b.rows):
+        # A call consent is what lets a campaign that requires consent dial a number. It is the owner's statement that the person agreed, so an approver may not make it.
+        raise HTTPException(403, "Only the owner can import call consents. Remove the call_consent column, or ask the owner to import this list.")
+    rep = intake.import_targets(s, cid, b.rows, actor=u["user"])
+    record_audit(s, u["user"], "targets.imported", f"campaign:{cid}", {"created": rep.created, "duplicates": rep.duplicates, "call_consents": rep.consents, "consent_updates": rep.consent_updates})
+    return {"created": rep.created, "duplicates": rep.duplicates, "call_consents": rep.consents, "consent_updates": rep.consent_updates, "flagged": rep.flagged}
 
 
 # ---- agents and numbers: how a real install gets them (the demo loads them from seed.json)
@@ -245,12 +249,14 @@ class AgentIn(BaseModel):
 
 
 @router.post("/agents", summary="Create an agent with its first prompt version (owner only). The version is saved, not activated.")
-def create_agent(b: AgentIn, s: Session = Depends(db), u: dict = Depends(owner), ctx: Ctx = Depends(get_ctx)):
+def create_agent(b: AgentIn, s: Session = Depends(db, scope="function"), u: dict = Depends(owner), ctx: Ctx = Depends(get_ctx)):
     if s.scalar(select(Agent.id).where(Agent.name == b.name.strip())):
         raise HTTPException(409, "An agent with that name exists.")
     transfer = normalize_phone(b.transfer_number) if b.transfer_number else ""
     if b.transfer_number and not transfer:
         raise HTTPException(422, "The transfer number needs the country code, for example +14155550100.")
+    if b.greeting.strip() and (problems := greeting_problems(b.greeting, ctx.settings.recording_notice_required)):
+        raise HTTPException(422, "The greeting is not allowed as written. " + " ".join(problems) + " Leave it empty to use the standard greeting.")
     a = Agent(name=b.name.strip(), kind=b.kind, company=(b.company or ctx.settings.company_name).strip(), voice=b.voice, greeting=b.greeting, transfer_number=transfer)
     s.add(a); s.flush()
     try:
@@ -270,7 +276,7 @@ class NumberIn(BaseModel):
 
 
 @router.post("/numbers", summary="Add a phone number you own (owner only). Its compliance checklist starts empty.")
-def create_number(b: NumberIn, s: Session = Depends(db), u: dict = Depends(owner)):
+def create_number(b: NumberIn, s: Session = Depends(db, scope="function"), u: dict = Depends(owner)):
     e164 = normalize_phone(b.e164)
     if not e164:
         raise HTTPException(422, "Use a full number with the country code, for example +14155550100.")
@@ -294,7 +300,7 @@ def _agent_or_404(s: Session, aid: int) -> Agent:
 
 # ---- agents, prompts, simulator
 @router.get("/agents", summary="Agents with every prompt version")
-def agents(s: Session = Depends(db)):
+def agents(s: Session = Depends(db, scope="function")):
     return [agent_row(a) for a in s.scalars(select(Agent).order_by(Agent.id))]
 
 
@@ -304,7 +310,7 @@ class VersionIn(BaseModel):
 
 
 @router.post("/agents/{aid}/versions", summary="Save a new prompt version (never edits an old one)")
-def add_version(aid: int, b: VersionIn, s: Session = Depends(db), u: dict = Depends(writer)):
+def add_version(aid: int, b: VersionIn, s: Session = Depends(db, scope="function"), u: dict = Depends(writer)):
     a = _agent_or_404(s, aid)
     try:
         v = prompts.add_version(s, a, b.body, b.note, u["user"])
@@ -318,7 +324,7 @@ class ActivateIn(BaseModel):
 
 
 @router.post("/agents/{aid}/activate", summary="Make a version the one used for new calls (owner only)")
-def activate(aid: int, b: ActivateIn, s: Session = Depends(db), u: dict = Depends(owner)):
+def activate(aid: int, b: ActivateIn, s: Session = Depends(db, scope="function"), u: dict = Depends(owner)):
     a = _agent_or_404(s, aid)
     try:
         prompts.activate(s, a, b.version_id, u["user"])
@@ -333,7 +339,7 @@ class SplitIn(BaseModel):
 
 
 @router.post("/agents/{aid}/split", summary="Send a share of calls to a candidate version (owner only)")
-def split(aid: int, b: SplitIn, s: Session = Depends(db), u: dict = Depends(owner)):
+def split(aid: int, b: SplitIn, s: Session = Depends(db, scope="function"), u: dict = Depends(owner)):
     a = _agent_or_404(s, aid)
     try:
         prompts.set_split(s, a, b.candidate_id, b.share_b, u["user"])
@@ -343,7 +349,7 @@ def split(aid: int, b: SplitIn, s: Session = Depends(db), u: dict = Depends(owne
 
 
 @router.get("/agents/{aid}/diff", summary="Line by line difference between two versions")
-def diff(aid: int, a: int, b: int, s: Session = Depends(db)):
+def diff(aid: int, a: int, b: int, s: Session = Depends(db, scope="function")):
     ag = _agent_or_404(s, aid)
     by = {v.id: v for v in ag.versions}
     if a not in by or b not in by:
@@ -363,7 +369,7 @@ class SimIn(BaseModel):
 
 
 @router.post("/agents/{aid}/simulate", summary="Run one scripted caller against a prompt version as text. No voice, no network.")
-def simulate(aid: int, b: SimIn, s: Session = Depends(db), ctx: Ctx = Depends(get_ctx), u: dict = Depends(writer)):
+def simulate(aid: int, b: SimIn, s: Session = Depends(db, scope="function"), ctx: Ctx = Depends(get_ctx), u: dict = Depends(writer)):
     ag = _agent_or_404(s, aid)
     ver = next((v for v in ag.versions if v.id == b.version_id), None)
     per = next((p for p in load_personas(b.set, persona_dir(ctx.settings)) if p["id"] == b.persona_id), None)
@@ -381,7 +387,7 @@ class SuiteIn(BaseModel):
 
 
 @router.post("/agents/{aid}/persona-suite", summary="Run a whole persona set against a prompt version and score it")
-def persona_suite(aid: int, b: SuiteIn, s: Session = Depends(db), ctx: Ctx = Depends(get_ctx), u: dict = Depends(writer)):
+def persona_suite(aid: int, b: SuiteIn, s: Session = Depends(db, scope="function"), ctx: Ctx = Depends(get_ctx), u: dict = Depends(writer)):
     ag = _agent_or_404(s, aid)
     ver = next((v for v in ag.versions if v.id == b.version_id), None)
     if ver is None:
@@ -394,7 +400,7 @@ def persona_suite(aid: int, b: SuiteIn, s: Session = Depends(db), ctx: Ctx = Dep
 
 # ---- numbers, qa, follow ups, suppressions
 @router.get("/numbers", summary="Numbers and their compliance checklist")
-def numbers(s: Session = Depends(db)):
+def numbers(s: Session = Depends(db, scope="function")):
     return [{"id": n.id, "e164": n.e164, "label": n.label, "direction": n.direction, "agent": s.get(Agent, n.agent_id).name if n.agent_id else "", "country": n.country, "checklist": n.checklist} for n in s.scalars(select(Number))]
 
 
@@ -404,7 +410,7 @@ class ChecklistIn(BaseModel):
 
 
 @router.post("/numbers/{nid}/checklist", summary="Tick a compliance step you did with your carrier (owner only). This records your word, it checks nothing with the carrier.")
-def checklist(nid: int, b: ChecklistIn, s: Session = Depends(db), u: dict = Depends(owner)):
+def checklist(nid: int, b: ChecklistIn, s: Session = Depends(db, scope="function"), u: dict = Depends(owner)):
     n = s.get(Number, nid)
     if n is None:
         raise HTTPException(404, "That number does not exist.")
@@ -414,19 +420,20 @@ def checklist(nid: int, b: ChecklistIn, s: Session = Depends(db), u: dict = Depe
 
 
 @router.get("/qa", summary="Calls queued for a person to read, flagged first")
-def qa_queue(show: str = Query("open", pattern="^(open|all)$"), s: Session = Depends(db)):
+def qa_queue(show: str = Query("open", pattern="^(open|all)$"), limit: int = Query(200, ge=1, le=1000), offset: int = Query(0, ge=0), s: Session = Depends(db, scope="function")):
+    # Paged, because a call held for review that sits beyond the first page could otherwise never be seen, and so never be marked as read, and its person would never be dialled again.
     stmt = select(QAScore).where(QAScore.sampled.is_(True)).order_by(QAScore.flagged.desc(), QAScore.score, QAScore.id.desc())
     if show == "open":
         stmt = stmt.where(QAScore.reviewed.is_(False))
     out = []
-    for q in s.scalars(stmt.limit(200)):
+    for q in s.scalars(stmt.limit(limit).offset(offset)):
         c = s.get(Call, q.call_id)
         out.append({"call_id": c.id, "score": q.score, "flagged": q.flagged, "note": q.flag_note, "checks": q.checks, "reviewed": q.reviewed, "disposition": c.disposition, "phone": c.peer_phone, "started_at": iso(c.started_at or c.created_at)})
     return out
 
 
 @router.post("/qa/{call_id}/review", summary="Mark a call as read")
-def review(call_id: int, s: Session = Depends(db), u: dict = Depends(writer)):
+def review(call_id: int, s: Session = Depends(db, scope="function"), u: dict = Depends(writer)):
     q = s.scalar(select(QAScore).where(QAScore.call_id == call_id))
     if q is None:
         raise HTTPException(404, "That call has no score.")
@@ -436,14 +443,33 @@ def review(call_id: int, s: Session = Depends(db), u: dict = Depends(writer)):
 
 
 @router.get("/followups", summary="Follow ups after calls")
-def followups(s: Session = Depends(db)):
+def followups(s: Session = Depends(db, scope="function")):
     rows = list(s.scalars(select(FollowUp).order_by(FollowUp.id.desc()).limit(300)))
     people = {call_id: f"{first} {last}".strip() for call_id, first, last in s.execute(select(Call.id, Target.first_name, Target.last_name).join(Target, Target.id == Call.target_id).where(Call.id.in_({f.call_id for f in rows})))} if rows else {}
     return [{**followup_row(f), "name": people.get(f.call_id, "")} for f in rows]
 
 
+class ResolveIn(BaseModel):
+    sent: bool
+    note: str = Field(default="", max_length=200)
+
+
+@router.post("/followups/{fid}/resolve", summary="Say whether a follow up that may or may not have been sent really went out (owner or approver)")
+def resolve_followup(fid: int, b: ResolveIn, s: Session = Depends(db, scope="function"), u: dict = Depends(writer)):
+    """A follow up whose send ended in a timeout or a server error is held as "send unconfirmed" and never sent again by itself. A person checks with the carrier or the mail
+    server and records what happened here. Nothing is sent by this route; it only closes the row (sent, or failed so that a person can write to them by hand)."""
+    f = s.get(FollowUp, fid)
+    if f is None:
+        raise HTTPException(404, "That follow up does not exist.")
+    if not (f.status == "sending" or (f.status == "blocked" and f.blocked_reason == "send_unconfirmed")):
+        raise HTTPException(409, "Only a follow up whose send could not be confirmed can be resolved.")
+    f.status, f.blocked_reason = ("sent", "confirmed by a person") if b.sent else ("failed", "not delivered, confirmed by a person")
+    record_audit(s, u["user"], "followup.resolved", f"followup:{f.id}", {"sent": b.sent, "note": b.note})
+    return followup_row(f)
+
+
 @router.get("/suppressions", summary="The do not call list")
-def suppressions(s: Session = Depends(db)):
+def suppressions(s: Session = Depends(db, scope="function")):
     return [{"id": x.id, "phone": x.phone, "reason": x.reason, "source": x.source, "created_at": iso(x.created_at)} for x in s.scalars(select(Suppression).order_by(Suppression.id.desc()).limit(1000))]
 
 
@@ -457,7 +483,7 @@ class SuppImportIn(BaseModel):
 
 
 @router.post("/suppressions/import", summary="Import a do not call list: rows with a phone and an optional reason")
-def import_suppressions(b: SuppImportIn, s: Session = Depends(db), u: dict = Depends(writer)):
+def import_suppressions(b: SuppImportIn, s: Session = Depends(db, scope="function"), u: dict = Depends(writer)):
     added = skipped = bad = 0
     for r in b.rows:
         phone = str(r.get("phone", "")).strip()
@@ -472,8 +498,34 @@ def import_suppressions(b: SuppImportIn, s: Session = Depends(db), u: dict = Dep
     return {"added": added, "already_listed": skipped, "bad_number": bad}
 
 
+class RemoveSuppIn(BaseModel):
+    note: str = Field(min_length=5, max_length=200)  # why: written to the audit log
+
+
+@router.post("/suppressions/{sid}/remove", summary="Take a number off the do not call list (owner only, with a reason that is written to the audit log)")
+def remove_suppression(sid: int, b: RemoveSuppIn, s: Session = Depends(db, scope="function"), u: dict = Depends(owner)):
+    """For a number that was put on the list by mistake, or by someone who spoofed the caller ID and said "do not call". The stop records of the number go too. This grants
+    nothing: a campaign that requires prior consent still needs a consent on file before the number is called again."""
+    if not suppression.remove_suppression(s, sid, u["user"], b.note):
+        raise HTTPException(404, "That entry does not exist.")
+    return {"ok": True}
+
+
+class EraseIn(BaseModel):
+    phone: str = Field(max_length=32)
+    keep_do_not_call: bool = True  # keep the person on the do not call list as a salted hash (the default: a person who asked to be erased asked to be left alone)
+
+
+@router.post("/people/erase", summary="Erase one person: their calls, transcripts, summaries, follow ups and list entries (owner only)")
+def erase_person(b: EraseIn, s: Session = Depends(db, scope="function"), u: dict = Depends(owner)):
+    try:
+        return erasure.erase_person(s, b.phone, u["user"], b.keep_do_not_call)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+
+
 @router.post("/suppressions", summary="Add a number to the do not call list")
-def add_suppression(b: SuppIn, s: Session = Depends(db), u: dict = Depends(writer)):
+def add_suppression(b: SuppIn, s: Session = Depends(db, scope="function"), u: dict = Depends(writer)):
     if not normalize_phone(b.phone):
         raise HTTPException(422, "Use a full number with the country code, for example +14155550100.")
     added = suppression.add_suppression(s, b.phone, b.reason, "owner", actor=u["user"])

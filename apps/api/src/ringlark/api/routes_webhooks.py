@@ -27,8 +27,22 @@ async def body_of(request: Request) -> bytes:
     return raw
 
 
+def _handle_telnyx(s: Session, ctx: Ctx, event_type: str, payload: dict) -> str:
+    """Handle the event and SAVE it before the answer goes back. Telnyx counts a 200 as delivered and never repeats it, so a STOP text must be on disk first: if the save
+    fails, this raises, Telnyx gets an error and sends the event again."""
+    result = live.handle_telnyx_event(s, ctx, ctx.effective(s), event_type, payload)
+    s.commit()
+    return result
+
+
+def _handle_ultravox(s: Session, event: str, call: dict) -> str:
+    result = live.handle_ultravox_event(s, event, call)
+    s.commit()
+    return result
+
+
 @router.post("/telnyx", summary="Call and text events from Telnyx (Ed25519 signed)")
-async def telnyx(request: Request, s: Session = Depends(db), ctx: Ctx = Depends(get_ctx), telnyx_signature_ed25519: str | None = Header(default=None), telnyx_timestamp: str | None = Header(default=None)):
+async def telnyx(request: Request, s: Session = Depends(db, scope="function"), ctx: Ctx = Depends(get_ctx), telnyx_signature_ed25519: str | None = Header(default=None), telnyx_timestamp: str | None = Header(default=None)):
     raw = await body_of(request)
     if not (telnyx_signature_ed25519 and telnyx_timestamp and verify_telnyx_webhook(ctx.settings.telnyx_public_key, raw, telnyx_signature_ed25519, telnyx_timestamp)):
         raise HTTPException(401, "Bad signature.")
@@ -40,18 +54,19 @@ async def telnyx(request: Request, s: Session = Depends(db), ctx: Ctx = Depends(
         return {"ok": True, "ignored": True}
     try:
         # Answering an inbound call talks to Ultravox and Telnyx (up to 20 and 15 seconds). That runs on a worker thread so the event loop keeps serving.
-        result = await run_in_threadpool(live.handle_telnyx_event, s, ctx, ctx.effective(s), et, payload)
+        result = await run_in_threadpool(_handle_telnyx, s, ctx, et, payload)
     except live.CallNotFoundYet as exc:
         # The call is named in the event but not saved yet: say so, and Telnyx sends the event again instead of it being lost.
         raise HTTPException(503, "That call is not saved yet. Send the event again.") from exc
     except SafetyError as exc:
         record_event(s, "webhook.blocked", None, None, {"event": et, "why": type(exc).__name__})
+        await run_in_threadpool(s.commit)
         result = "blocked_by_safety"
     return {"ok": True, "result": result}
 
 
 @router.post("/ultravox", summary="Call events from Ultravox (HMAC signed)")
-async def ultravox(request: Request, s: Session = Depends(db), ctx: Ctx = Depends(get_ctx), x_ultravox_webhook_signature: str | None = Header(default=None), x_ultravox_webhook_timestamp: str | None = Header(default=None)):
+async def ultravox(request: Request, s: Session = Depends(db, scope="function"), ctx: Ctx = Depends(get_ctx), x_ultravox_webhook_signature: str | None = Header(default=None), x_ultravox_webhook_timestamp: str | None = Header(default=None)):
     raw = await body_of(request)
     if not verify_ultravox_webhook(ctx.settings.ultravox_webhook_secret, raw, x_ultravox_webhook_signature or "", x_ultravox_webhook_timestamp or ""):
         raise HTTPException(401, "Bad signature.")
@@ -60,4 +75,4 @@ async def ultravox(request: Request, s: Session = Depends(db), ctx: Ctx = Depend
         event, call = ev["event"], ev.get("call", {})
     except (ValueError, KeyError, TypeError):
         return {"ok": True, "ignored": True}
-    return {"ok": True, "result": await run_in_threadpool(live.handle_ultravox_event, s, event, call)}
+    return {"ok": True, "result": await run_in_threadpool(_handle_ultravox, s, event, call)}

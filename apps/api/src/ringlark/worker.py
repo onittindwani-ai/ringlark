@@ -9,6 +9,7 @@ import time
 
 from ringlark.config import Settings
 from ringlark.context import Ctx
+from ringlark.dbupgrade import upgrade_sqlite
 from ringlark.jobs import make_handlers, schedule_due
 from sendora_core.db import Base, make_engine, make_session_factory, session_scope
 from sendora_core.jobs import Worker
@@ -32,6 +33,7 @@ def main() -> None:
 
     if settings.database_url.startswith("sqlite"):
         Base.metadata.create_all(engine)
+        upgrade_sqlite(engine)
     ctx = Ctx(settings, make_session_factory(engine))
     worker = Worker(ctx.factory, make_handlers(ctx))
     stop = {"now": False}

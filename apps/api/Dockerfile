@@ -6,6 +6,7 @@ COPY constraints.txt /app/constraints.txt
 COPY packages/core-py /app/packages/core-py
 COPY apps/api /app/apps/api
 COPY data /app/data
+COPY tools /app/tools
 RUN pip install --no-cache-dir -c /app/constraints.txt /app/packages/core-py "/app/apps/api[postgres]"
 ENV SEED_DIR=/app/data HANDOFF_DIR=/data/handoff
 RUN useradd --create-home --uid 10001 app && mkdir -p /data/handoff && chown -R app /data

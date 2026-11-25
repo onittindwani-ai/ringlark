@@ -284,6 +284,6 @@ def test_a_text_that_times_out_is_not_sent_twice_and_never_a_500(client):
     r1 = client.post(f"/api/tools/{cid}/send_sms", headers=tok, json={"kind": "callback"})
     r2 = client.post(f"/api/tools/{cid}/send_sms", headers=tok, json={"kind": "callback"})
     assert r1.status_code == 200 and r2.status_code == 200 and r2.json()["ok"] is False
-    assert len(sent) <= 1  # at most the one try; the second request never reached the vendor
+    assert len(sent) == 1  # exactly the one try: the first request reached the vendor, the second never did
     with client.ctx.factory() as s:
         assert s.scalars(select(FollowUp).where(FollowUp.call_id == cid, FollowUp.status == "sent")).first() is None

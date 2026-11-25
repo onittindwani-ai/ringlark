@@ -78,6 +78,8 @@ class Settings(BaseAppSettings):
     allow_extended_hours: bool = False  # ALLOW_EXTENDED_HOURS: lets a campaign call before 08:00 or after 21:00 callee local time (off by default)
     max_inbound_calls: int = Field(default=5, ge=1, le=100)  # MAX_INBOUND_CALLS: inbound calls answered at the same time
     max_inbound_per_number_hour: int = Field(default=6, ge=1, le=100)  # MAX_INBOUND_PER_NUMBER_HOUR: inbound calls answered per caller number per hour
+    recording_notice_required: bool = True  # RECORDING_NOTICE_REQUIRED: a custom greeting must say the call may be recorded (transcripts are always stored). Turn off only if your counsel says no notice is needed
+    retention_days: int = Field(default=365, ge=0, le=3650)  # RETENTION_DAYS: transcripts, summaries and follow up messages of finished calls older than this are deleted daily. 0 keeps them for ever
 
     @property
     def window_bounds(self) -> tuple[int, int]:

@@ -12,6 +12,7 @@ from ringlark.bodylimit import PerRouteBodyLimit
 from ringlark.api import routes_auth, routes_data, routes_demo, routes_ops, routes_tools, routes_webhooks
 from ringlark.config import Settings
 from ringlark.context import Ctx
+from ringlark.dbupgrade import upgrade_sqlite
 from sendora_core.app import SESSION_COOKIE, create_base_app
 from sendora_core.auth import read_session_token
 from sendora_core.ratelimit import TokenBucket
@@ -30,6 +31,7 @@ def create_app(settings: Settings | None = None, ctx: Ctx | None = None) -> Fast
 
         if settings.database_url.startswith("sqlite"):
             Base.metadata.create_all(engine)  # SQLite zero setup path. Postgres uses `alembic upgrade head`.
+            upgrade_sqlite(engine)  # an older database file gets the columns and indexes added since
         ctx = Ctx(settings, make_session_factory(engine))
         if not settings.seed_dir and datadir.CHECKOUT_DATA.exists():
             ctx.settings.seed_dir = str(datadir.CHECKOUT_DATA)  # a checkout: the data folder next to the source. An installed copy must set SEED_DIR.

@@ -16,6 +16,10 @@ from ringlark.util import aware, is_e164, zone
 # Number ranges that cost the caller or the callee money or are never a person to sell to (not complete, see docs/13): US 900 and 976, UK 09, and the
 # shared international ranges. They are refused whatever countries are allowed.
 PREMIUM_PREFIXES = ("+1900", "+1976", "+449", "+882", "+883", "+979", "+870")
+# Caribbean numbers share the +1 country code with the US and Canada, but they are other countries, and several are known for one ring and call back toll fraud. Because
+# "+1" would allow them all, they are refused unless ALLOWED_CALLING_COUNTRIES names the exact area code (for example "+1,+1876" or "+1242"). Puerto Rico, Guam and the other
+# US territories are not on this list.
+CARIBBEAN_NANP = tuple(f"+1{n}" for n in (242, 246, 264, 268, 284, 345, 441, 473, 649, 664, 721, 758, 767, 784, 809, 829, 849, 868, 869, 876))
 
 
 def premium_rate(phone: str) -> bool:
@@ -24,7 +28,13 @@ def premium_rate(phone: str) -> bool:
 
 def country_allowed(phone: str, codes: tuple[str, ...]) -> bool:
     """An empty list means no country limit (the pure rules are tested without one); the dialer always passes ALLOWED_CALLING_COUNTRIES."""
-    return not codes or phone.startswith(codes)
+    if not codes:
+        return True
+    if not phone.startswith(codes):
+        return False
+    if phone.startswith(CARIBBEAN_NANP):
+        return any(len(c) > 2 and phone.startswith(c) for c in codes)  # only an entry as exact as the area code lets a Caribbean number through
+    return True
 
 
 @dataclass(frozen=True)
@@ -47,6 +57,7 @@ class DialRequest:
     kill_switch: bool = False
     draft_mode: bool = False
     greeting_has_disclosure: bool = True
+    greeting_has_recording_notice: bool = True  # False when recording notices are required and the greeting has none
     on_dnc_list: bool = False
     call_consent: str | None = None  # granted, revoked or None
     calls_today: int = 0
@@ -87,6 +98,8 @@ def evaluate(req: DialRequest) -> Decision:
         return Decision(False, "kill_switch")
     if not req.greeting_has_disclosure:
         return Decision(False, "no_ai_disclosure")
+    if not req.greeting_has_recording_notice:
+        return Decision(False, "no_recording_notice")
     if not is_e164(req.phone):
         return Decision(False, "bad_number")
     if premium_rate(req.phone):

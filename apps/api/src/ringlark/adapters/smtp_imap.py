@@ -10,7 +10,7 @@ from email.message import EmailMessage
 from email.policy import default as default_policy
 from email.utils import make_msgid, parseaddr
 
-from ringlark.adapters.base import InboundEmail
+from ringlark.adapters.base import InboundEmail, UnknownOutcome
 from ringlark.util import clean_header, is_valid_email
 from sendora_core.adapters import AdapterError
 from sendora_core.safety import write_action
@@ -67,6 +67,8 @@ class SmtpImapEmail:
                 c.send_message(m, to_addrs=[to.strip()])
         except smtplib.SMTPAuthenticationError as exc:
             raise AdapterError("The mail server rejected the user name or password. For Gmail use an app password.") from exc
+        except (smtplib.SMTPServerDisconnected, TimeoutError) as exc:
+            raise UnknownOutcome(f"The connection to {self.settings.smtp_host} dropped or timed out while sending, so it is not known whether the email went out.") from exc
         except (smtplib.SMTPException, OSError) as exc:
             raise AdapterError(f"Could not send through {self.settings.smtp_host}: {type(exc).__name__}.") from exc
         return m["Message-ID"]

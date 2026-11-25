@@ -16,7 +16,7 @@ Worker: dial tick, post call, follow ups, CRM sync, report
 2. **Place the call.** If every rule says yes and the mode is live, the app first saves the call (status `placing`) and commits it. Only then does it create the Ultravox call (the hard rules, your prompt, six tools, a per call token that expires) and let Telnyx dial and carry the audio. The call becomes `placed`; a failure at either vendor ends it as `failed` and the tick carries on. A call that shows no sign of life for 30 minutes is closed. In demo mode the offline adapters play a scripted call instead.
 3. **During the call.** Ultravox runs the conversation and calls the tool endpoints (`/api/tools/{call}/{tool}`): book a meeting, look up the CRM, transfer to a person, send a text, press a key in a phone menu, end the call with a result code. Each tool checks the per call token (one call, 20 minutes), checks the live kill switch and draft state, enforces its own caps (one booking, one transfer, one text of each kind per call) and writes to the audit log.
 4. **Events.** Telnyx and Ultravox send signed webhooks. A bad, old or missing signature is refused. Events are stored as turns.
-5. **After the call (post call job).** Transcript, summary, result code, a QA score, follow up texts or emails (waiting for approval), a CRM note, and updates to the do not call list or consent when the person asked.
+5. **After the call (post call job).** Transcript, summary, result code, a QA score, follow up texts or emails (waiting for approval), a CRM note (queued, then written in a short pass after everything else is saved), and updates to the do not call list or consent when the person asked.
 
 ## The Telnyx to Ultravox bridge (UNVERIFIED)
 
@@ -32,7 +32,7 @@ Every write that leaves the system (a call, a text, an email, a calendar booking
 
 ## Data
 
-Tables are prefixed `rm_`: State, Agent, PromptVersion, Flow, Number, Target, Campaign, Call, Turn, Disposition, QAScore, FollowUp, ConsentRecord, Suppression, plus the shared base tables for audit, approvals and jobs. Migrations are in `apps/api/alembic`. The OpenAPI file is `docs/openapi.json` (47 paths).
+Tables are prefixed `rm_`: State, Agent, PromptVersion, Flow, Number, Target, Campaign, Call, Turn, Disposition, QAScore, FollowUp, ConsentRecord, Suppression, CallAction (one time rights of a call, written before the vendor is asked), plus the shared base tables for audit, approvals and jobs. Migrations are in `apps/api/alembic`. The OpenAPI file is `docs/openapi.json` (50 paths).
 
 ## Web
 

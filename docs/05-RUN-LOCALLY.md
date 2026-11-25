@@ -13,7 +13,7 @@ On Windows use WSL 2 with Ubuntu and run everything inside it. PowerShell and cm
 
 ## Settings
 
-`cp .env.example .env`, then follow `04-ENVIRONMENT-VARIABLES.md`. Run `make check-env` (it needs only Python, no install) and then `python tools/doctor.py`. The first reads your file, the second tests the services. Neither prints a value.
+`cp .env.example .env`, then follow `04-ENVIRONMENT-VARIABLES.md`. Run `make check-env` (it needs only Python, no install) and then `.venv/bin/python tools/doctor.py`. The first reads your file, the second tests the services. Neither prints a value.
 
 ## Database
 
@@ -32,7 +32,7 @@ Open http://localhost:3000.
 
 ## Tests
 
-- Python: `.venv/bin/python -m pytest` (<!--n:tests.passed-->416<!--/n--> passed, <!--n:tests.skipped-->1<!--/n--> skipped at the last full run; the skipped one needs a Postgres, set `TEST_POSTGRES_URL`).
+- Python: `.venv/bin/python -m pytest` (<!--n:tests.passed-->458<!--/n--> passed, <!--n:tests.skipped-->1<!--/n--> skipped at the last full run; the skipped one needs a Postgres, set `TEST_POSTGRES_URL`).
 - Seed check: `.venv/bin/python tools/score_seed.py` prints one PASS line per planted trap.
 - Persona suite score: in the app, Agents and prompts, then Simulator and persona suite. Written up in `PERSONA-SUITE-EVAL.md`.
 - Browser tests: `pnpm e2e` (needs Google Chrome; it starts its own API and web server and uses its own throwaway database). It tests the last build, so run `pnpm build` first.

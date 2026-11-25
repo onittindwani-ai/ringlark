@@ -8,20 +8,18 @@ from datetime import datetime, timedelta
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from ringlark import crmsync
 from ringlark import intents as I
 from ringlark import messages, model_tasks, qa, sms_rules, suppression
 from ringlark.caller_reader import asks_to_stop, revoked_consent
-from ringlark.adapters.base import PersonRecord
 from ringlark.context import set_state
 from ringlark.models import Agent, Call, Disposition, FollowUp, QAScore, State, Target, Turn
 from ringlark.tools import happened
 from ringlark.util import aware, is_valid_email
 from ringlark.waveform import timing
-from sendora_core.adapters import AdapterError
 from sendora_core.approvals import request_approval
 from sendora_core.audit import record_audit
 from sendora_core.events import record_event
-from sendora_core.safety import SafetyError, guard_write
 
 
 def fill_turns_from_voice(session: Session, ctx, call: Call) -> int:
@@ -47,9 +45,12 @@ def rule_disposition(turns: list[dict]) -> str:
     return "needs_review"
 
 
-def _already_waiting(session: Session, channel: str, to: str, body: str) -> bool:
-    """The same message to the same person is already waiting to be approved or sent: a second copy would only make them get it twice."""
-    return session.scalar(select(FollowUp.id).where(FollowUp.status == "pending", FollowUp.channel == channel, FollowUp.to == to, FollowUp.body == body).limit(1)) is not None
+def _already_waiting(session: Session, call: Call, channel: str, to: str, body: str) -> bool:
+    """The same message to the same person is already waiting to be approved, or already went out (or may have) on this call: a second copy would only make them get it twice.
+    The in call text tool sends the confirmation while the person is still on the phone, so the step after the call must see that row too."""
+    same = (FollowUp.channel == channel) & (FollowUp.to == to) & (FollowUp.body == body)
+    on_this_call = (FollowUp.call_id == call.id) & (FollowUp.status.in_(("sent", "sending", "drafted")) | (FollowUp.blocked_reason == "send_unconfirmed"))
+    return session.scalar(select(FollowUp.id).where(same, (FollowUp.status == "pending") | on_this_call).limit(1)) is not None
 
 
 def _followups(session: Session, ctx, call: Call, target: Target | None, code: str) -> int:
@@ -62,11 +63,11 @@ def _followups(session: Session, ctx, call: Call, target: Target | None, code: s
     if sms_rules.consent_decision(session, call.peer_phone, target):
         kind = "confirmation" if code == "booked" else "callback"
         body = messages.sms_text(settings, agent, kind)
-        if body and not _already_waiting(session, "sms", call.peer_phone, body):
+        if body and not _already_waiting(session, call, "sms", call.peer_phone, body):
             session.add(FollowUp(call_id=call.id, channel="sms", to=call.peer_phone, body=body, status="pending")); n += 1
     if target.email and code == "booked" and is_valid_email(target.email) and not suppression.is_suppressed(session, call.peer_phone):
         subject, email_body = messages.booked_email(settings, agent)
-        if not _already_waiting(session, "email", target.email, email_body):
+        if not _already_waiting(session, call, "email", target.email, email_body):
             session.add(FollowUp(call_id=call.id, channel="email", to=target.email, subject=subject, body=email_body, status="pending")); n += 1
     session.flush()
     if ctx.settings.follow_ups_need_approval:
@@ -96,7 +97,8 @@ def _empty_transcript_wait(session: Session, ctx, call: Call) -> bool:
     return aware(now) - first < EMPTY_TRANSCRIPT_WAIT
 
 
-def process_call(session: Session, ctx, call: Call) -> dict:
+def process_call(session: Session, ctx, call: Call, *, defer_crm: bool = False) -> dict:
+    """`defer_crm` is set by the job: the CRM note is queued and written after everything else is saved (see crmsync.py). Without it the note is written right here."""
     if call.processed:
         return {"skipped": True}
     try:
@@ -150,11 +152,10 @@ def process_call(session: Session, ctx, call: Call) -> dict:
     elif target and code in ("not_interested", "hostile_ended", "interested_callback", "transferred") and target.status != "suppressed":
         target.status = "done" if code != "interested_callback" else "contacted"
     if target and code == "booked":
-        try:
-            guard_write(ctx.effective(session), "crm.upsert")  # the kill switch and "draft only" set in the app stop this write too, whatever MODE says
-            ctx.adapters.crm.upsert_person(PersonRecord(first_name=target.first_name, last_name=target.last_name, phone=call.peer_phone, extra={"note": call.summary}))
-        except (SafetyError, AdapterError):
-            pass
+        if defer_crm:
+            crmsync.queue(session, call)
+        else:
+            crmsync.write_now(session, ctx, call, target)
     call.status, call.processed = "completed", True
     record_audit(session, "postcall", "call.processed", f"call:{call.id}", {"disposition": code, "qa": s["score"], "followups": n})
     record_event(session, "call.processed", "call", str(call.id), {"disposition": code, "qa": s["score"]})

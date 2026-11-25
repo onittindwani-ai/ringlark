@@ -6,7 +6,7 @@ from sqlalchemy import select
 
 from ringlark import demo, dialer, followups, intake, jobs, metrics, prompts, qa, waveform
 from ringlark.agent_offline import prompt_flags
-from ringlark.models import Agent, Call, Campaign, Disposition, FollowUp, PromptVersion, QAScore, Suppression, Target
+from ringlark.models import Agent, Call, CallAction, Campaign, Disposition, FollowUp, PromptVersion, QAScore, Suppression, Target
 from ringlark.personas import load_personas, run_suite
 from ringlark.postcall import process_call, rule_disposition, store_turns
 from ringlark.toolauth import check_token, tool_token
@@ -117,7 +117,8 @@ def test_transfer_goes_only_to_the_configured_number_and_only_in_office_hours(se
         assert not svc.run("transfer_to_human", {})["ok"]
     svc.now = datetime(2026, 12, 1, 14, 0, tzinfo=UTC)  # 09:00 in New York, open
     assert not svc.run("transfer_to_human", {})["ok"]  # one hand over per call: the first one already happened
-    c.taken_over = False  # a new call for the rest of this check
+    c.taken_over = False  # a new call for the rest of this check (the one time right of the first hand over is cleared too)
+    session.query(CallAction).delete()
     assert svc.run("transfer_to_human", {})["ok"]
 
 

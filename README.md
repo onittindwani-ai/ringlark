@@ -28,7 +28,7 @@ Start at [docs/00-START-HERE.md](docs/00-START-HERE.md). The guides run from `00
 
 Numbers come from `data/counts.json`, `data/measured.json` and the runs on 2026-11-23 (the Python test and coverage numbers were measured again on 2026-11-25 for version 1.0.1).
 
-- <!--n:tests.passed-->416<!--/n--> Python tests passed, <!--n:tests.skipped-->1<!--/n--> skipped (the Postgres cycle), <!--n:tests.coverage_percent-->91<!--/n--> percent line coverage of the `ringlark` package (measured by `tools/make_counts.py`, quoted from `data/measured.json`). <!--n:contract_tests-->12<!--/n--> of the tests are contract tests against saved excerpts of the vendors' public docs (`mock/contracts`).
+- <!--n:tests.passed-->458<!--/n--> Python tests passed, <!--n:tests.skipped-->1<!--/n--> skipped (the Postgres cycle), <!--n:tests.coverage_percent-->91<!--/n--> percent line coverage of the `ringlark` package (measured by `tools/make_counts.py`, quoted from `data/measured.json`). <!--n:contract_tests-->12<!--/n--> of the tests are contract tests against saved excerpts of the vendors' public docs (`mock/contracts`).
 - Compliance property tests on thousands of seeded random worlds: the dialer never called outside the person's hours, never called a do not call or revoked consent number, never went over the cap.
 - Database migrations up, down and up again on SQLite and on Postgres 17.7.
 - A fresh clone in a temporary folder is installed from nothing, built, tested and run through all the browser tests, then deleted (the last run is in `docs/14-LIMITS-AND-HONEST-NOTES.md`).

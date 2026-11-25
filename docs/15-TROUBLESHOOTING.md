@@ -1,6 +1,6 @@
 # Troubleshooting
 
-Run `make check-env` first (it lists missing or half filled settings, names only), then `python tools/doctor.py` (it tests each service you set up). Both name the problem in plain words.
+Run `make check-env` first (it lists missing or half filled settings, names only), then `.venv/bin/python tools/doctor.py` (it tests each service you set up). Both name the problem in plain words.
 
 | What you see | Likely cause | Fix |
 |---|---|---|

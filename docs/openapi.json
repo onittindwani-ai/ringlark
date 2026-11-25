@@ -1177,6 +1177,29 @@
        "default": "open",
        "title": "Show"
       }
+     },
+     {
+      "name": "limit",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "maximum": 1000,
+       "minimum": 1,
+       "default": 200,
+       "title": "Limit"
+      }
+     },
+     {
+      "name": "offset",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "minimum": 0,
+       "default": 0,
+       "title": "Offset"
+      }
      }
     ],
     "responses": {
@@ -1260,6 +1283,57 @@
     }
    }
   },
+  "/api/followups/{fid}/resolve": {
+   "post": {
+    "tags": [
+     "data"
+    ],
+    "summary": "Say whether a follow up that may or may not have been sent really went out (owner or approver)",
+    "description": "A follow up whose send ended in a timeout or a server error is held as \"send unconfirmed\" and never sent again by itself. A person checks with the carrier or the mail\nserver and records what happened here. Nothing is sent by this route; it only closes the row (sent, or failed so that a person can write to them by hand).",
+    "operationId": "resolve_followup_api_followups__fid__resolve_post",
+    "parameters": [
+     {
+      "name": "fid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Fid"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ResolveIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
   "/api/suppressions": {
    "get": {
     "tags": [
@@ -1328,6 +1402,96 @@
       "application/json": {
        "schema": {
         "$ref": "#/components/schemas/SuppImportIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/suppressions/{sid}/remove": {
+   "post": {
+    "tags": [
+     "data"
+    ],
+    "summary": "Take a number off the do not call list (owner only, with a reason that is written to the audit log)",
+    "description": "For a number that was put on the list by mistake, or by someone who spoofed the caller ID and said \"do not call\". The stop records of the number go too. This grants\nnothing: a campaign that requires prior consent still needs a consent on file before the number is called again.",
+    "operationId": "remove_suppression_api_suppressions__sid__remove_post",
+    "parameters": [
+     {
+      "name": "sid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Sid"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/RemoveSuppIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/people/erase": {
+   "post": {
+    "tags": [
+     "data"
+    ],
+    "summary": "Erase one person: their calls, transcripts, summaries, follow ups and list entries (owner only)",
+    "operationId": "erase_person_api_people_erase_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/EraseIn"
        }
       }
      },
@@ -2198,6 +2362,25 @@
     ],
     "title": "DecideIn"
    },
+   "EraseIn": {
+    "properties": {
+     "phone": {
+      "type": "string",
+      "maxLength": 32,
+      "title": "Phone"
+     },
+     "keep_do_not_call": {
+      "type": "boolean",
+      "title": "Keep Do Not Call",
+      "default": true
+     }
+    },
+    "type": "object",
+    "required": [
+     "phone"
+    ],
+    "title": "EraseIn"
+   },
    "HTTPValidationError": {
     "properties": {
      "detail": {
@@ -2274,6 +2457,40 @@
      "e164"
     ],
     "title": "NumberIn"
+   },
+   "RemoveSuppIn": {
+    "properties": {
+     "note": {
+      "type": "string",
+      "maxLength": 200,
+      "minLength": 5,
+      "title": "Note"
+     }
+    },
+    "type": "object",
+    "required": [
+     "note"
+    ],
+    "title": "RemoveSuppIn"
+   },
+   "ResolveIn": {
+    "properties": {
+     "sent": {
+      "type": "boolean",
+      "title": "Sent"
+     },
+     "note": {
+      "type": "string",
+      "maxLength": 200,
+      "title": "Note",
+      "default": ""
+     }
+    },
+    "type": "object",
+    "required": [
+     "sent"
+    ],
+    "title": "ResolveIn"
    },
    "SettingsIn": {
     "properties": {
