@@ -215,7 +215,9 @@ def test_a_real_install_can_make_an_agent_a_number_a_campaign_and_place_a_call(t
     camp = c.post("/api/campaigns", headers=h, json={"name": "First", "agent_id": agent["id"], "number_id": n.json()["id"]}).json()
     rep = c.post(f"/api/campaigns/{camp['id']}/targets", headers=h, json={"rows": [{"phone": "+14155550101", "first_name": "Ava", "timezone": "America/New_York", "call_consent": "yes"}]}).json()
     assert rep["created"] == 1 and rep["call_consents"] == 1  # a campaign made with no flag requires a call consent, so the import gives one
-    assert c.post(f"/api/campaigns/{camp['id']}/start", headers=h).status_code == 200
+    assert rep["warnings"][0]["area_code"] == "415"  # a San Francisco number with a New York zone: a warning, kept in the list
+    assert c.post(f"/api/campaigns/{camp['id']}/start", headers=h).status_code == 409  # until the owner says they looked at it
+    assert c.post(f"/api/campaigns/{camp['id']}/start", headers=h, json={"acknowledge_timezone_warnings": True}).status_code == 200
     with c.ctx.factory() as s:
         res = dialer.dial_tick(s, c.ctx.effective(s), c.ctx.adapters, NOW)
         s.commit()
@@ -238,7 +240,7 @@ def test_a_call_consent_column_lets_a_consent_only_campaign_call_exactly_those_p
     ]
     rep = c.post(f"/api/campaigns/{camp['id']}/targets", headers=h, json={"rows": rows}).json()
     assert rep["created"] == 3 and rep["call_consents"] == 1
-    assert c.post(f"/api/campaigns/{camp['id']}/start", headers=h).status_code == 200
+    assert c.post(f"/api/campaigns/{camp['id']}/start", headers=h, json={"acknowledge_timezone_warnings": True}).status_code == 200  # 415 numbers with a New York zone
     with c.ctx.factory() as s:
         res = dialer.dial_tick(s, c.ctx.effective(s), c.ctx.adapters, NOW)
         s.commit()
@@ -252,7 +254,7 @@ def test_a_call_consent_column_never_overrides_a_refusal(session, seeded):
 
     camp = session.scalars(select(Campaign)).first()
     add_suppression(session, "+12065550141", "asked to stop", "test")
-    rep = intake.import_targets(session, camp.id, [{"phone": "+12065550141", "timezone": "America/New_York", "call_consent": "true"}])
+    rep = intake.import_targets(session, camp.id, [{"phone": "+12065550141", "timezone": "America/Los_Angeles", "call_consent": "true"}])
     assert rep.consents == 0 and rep.flagged == {"consent_not_recorded_refused_before": 1} and latest_consent(session, "+12065550141", "call") != "granted"
 
 

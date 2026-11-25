@@ -8,7 +8,7 @@ from datetime import UTC, datetime, timedelta
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from ringlark import suppression
+from ringlark import suppression, times
 from ringlark.adapters.base import VoiceCall
 from ringlark.adapters.telnyx import decode_state
 from ringlark.adapters.ultravox import tool_definitions
@@ -17,7 +17,7 @@ from ringlark.compliance import voicemail_allowed
 from ringlark.context import set_state
 from ringlark.disclosure import build_greeting, greeting_problems
 from ringlark.live_prompt import live_system_prompt
-from ringlark.models import Agent, Call, Campaign, ConsentRecord, Disposition, Number, PromptVersion
+from ringlark.models import Agent, Call, Campaign, ConsentRecord, Disposition, Number, PromptVersion, State
 from ringlark.toolauth import secret_for, tool_base_url, tool_token
 from ringlark.util import aware, normalize_phone
 from sendora_core.adapters import AdapterError
@@ -28,6 +28,10 @@ from sendora_core.safety import SafetyError, guard_write
 
 START_WORDS = re.compile(r"^\s*(start|unstop)\s*[.!]?\s*$", re.I)  # only the carrier word. A plain "yes" never gives consent
 IN_FLIGHT = ("placing", "placed", "in_progress")
+ANONYMOUS_NUMBERS = ("+266696687",)  # the number carriers show for a withheld caller ID (it spells ANONYMOUS on the keypad). Which one Telnyx sends is UNVERIFIED: anything that is not a number counts as withheld too
+VOICEMAIL_WAIT = "vm_wait:"  # State key per call while a voicemail is being left: "beep|<time>" (waiting for the greeting to end), then "speaking|<time>"
+BEEP_TIMEOUT_S = 60  # no end-of-greeting event this long after the machine was detected: hang up, nothing is said
+SPEECH_TIMEOUT_S = 90  # the message was started but its end was never reported: hang up, and the call is not recorded as a message left
 
 
 class CallNotFoundYet(LookupError):
@@ -93,7 +97,13 @@ def handle_telnyx_event(session: Session, ctx, settings, event_type: str, payloa
         if not _stream(ctx, settings, call, decode_state(payload.get("client_state")).get("join", "")):
             return "blocked_by_safety"
         return "streaming"
+    if event_type == "call.machine.greeting.ended":  # the beep (event name UNVERIFIED against live Telnyx)
+        return handle_beep(session, ctx, settings, call)
+    if event_type == "call.speak.ended":
+        return handle_speech_ended(session, ctx, call)
     if event_type == "call.hangup":
+        if session.get(State, f"{VOICEMAIL_WAIT}{call.id}") is not None:
+            return end_voicemail(session, ctx, call, "voicemail_no_message", "The line was closed before the message finished, so no message is recorded as left.")
         if call.status in ("placing", "placed", "in_progress"):
             call.status = "in_progress"
             enqueue(session, "postcall")
@@ -102,36 +112,97 @@ def handle_telnyx_event(session: Session, ctx, settings, event_type: str, payloa
 
 
 def handle_machine(session: Session, ctx, settings, call: Call) -> str:
+    """An answering machine picked up. A message is only left when the campaign allows it and the text says who and why, and it is NOT spoken now: the machine's own greeting is
+    still playing, so the words would be cut off at the start. The message waits for the end of the greeting (the beep, see handle_beep)."""
     camp = session.get(Campaign, call.campaign_id) if call.campaign_id else None
     call.answered_by = "machine"
     ok, why = voicemail_allowed(bool(camp and camp.allow_voicemail), camp.voicemail_text if camp else "")
-    code = "voicemail_no_message"
-    if ok:
-        try:
-            guard_write(settings, "call.speak")  # the kill switch and draft mode stop a voicemail too
-            ctx.adapters.telephony.speak(call.telnyx_call_id, camp.voicemail_text)
-            code = "voicemail_left"
-        except SafetyError:
-            code = "voicemail_no_message"
+    if not ok:
+        return end_voicemail(session, ctx, call, "voicemail_no_message", why)
     try:
-        ctx.adapters.telephony.hangup(call.telnyx_call_id)
+        guard_write(settings, "call.speak")  # the kill switch and draft mode stop a voicemail too
     except SafetyError:
-        pass
+        return end_voicemail(session, ctx, call, "voicemail_no_message", "Stopped by the kill switch or draft mode.")
+    set_state(session, f"{VOICEMAIL_WAIT}{call.id}", f"beep|{datetime.now(UTC).isoformat()}")
+    return "voicemail_waiting_for_beep"
+
+
+def handle_beep(session: Session, ctx, settings, call: Call) -> str:
+    """The machine's greeting ended: say the message now."""
+    row = session.get(State, f"{VOICEMAIL_WAIT}{call.id}")
+    if row is None or not (row.value or "").startswith("beep|"):
+        return "ignored"
+    camp = session.get(Campaign, call.campaign_id) if call.campaign_id else None
+    try:
+        guard_write(settings, "call.speak")
+        ctx.adapters.telephony.speak(call.telnyx_call_id, camp.voicemail_text)
+    except SafetyError:
+        return end_voicemail(session, ctx, call, "voicemail_no_message", "Stopped by the kill switch or draft mode.")
+    except (AdapterError, OSError) as exc:
+        return end_voicemail(session, ctx, call, "voicemail_no_message", f"The phone company could not start the message ({type(exc).__name__}).")
+    row.value = f"speaking|{datetime.now(UTC).isoformat()}"
+    return "voicemail_speaking"
+
+
+def handle_speech_ended(session: Session, ctx, call: Call) -> str:
+    """The phone company says the message has been spoken to the end: only now is it recorded as left."""
+    row = session.get(State, f"{VOICEMAIL_WAIT}{call.id}")
+    if row is None or not (row.value or "").startswith("speaking|"):
+        return "ignored"
+    return end_voicemail(session, ctx, call, "voicemail_left", "")
+
+
+def end_voicemail(session: Session, ctx, call: Call, code: str, note: str) -> str:
+    """Hang up, record how the machine call ended (once) and hand it to post call processing."""
+    _hang_up(ctx, call.telnyx_call_id)
+    row = session.get(State, f"{VOICEMAIL_WAIT}{call.id}")
+    if row is not None:
+        session.delete(row)
     if session.scalar(select(Disposition).where(Disposition.call_id == call.id)) is None:
-        session.add(Disposition(call_id=call.id, code=code, note=why, set_by="rules"))
+        session.add(Disposition(call_id=call.id, code=code, note=note, set_by="rules"))
     call.disposition, call.status = code, "in_progress"
     enqueue(session, "postcall")
     return code
 
 
+def settle_voicemail_waits(session: Session, ctx, now: datetime) -> int:
+    """Close a voicemail that never finished: no end-of-greeting event (nothing is said), or a message started whose end was never reported (not recorded as left).
+    Run by the dialer job, so a lost event cannot leave a line open or a call recorded as a message that may not have played."""
+    n = 0
+    for row in list(session.scalars(select(State).where(State.key.startswith(VOICEMAIL_WAIT, autoescape=True)))):
+        phase, _, when = (row.value or "").partition("|")
+        try:
+            age = (aware(now) - aware(datetime.fromisoformat(when))).total_seconds()
+        except ValueError:
+            age = 10**9
+        limit = BEEP_TIMEOUT_S if phase == "beep" else SPEECH_TIMEOUT_S
+        call = session.get(Call, int(row.key[len(VOICEMAIL_WAIT):])) if row.key[len(VOICEMAIL_WAIT):].isdigit() else None
+        if call is None:
+            session.delete(row)
+        elif age >= limit:
+            end_voicemail(session, ctx, call, "voicemail_no_message", "No end of greeting was heard, so nothing was said." if phase == "beep" else "The message was started but its end was never confirmed, so it is not recorded as left.")
+            n += 1
+    session.flush()
+    return n
+
+
 def _inbound_refusal(session: Session, settings, frm: str) -> str:
-    """Who may be answered right now: at most MAX_INBOUND_CALLS at the same time and MAX_INBOUND_PER_NUMBER_HOUR from one number. Each answered call is billed voice time."""
+    """Who may be answered right now: at most MAX_INBOUND_CALLS at the same time, MAX_INBOUND_PER_NUMBER_HOUR from one number, and for callers who withhold their number a limit
+    of their own (MAX_INBOUND_ANONYMOUS_HOUR in all). They cannot share a single per number bucket: six withheld calls would then lock out every other private caller.
+    Each answered call is billed voice time."""
     now = datetime.now(UTC)  # inbound rows are stamped with the real clock
     live = session.scalar(select(func.count()).select_from(Call).where(Call.direction == "inbound", Call.status.in_(IN_FLIGHT), Call.created_at >= now - timedelta(minutes=30))) or 0
     if live >= settings.max_inbound_calls:
         return "busy"
     recent = session.scalar(select(func.count()).select_from(Call).where(Call.direction == "inbound", Call.peer_phone == frm, Call.created_at >= now - timedelta(hours=1))) or 0
-    return "rate_limited" if recent >= settings.max_inbound_per_number_hour else ""
+    limit = settings.max_inbound_per_number_hour if frm else settings.max_inbound_anonymous_hour
+    return "rate_limited" if recent >= limit else ""
+
+
+def caller_number(raw: str) -> str:
+    """The caller's number, or "" when it is withheld, a word like "anonymous", or the carriers' placeholder number."""
+    n = normalize_phone(raw)
+    return "" if n in ANONYMOUS_NUMBERS else n
 
 
 def _hang_up(ctx, cid: str) -> None:
@@ -142,7 +213,7 @@ def _hang_up(ctx, cid: str) -> None:
 
 
 def handle_inbound(session: Session, ctx, settings, payload: dict) -> str:
-    to, frm = normalize_phone(payload.get("to", "")), normalize_phone(payload.get("from", ""))
+    to, frm = normalize_phone(payload.get("to", "")), caller_number(payload.get("from", ""))
     num = session.scalars(select(Number).where(Number.e164 == to)).first()
     cid = payload.get("call_control_id", "")
     if num is None or num.agent_id is None or session.scalars(select(Call).where(Call.telnyx_call_id == cid)).first():
@@ -161,7 +232,9 @@ def handle_inbound(session: Session, ctx, settings, payload: dict) -> str:
     call_id = call.id
     session.commit()  # saved before the voice engine or the phone company is told, like an outbound call
     try:
-        vc: VoiceCall = ctx.adapters.voice.create_call(system_prompt=live_system_prompt(version.body if version else ""), voice=agent.voice, first_message=inbound_greeting(agent, settings),
+        offered = times.safe_slots(ctx.adapters, ctx.now(session))
+        shown = None if offered is None else times.offer(offered, settings.office_timezone)  # an inbound caller's own time zone is not known: times are said in the office's
+        vc: VoiceCall = ctx.adapters.voice.create_call(system_prompt=live_system_prompt(version.body if version else "", None, shown), voice=agent.voice, first_message=inbound_greeting(agent, settings),
                                                         tools=tool_definitions(tool_base_url(settings), call_id, tool_token(secret_for(settings), call_id)), max_seconds=600)
         call.external_id = vc.call_id
         session.commit()

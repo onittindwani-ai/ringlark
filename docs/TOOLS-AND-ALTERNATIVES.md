@@ -31,7 +31,7 @@ What Ringlark has for each: Ultravox: Adapter tested on a mock (run on a mock on
 - Reliability and upkeep (65): Hosted by the vendor, so no upkeep; no uptime measurement was made, so this is a judgement.
 - Cost (60): Usage based; the pages read did not state prices, so no figure is quoted and the score is a placeholder judgement.
 - Data control (45): Call audio and transcripts pass through the vendor; recording is off in the calls Ringlark creates.
-- Integration depth (65): The adapter creates calls, builds the six tool definitions and checks webhook signatures against a mock; none of it was run live.
+- Integration depth (65): The adapter creates calls, builds the seven tool definitions and checks webhook signatures against a mock; none of it was run live.
 - Sources: https://docs.ultravox.ai/api-reference/calls/calls-post (checked 2026-11-23), https://docs.ultravox.ai/webhooks/securing-webhooks.md (checked 2026-11-23), https://docs.ultravox.ai/voices/overview.md (checked 2026-11-23)
 
 **Evidence, Vapi**

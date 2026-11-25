@@ -183,6 +183,12 @@ def test_no_voicemail_unless_allowed_and_the_message_says_who_and_why(seed, ctx,
         session.add(c); session.flush()
         before = len([a for a, _ in ctx.adapters.telephony.log if a == "speak"])
         code = live.handle_machine(session, ctx, eff, c)
+        assert len([a for a, _ in ctx.adapters.telephony.log if a == "speak"]) == before  # nothing is said while the machine's own greeting plays
+        if code == "voicemail_waiting_for_beep":
+            code = live.handle_beep(session, ctx, eff, c)  # the end of the greeting: now the message is spoken, and only the phone company's "finished" makes it "left"
+            assert code in ("voicemail_speaking", "voicemail_no_message")
+            if code == "voicemail_speaking":
+                code = live.handle_speech_ended(session, ctx, c)
         spoke = len([a for a, _ in ctx.adapters.telephony.log if a == "speak"]) > before
         ok, _ = voicemail_allowed(camp.allow_voicemail, camp.voicemail_text)
         if spoke:

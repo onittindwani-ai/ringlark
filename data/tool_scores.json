@@ -58,7 +58,7 @@
       },
       "integration": {
        "score": 65,
-       "evidence": "The adapter creates calls, builds the six tool definitions and checks webhook signatures against a mock; none of it was run live."
+       "evidence": "The adapter creates calls, builds the seven tool definitions and checks webhook signatures against a mock; none of it was run live."
       }
      },
      "sources": [

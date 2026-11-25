@@ -19,6 +19,29 @@ class UnknownOutcome(AdapterError):
     but every place that writes to the outside world catches this one FIRST and never sends the same thing again by itself."""
 
 
+class BadReply(UnknownOutcome):
+    """The vendor answered with a success code but the body is not what its documentation says (not JSON, a missing field, the wrong kind of value). For a read this is
+    a plain failure. For a write it is an unknown outcome: the vendor may have done the thing, so it is never repeated by itself and a person looks."""
+
+
+def reply_json(r: httpx.Response, who: str):
+    """The JSON body of a reply, or BadReply when there is none."""
+    try:
+        return r.json()
+    except ValueError as exc:
+        raise BadReply(f"{who} sent an answer that is not JSON.") from exc
+
+
+def dig(obj, *path, who: str = "the vendor"):
+    """Walk a path of keys and positions into a reply, or BadReply when any step is missing or the wrong kind of value."""
+    for key in path:
+        try:
+            obj = obj[key]
+        except (KeyError, IndexError, TypeError) as exc:
+            raise BadReply(f"{who} sent an answer without the field {key!r}.") from exc
+    return obj
+
+
 # Everything that means "we cannot tell whether it went through": a server error, a timeout, a dropped connection. A person decides what happens next.
 UNKNOWN_OUTCOME = (UnknownOutcome, httpx.HTTPError, OSError)
 

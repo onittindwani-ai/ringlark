@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from ringlark import metrics
+from ringlark import crmsync, metrics
 from ringlark.api.deps import db, get_ctx, owner, writer
 from ringlark.api.serializers import iso
 from ringlark.context import Ctx, set_state
@@ -20,7 +20,20 @@ router = APIRouter(prefix="/api", tags=["operations"])
 
 @router.get("/overview", summary="Numbers for the overview page")
 def overview(s: Session = Depends(db, scope="function"), ctx: Ctx = Depends(get_ctx)):
-    return metrics.overview(s, ctx.now(s))
+    return metrics.overview(s, ctx.now(s), ctx.settings.office_timezone)
+
+
+@router.get("/crm/dead-letters", summary="CRM notes that could not be written and were given up on")
+def crm_dead_letters(s: Session = Depends(db, scope="function")):
+    return crmsync.dead_letters(s)
+
+
+@router.post("/crm/dead-letters/{call_id}/retry", summary="Put a dead CRM note back in the queue (owner only)")
+def crm_retry(call_id: int, s: Session = Depends(db, scope="function"), u: dict = Depends(owner)):
+    if not crmsync.retry_dead(s, call_id):
+        raise HTTPException(404, "There is no dead CRM note for that call.")
+    record_audit(s, u["user"], "crm.note_requeued", f"call:{call_id}", {})
+    return {"ok": True}
 
 
 @router.get("/approvals", summary="Pending and recent approvals")

@@ -222,7 +222,7 @@ def test_waveform_is_labelled_synthetic_and_follows_the_turns():
 def test_import_flags_bad_rows_and_drops_duplicates(session, seeded):
     camp = seeded["info"]["campaign_id"]
     rep = intake.import_targets(session, camp, [{"phone": "+14155550100"}, {"phone": "+14155550188", "timezone": "Europe/London"}, {"phone": "12", "timezone": "x"}])
-    assert rep.duplicates == 1 and rep.created == 2 and rep.flagged == {"bad_number": 1, "unknown_timezone": 1}
+    assert rep.duplicates == 1 and rep.created == 2 and rep.flagged == {"bad_number": 1, "unknown_timezone": 1, "timezone_area_code_mismatch": 1}  # a 415 (San Francisco) number with a London zone
 
 
 def test_demo_cycle_places_answers_and_processes(session, ctx):

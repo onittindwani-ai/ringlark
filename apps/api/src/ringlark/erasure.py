@@ -36,7 +36,7 @@ def erase_person(session: Session, phone: str, actor: str, keep_do_not_call: boo
         session.execute(delete(QAScore).where(QAScore.call_id.in_(call_ids)))
         session.execute(delete(Disposition).where(Disposition.call_id.in_(call_ids)))
         session.execute(delete(Event).where(Event.entity_type == "call", Event.entity_id.in_(ids)))
-        for prefix in ("postcall_empty:", "crm_pending:"):
+        for prefix in ("postcall_empty:", "crm_pending:", "crm_dead:"):
             session.execute(delete(State).where(State.key.in_([f"{prefix}{i}" for i in call_ids])))
         session.execute(delete(Call).where(Call.id.in_(call_ids)))
     counts["followups"] = counts.get("followups", 0) + (session.execute(delete(FollowUp).where(FollowUp.to == p)).rowcount or 0)

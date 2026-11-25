@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+
 from pydantic import Field
 
 from sendora_core.settings import BaseAppSettings, Mode
@@ -79,6 +81,8 @@ class Settings(BaseAppSettings):
     max_inbound_calls: int = Field(default=5, ge=1, le=100)  # MAX_INBOUND_CALLS: inbound calls answered at the same time
     max_inbound_per_number_hour: int = Field(default=6, ge=1, le=100)  # MAX_INBOUND_PER_NUMBER_HOUR: inbound calls answered per caller number per hour
     recording_notice_required: bool = True  # RECORDING_NOTICE_REQUIRED: a custom greeting must say the call may be recorded (transcripts are always stored). Turn off only if your counsel says no notice is needed
+    max_inbound_anonymous_hour: int = Field(default=30, ge=1, le=1000)  # MAX_INBOUND_ANONYMOUS_HOUR: inbound calls answered per hour in all from callers whose number is withheld (they share one limit, apart from the per number one)
+    dial_failure_limit: int = Field(default=3, ge=1, le=20)  # DIAL_FAILURE_LIMIT: calls in a row that fail at the phone company or voice engine before the dialer stops for ten minutes
     retention_days: int = Field(default=365, ge=0, le=3650)  # RETENTION_DAYS: transcripts, summaries and follow up messages of finished calls older than this are deleted daily. 0 keeps them for ever
 
     @property
@@ -88,7 +92,18 @@ class Settings(BaseAppSettings):
 
     @property
     def calling_codes(self) -> tuple[str, ...]:
-        return tuple(c.strip() for c in self.allowed_calling_countries.split(",") if c.strip().startswith("+"))
+        """The country calling codes the dialer may call, each written like +1, +44 or +1876. An empty or unreadable list is NOT "no limit": it allows no country at all."""
+        return tuple(c for c in self.calling_entries()[0])
+
+    def calling_entries(self) -> tuple[list[str], list[str]]:
+        """(the entries that are valid, the entries that are not). An entry is a plus sign and one to four digits, for example +1 or +1876."""
+        good, bad = [], []
+        for raw in self.allowed_calling_countries.split(","):
+            c = raw.strip()
+            if not c:
+                continue
+            (good if re.fullmatch(r"\+[1-9][0-9]{0,3}", c) else bad).append(c)
+        return good, bad
 
     @property
     def real_calling(self) -> bool:
@@ -119,9 +134,19 @@ class Settings(BaseAppSettings):
                 out.append("PUBLIC_BASE_URL is empty or not an https address, so Ultravox cannot reach the tool endpoints. Calls stay in draft mode until it is set.")
         return out
 
+    def calling_problems(self) -> list[str]:
+        good, bad = self.calling_entries()
+        out: list[str] = []
+        if bad:
+            out.append(f"ALLOWED_CALLING_COUNTRIES has entries that are not a country calling code with a plus sign ({', '.join(bad)}). Write them like +1 or +44. They are ignored.")
+        if not good:
+            out.append("ALLOWED_CALLING_COUNTRIES has no usable entry, so the dialer will call nobody. Set it to +1 for the United States and Canada, or list the codes you may call.")
+        return out
+
     def problems(self) -> list[str]:
         out = [p for p in super().problems() if not (self.demo_mode and p.startswith("MODE is live while DEMO_MODE"))]
         out.extend(self.identity_problems())
+        out.extend(self.calling_problems())
         if not self.demo_mode and not self.owner_password_hash:
             out.append("OWNER_PASSWORD_HASH is empty. Create one with tools/hash_password.py and set it before you run outside demo mode.")
         if self.mode is Mode.LIVE and not self.demo_mode:

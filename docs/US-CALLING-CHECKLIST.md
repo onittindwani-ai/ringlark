@@ -23,6 +23,8 @@
 
 - Ringlark checks hours in the person's own time zone, weekdays only, 09:00 to 17:00 by default (a decided default you can change). Federal rules set the earliest and latest hours, and states can be stricter. The default is inside the federal hours, and a person with an unknown time zone is never called.
 
+- The hours come only from the time zone column in your list, and nothing else tells Ringlark where a person is. A list exported with one default zone (all New York, say) would call a person in Los Angeles at 6:00 in the morning. The import compares the area code with the zone and warns about rows that do not fit (a partial table, a warning only), and the owner has to say they looked before such a campaign starts. Check the zones yourself too: ask where the people are, not only which number they have. The daily cap counts from midnight in `OFFICE_TIMEZONE`.
+
 ## Do not call
 
 - Ringlark keeps its own do not call list and adds a number the moment a person asks to stop. Honor the national and state registries too. Import them with the do not call import (`POST /api/suppressions/import`, steps in `10-USING-IT-FOR-A-CLIENT.md`) or one by one on the Numbers and compliance page. Ringlark does not look them up for you.

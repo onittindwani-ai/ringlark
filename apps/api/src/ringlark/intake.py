@@ -8,6 +8,7 @@ from datetime import UTC, datetime, timedelta
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from ringlark import areacodes
 from ringlark.models import ConsentRecord, Target
 from ringlark.suppression import is_suppressed, latest_consent
 from ringlark.util import is_valid_email, normalize_phone, zone
@@ -21,6 +22,7 @@ class ImportReport:
     consents: int = 0
     consent_updates: int = 0  # a row for a person already in the list that carried a consent: recorded, and audited one by one
     flagged: dict[str, int] = field(default_factory=dict)
+    warnings: list[dict] = field(default_factory=list)  # rows kept but worth a look: today the time zone does not fit the area code (the owner acknowledges them before the campaign starts)
 
     def flag(self, k: str) -> None:
         self.flagged[k] = self.flagged.get(k, 0) + 1
@@ -96,6 +98,9 @@ def import_targets(session: Session, campaign_id: int, rows: list[dict], actor: 
             rep.flag("bad_number")
         if not zone(str(r.get("timezone", ""))):
             rep.flag("unknown_timezone")
+        elif norm and (odd := areacodes.mismatch(norm, str(r.get("timezone", "")))):
+            rep.flag("timezone_area_code_mismatch")
+            rep.warnings.append({"phone": norm, "area_code": odd[0], "timezone": str(r.get("timezone", "")), "kind": "timezone_area_code_mismatch"})
         email = str(r.get("email", "")).strip()
         if email and not is_valid_email(email):  # one plain address only: "a@x.com, b@y.com" would send one email to two people
             rep.flag("bad_email")
@@ -118,3 +123,14 @@ def _update_duplicate(session: Session, rep: ImportReport, norm: str, row: dict,
             t.sms_consent = True
             rep.consent_updates += 1
             record_audit(session, actor, "consent.imported", f"phone:{norm[-4:]}", {"kind": "sms", "already_in_list": True})
+
+
+def timezone_mismatches(session: Session, campaign_id: int) -> list[dict]:
+    """The people of a campaign whose time zone does not fit the area code of their number. Worked out on demand from the list, so nothing extra is stored and an edited row is judged again."""
+    out = []
+    for t in session.scalars(select(Target).where(Target.campaign_id == campaign_id, Target.status.in_(("new", "queued", "contacted"))).order_by(Target.id)):
+        odd = areacodes.mismatch(normalize_phone(t.phone), t.timezone)
+        if odd:
+            out.append({"target_id": t.id, "name": f"{t.first_name} {t.last_name}".strip(), "phone": t.phone, "area_code": odd[0], "timezone": t.timezone,
+                        "usual_utc_offset": odd[1], "given_utc_offset": odd[2]})
+    return out

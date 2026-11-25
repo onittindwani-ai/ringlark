@@ -26,6 +26,8 @@ Do not skip items. Tick each one. Going live means real calls reach real people,
 
 - [ ] Run in `draft` for a week and read what it would have done. Run the persona suite after every prompt change.
 - [ ] Switch to `live` with one campaign, a low daily cap and a short list.
+- [ ] Place a test call to your own phone and ask for an appointment: the times the agent offers must be the open times of your calendar, in your time zone, and the booking must appear in Cal.com at the hour you chose (this was never run against the real services, see `14`).
+- [ ] If you leave voicemail on, test it on two real answering machines: the message must start after the beep and be heard whole (the event order is UNVERIFIED, see `14`).
 - [ ] Watch the Live console for the first calls. Use **Take over** if a call goes wrong.
 - [ ] Read every call marked **Needs a look** in QA review the same day.
 

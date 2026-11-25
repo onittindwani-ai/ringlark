@@ -43,7 +43,7 @@ def test_a_campaign_made_with_no_flag_requires_consent_and_will_not_dial_a_perso
     assert camp["require_prior_consent"] is True
     rows = [{"phone": "+14155550101", "first_name": "Ava", "timezone": "America/New_York"}, {"phone": "+14155550102", "first_name": "Ben", "timezone": "America/New_York", "call_consent": "yes"}]
     c.post(f"/api/campaigns/{camp['id']}/targets", headers=h, json={"rows": rows})
-    assert c.post(f"/api/campaigns/{camp['id']}/start", headers=h).status_code == 200
+    assert c.post(f"/api/campaigns/{camp['id']}/start", headers=h, json={"acknowledge_timezone_warnings": True}).status_code == 200
     with c.ctx.factory() as s:
         res = dialer.dial_tick(s, c.ctx.effective(s), c.ctx.adapters, NOW)
         s.commit()

@@ -210,7 +210,7 @@ def test_a_hung_crm_never_holds_up_post_call_work_and_the_notes_are_written_late
     assert len(good.writes) == 2 and session.scalar(select(func.count()).select_from(State).where(State.key.startswith("crm_pending:", autoescape=True))) == 0
 
 
-def test_the_crm_pass_stops_when_its_time_is_used_and_gives_up_after_three_tries(session, ctx, seeded):
+def test_the_crm_pass_stops_when_its_time_is_used_and_a_hung_crm_never_costs_a_note(session, ctx, seeded):
     live_ctx(ctx)
     dialer_booked_call(session, seeded)
     session.commit()
@@ -221,9 +221,9 @@ def test_the_crm_pass_stops_when_its_time_is_used_and_gives_up_after_three_tries
     ctx.adapters.crm = spy
     assert crmsync.flush(session, ctx, budget_s=-1) == {"written": 0, "left": 1, "gave_up": 0} and spy.writes == []  # no time left: nothing is asked
     ctx.adapters.crm = HungCrm(ctx.factory)
-    results = [crmsync.flush(session, ctx) for _ in range(3)]
-    assert [r["gave_up"] for r in results] == [0, 0, 1]
-    assert session.scalar(select(Event.id).where(Event.kind == "crm.write_gave_up")) is not None
+    results = [crmsync.flush(session, ctx) for _ in range(9)]  # nine runs of the post call job during an outage (4.5 minutes)
+    assert [r["gave_up"] for r in results] == [0] * 9 and [r["left"] for r in results] == [1] * 9  # a hung CRM costs a delay, never a note
+    assert session.scalar(select(func.count()).select_from(State).where(State.key.startswith("crm_pending:", autoescape=True))) == 1
 
 
 # ---- 2. two requests at the same time make one booking and one text
@@ -558,7 +558,8 @@ def test_caribbean_numbers_need_their_own_area_code_in_the_allowed_list():
     assert not compliance.country_allowed("+18765550100", ("+1",)) and not compliance.country_allowed("+18095550100", ("+1",))
     assert compliance.country_allowed("+18765550100", ("+1", "+1876")) and compliance.country_allowed("+14155550100", ("+1",))
     assert compliance.country_allowed("+17875550100", ("+1",))  # Puerto Rico is a US territory
-    assert compliance.country_allowed("+442079460958", ()) is True
+    assert compliance.country_allowed("+442079460958", None) is True  # None is "no limit chosen": the pure rule tests only
+    assert compliance.country_allowed("+14155550100", ()) is False and compliance.country_allowed("+442079460958", ()) is False  # an empty list allows nobody
 
 
 def test_a_custom_greeting_must_say_it_is_an_ai_and_that_the_call_may_be_recorded(client):

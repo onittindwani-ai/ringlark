@@ -15,7 +15,7 @@ import time
 
 import httpx
 
-from ringlark.adapters.base import VoiceCall, safe_base_url
+from ringlark.adapters.base import BadReply, VoiceCall, dig, reply_json, safe_base_url
 from sendora_core.adapters import AdapterError
 
 TOLERANCE_S = 60
@@ -51,7 +51,8 @@ def tool_definitions(public_base_url: str, call_id: int, token: str) -> list[dic
                 "dynamicParameters": [{"name": n, "location": "PARAMETER_LOCATION_BODY", "schema": {"type": "string", "description": d}, "required": req} for n, d, req in params]}}
 
     return [
-        tool("book_meeting", "Book a meeting once the person has agreed to a time.", [("slot", "ISO time chosen from the offered times", True), ("name", "Person's name", True), ("email", "Person's email if given", False)]),
+        tool("book_meeting", "Book a meeting once the person has agreed to a time.", [("slot", "The chosen time, copied exactly from the open times, ISO with its UTC offset", True), ("name", "Person's name", True), ("email", "Person's email if given", False)]),
+        tool("list_times", "Get the next open times to offer. Use it before offering any time that is not in your instructions, and again if a booking is refused.", []),
         tool("lookup_crm", "Look up what we already know about the person on the line.", []),
         tool("transfer_to_human", "Hand the call to a human when asked, or when you cannot help.", [("reason", "Why", False)]),
         tool("send_sms", "Text the person a standard message, only if they agreed to a text.", [("kind", "booking_link, confirmation or callback", True)]),
@@ -82,15 +83,24 @@ class UltravoxVoice:
             raise AdapterError("Ultravox rejected the API key.")
         if r.status_code >= 400:
             raise AdapterError(f"Ultravox refused to create the call: {r.status_code}")
-        d = r.json()
-        return VoiceCall(d["callId"], d.get("joinUrl") or "")
+        d = reply_json(r, "Ultravox")
+        if not isinstance(d, dict):
+            raise BadReply("Ultravox answered the new call in a shape that could not be read.")
+        return VoiceCall(str(dig(d, "callId", who="Ultravox")), str(d.get("joinUrl") or ""))
 
     def transcript(self, call_id: str) -> list[dict]:
         r = self.client.get(f"/api/calls/{call_id}/messages")
         if r.status_code >= 400:
             raise AdapterError(f"Ultravox could not return the transcript: {r.status_code}")
-        return [{"speaker": "agent" if m.get("role") == "MESSAGE_ROLE_AGENT" else "caller", "text": m.get("text", ""), "start_ms": int(m.get("startMs", 0)), "end_ms": int(m.get("endMs", 0))}
-                for m in r.json().get("results", []) if m.get("text")]
+        body = reply_json(r, "Ultravox")
+        results = body.get("results", []) if isinstance(body, dict) else None
+        if not isinstance(results, list):
+            raise BadReply("Ultravox sent a transcript in a shape that could not be read.")
+        try:
+            return [{"speaker": "agent" if m.get("role") == "MESSAGE_ROLE_AGENT" else "caller", "text": m.get("text", ""), "start_ms": int(m.get("startMs", 0)), "end_ms": int(m.get("endMs", 0))}
+                    for m in results if m.get("text")]
+        except (AttributeError, TypeError, ValueError) as exc:
+            raise BadReply("Ultravox sent a transcript in a shape that could not be read.") from exc
 
     def healthcheck(self) -> tuple[bool, str]:
         try:

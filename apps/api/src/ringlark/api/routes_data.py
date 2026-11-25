@@ -120,7 +120,8 @@ def campaigns(s: Session = Depends(db, scope="function"), ctx: Ctx = Depends(get
     out = []
     for c in s.scalars(select(Campaign).order_by(Campaign.id)):
         counts = {k: v for k, v in s.execute(select(Target.status, __import__("sqlalchemy").func.count()).where(Target.campaign_id == c.id).group_by(Target.status)).all()}
-        out.append({**campaign_row(c), "agent": s.get(Agent, c.agent_id).name, "targets": counts, "calls_today": dialer.calls_today(s, c.id, ctx.now(s))})
+        out.append({**campaign_row(c), "agent": s.get(Agent, c.agent_id).name, "targets": counts, "calls_today": dialer.calls_today(s, c.id, ctx.now(s), ctx.settings.office_timezone),
+                    "timezone_warnings": 0 if ctx.settings.demo_mode else len(intake.timezone_mismatches(s, c.id))})  # the made up demo list is not checked, as at start
     return out
 
 
@@ -171,7 +172,11 @@ def create_campaign(b: CampaignIn, s: Session = Depends(db, scope="function"), u
     return campaign_row(c)
 
 
-def _campaign_action(s: Session, u: dict, cid: int, action: str):
+class StartIn(BaseModel):
+    acknowledge_timezone_warnings: bool = False  # "I looked at the people whose time zone does not fit their area code" (see GET /campaigns/{id}/timezone-warnings)
+
+
+def _campaign_action(s: Session, u: dict, cid: int, action: str, ctx: Ctx | None = None, ack: bool = False):
     c = s.get(Campaign, cid)
     if c is None:
         raise HTTPException(404, "That campaign does not exist.")
@@ -180,6 +185,13 @@ def _campaign_action(s: Session, u: dict, cid: int, action: str):
             raise HTTPException(403, "Only the owner can start a campaign.")
         if not s.get(Agent, c.agent_id).active_version_id:
             raise HTTPException(409, "The agent has no active prompt version.")
+        odd = intake.timezone_mismatches(s, c.id) if ctx is not None and not ctx.settings.demo_mode else []  # the fictional demo list is not checked
+        if odd and not ack:
+            raise HTTPException(409, f"{len(odd)} people have a time zone that does not fit the area code of their number (for example {odd[0]['phone']} with {odd[0]['timezone']}). A wrong zone means "
+                                     "a call at the wrong hour. Look at them under 'Time zone warnings' (GET /api/campaigns/{id}/timezone-warnings), fix the zones in your list, or start again "
+                                     "with acknowledge_timezone_warnings set to true.")
+        if odd:
+            record_audit(s, u["user"], "campaign.timezone_warnings_acknowledged", f"campaign:{c.id}", {"people": len(odd)})
         c.status = "running"
     else:
         c.status = "paused"
@@ -187,9 +199,40 @@ def _campaign_action(s: Session, u: dict, cid: int, action: str):
     return campaign_row(c)
 
 
-@router.post("/campaigns/{cid}/start", summary="Start a campaign (owner only)")
-def campaign_start(cid: int, s: Session = Depends(db, scope="function"), u: dict = Depends(writer)):
-    return _campaign_action(s, u, cid, "start")
+@router.post("/campaigns/{cid}/start", summary="Start a campaign (owner only). People whose time zone does not fit their area code need acknowledge_timezone_warnings.")
+def campaign_start(cid: int, b: StartIn | None = None, s: Session = Depends(db, scope="function"), u: dict = Depends(writer), ctx: Ctx = Depends(get_ctx)):
+    return _campaign_action(s, u, cid, "start", ctx, bool(b and b.acknowledge_timezone_warnings))
+
+
+@router.get("/campaigns/{cid}/timezone-warnings", summary="People whose time zone does not fit the area code of their number")
+def timezone_warnings(cid: int, s: Session = Depends(db, scope="function")):
+    if s.get(Campaign, cid) is None:
+        raise HTTPException(404, "That campaign does not exist.")
+    return intake.timezone_mismatches(s, cid)[:500]
+
+
+class RestoreIn(BaseModel):
+    target_ids: list[int] | None = Field(default=None, max_length=5000)  # None: every person who can come back
+
+
+@router.post("/campaigns/{cid}/targets/restore", summary="Put people who were held back by failed tries back in the list (owner only). Never anyone on the do not call list.")
+def restore_targets(cid: int, b: RestoreIn, s: Session = Depends(db, scope="function"), u: dict = Depends(owner)):
+    c = s.get(Campaign, cid)
+    if c is None:
+        raise HTTPException(404, "That campaign does not exist.")
+    stmt = select(Target).where(Target.campaign_id == cid, Target.status == "suppressed")
+    if b.target_ids is not None:
+        stmt = stmt.where(Target.id.in_(b.target_ids))
+    restored, skipped = [], {}
+    for t in s.scalars(stmt.order_by(Target.id)):
+        why = dialer.restore_problem(s, c, t)
+        if why:
+            skipped[why] = skipped.get(why, 0) + 1
+            continue
+        t.status = "new"
+        restored.append(t.id)
+    record_audit(s, u["user"], "targets.restored", f"campaign:{cid}", {"restored": len(restored), "skipped": skipped})
+    return {"restored": restored, "skipped": skipped}
 
 
 @router.post("/campaigns/{cid}/pause", summary="Pause a campaign")
@@ -203,7 +246,7 @@ def targets(cid: int, s: Session = Depends(db, scope="function"), ctx: Ctx = Dep
     if c is None:
         raise HTTPException(404, "That campaign does not exist.")
     agent, now, eff = s.get(Agent, c.agent_id), ctx.now(s), ctx.effective(s)
-    today = dialer.calls_today(s, c.id, now)
+    today = dialer.calls_today(s, c.id, now, ctx.settings.office_timezone)
     out = []
     for t in s.scalars(select(Target).where(Target.campaign_id == cid).order_by(Target.id).limit(limit)):
         d = dialer.decide(s, eff, c, agent, t, now, today)
@@ -234,7 +277,7 @@ def import_targets(cid: int, b: TargetsIn, s: Session = Depends(db, scope="funct
         raise HTTPException(403, "Only the owner can import call consents. Remove the call_consent column, or ask the owner to import this list.")
     rep = intake.import_targets(s, cid, b.rows, actor=u["user"])
     record_audit(s, u["user"], "targets.imported", f"campaign:{cid}", {"created": rep.created, "duplicates": rep.duplicates, "call_consents": rep.consents, "consent_updates": rep.consent_updates})
-    return {"created": rep.created, "duplicates": rep.duplicates, "call_consents": rep.consents, "consent_updates": rep.consent_updates, "flagged": rep.flagged}
+    return {"created": rep.created, "duplicates": rep.duplicates, "call_consents": rep.consents, "consent_updates": rep.consent_updates, "flagged": rep.flagged, "warnings": rep.warnings[:200]}
 
 
 # ---- agents and numbers: how a real install gets them (the demo loads them from seed.json)

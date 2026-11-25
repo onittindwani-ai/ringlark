@@ -14,7 +14,7 @@ from ringlark.toolauth import check_token, secret_for
 from sendora_core.ratelimit import RateLimitExceeded
 
 router = APIRouter(prefix="/api/tools", tags=["tools"])
-TOOLS = {"book_meeting", "lookup_crm", "transfer_to_human", "send_sms", "press_digit", "end_call"}
+TOOLS = {"book_meeting", "list_times", "lookup_crm", "transfer_to_human", "send_sms", "press_digit", "end_call"}
 
 
 @router.post("/{call_id}/{tool}", summary="Run one agent tool for one call")

@@ -79,7 +79,7 @@ def test_ultravox_create_call_with_tools_and_transcript(live):
     sent = u.calls[vc.call_id]["request"]
     assert sent["voice"] == "Mark" and sent["maxDuration"] == "600s" and sent["medium"] == {"telnyx": {}}
     names = [t["temporaryTool"]["modelToolName"] for t in sent["selectedTools"]]
-    assert names == ["book_meeting", "lookup_crm", "transfer_to_human", "send_sms", "press_digit", "end_call"]
+    assert names == ["book_meeting", "list_times", "lookup_crm", "transfer_to_human", "send_sms", "press_digit", "end_call"]  # list_times: the open times the agent may offer
     assert sent["selectedTools"][0]["temporaryTool"]["http"]["baseUrlPattern"] == "https://app.example.test/api/tools/12/book_meeting"
     assert sent["selectedTools"][0]["temporaryTool"]["staticParameters"][0]["value"] == "tok"
     vc2 = v.create_call(system_prompt="x" * 50, voice="", first_message="Hi", tools=[], max_seconds=60, external_voice={"elevenLabs": {"voiceId": "abc"}})

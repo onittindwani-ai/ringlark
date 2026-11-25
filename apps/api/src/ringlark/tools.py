@@ -6,7 +6,7 @@ nothing a caller says can widen that, and every write goes through the draft mod
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import datetime
 from zoneinfo import ZoneInfo
 
 import httpx
@@ -14,7 +14,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from ringlark import messages, sms_rules, suppression
+from ringlark import messages, sms_rules, suppression, times
 from ringlark.adapters.base import UNKNOWN_OUTCOME
 from ringlark.models import DISPOSITIONS, Agent, Call, CallAction, ConsentRecord, Disposition, FollowUp, Target
 from ringlark.util import aware, is_valid_email, normalize_phone
@@ -26,7 +26,7 @@ from sendora_core.safety import SafetyError, guard_write
 
 VENDOR_ERRORS = (AdapterError, httpx.HTTPError, OSError)  # a refused request, a timeout or a dropped connection at Cal.com, Telnyx, the CRM or Ultravox
 STOP_LINE = messages.STOP_LINE
-BOOK_AHEAD = timedelta(days=14)  # the agent may only book a time the calendar itself offers inside this window
+BOOK_AHEAD = times.OFFER_AHEAD
 
 
 class ToolService:
@@ -70,7 +70,7 @@ class ToolService:
         self.s.execute(delete(CallAction).where(CallAction.call_id == self.call.id, CallAction.kind == kind))
         self.s.commit()
 
-    # ---- the six tools
+    # ---- the seven tools
     def t_book_meeting(self, a: dict) -> dict:
         name, slot = a.get("name"), str(a.get("slot") or "")
         name = name.strip() if isinstance(name, str) else ""
@@ -81,7 +81,10 @@ class ToolService:
             try:
                 when = datetime.fromisoformat(slot.replace("Z", "+00:00"))
             except ValueError:
-                return {"ok": False, "say": "I did not catch which time you want."}
+                return self._times_answer("I did not catch which time you want.")
+            if when.tzinfo is None:
+                # A time with no offset would be read as UTC, which is the wrong hour for almost everyone. The offered times always carry their offset.
+                return self._times_answer("I need the time exactly as it was offered, with its offset.")
         given = a.get("email")
         if given is not None and not isinstance(given, str):
             return {"ok": False, "say": "I need one email address to send the booking to."}  # a number or a list from the model is not an address, and must not become a 500
@@ -94,7 +97,7 @@ class ToolService:
         if self._happened("meeting.unconfirmed"):
             return {"ok": False, "say": "I could not confirm a booking on this call, so someone will follow up with you to be sure."}
         if slot not in self.slot_map and not self._offered(when):
-            return {"ok": False, "say": "That time is not one I can book. I will offer the times that are open."}
+            return self._times_answer("That time is not one I can book.")
         if not self._claim("book_meeting"):
             return {"ok": False, "say": "This call already has a booking."}  # another request for this call got there first
         self.s.commit()  # the right to book is saved BEFORE Cal.com is asked
@@ -111,6 +114,26 @@ class ToolService:
         record_event(self.s, "meeting.booked", "call", str(self.call.id), {"at": aware(b.starts_at).isoformat()})
         self.s.commit()  # visible to the next request (end_call "booked") before this answer is sent
         return {"ok": True, "booking_id": b.external_id, "starts_at": aware(b.starts_at).isoformat()}
+
+    def _zone_name(self) -> str:
+        return (self.target.timezone if self.target and self.target.timezone else "") or self.settings.office_timezone
+
+    def _times_answer(self, lead: str) -> dict:
+        """A refusal that also carries the times that ARE open, so the model always has something true to offer next."""
+        try:
+            offered = times.open_times(self.ctx.adapters.calendar, self.now, self._zone_name())
+        except times.CALENDAR_ERRORS:
+            return {"ok": False, "say": f"{lead} Use list_times to get the open times."}
+        spoken = "; ".join(t.say for t in offered)
+        return {"ok": False, "say": f"{lead} The open times are: {spoken}." if offered else f"{lead} There are no open times in the next two weeks, so someone will follow up.",
+                "times": [{"slot": t.slot, "say": t.say} for t in offered]}
+
+    def t_list_times(self, a: dict) -> dict:
+        """The open times the agent may offer. A read, so it needs no write guard; a calendar that is down is a plain answer from run()."""
+        offered = times.open_times(self.ctx.adapters.calendar, self.now, self._zone_name())
+        if not offered:
+            return {"ok": True, "times": [], "say": "There are no open times in the next two weeks, so someone will follow up."}
+        return {"ok": True, "times": [{"slot": t.slot, "say": t.say} for t in offered]}
 
     def _happened(self, kind: str) -> bool:
         """True when this tool already did its one job for this call (kind is the event it records)."""
@@ -234,7 +257,9 @@ class ToolService:
         if code == "booked" and not self._happened("meeting.booked"):
             # "Booked" is true only after a booking that passed the checks. A model error or a caller's push must not close the person, write the CRM or queue a
             # "your appointment is booked" text, so the call goes to a person to read instead.
-            code, note = "needs_review", ("Said booked but no booking was made on this call. " + note).strip()[:300]
+            lead = ("A booking was tried and Cal.com's answer could not be confirmed: check the calendar before anything else. "
+                    if self._happened("meeting.unconfirmed") else "Said booked but no booking was made on this call. ")
+            code, note = "needs_review", (lead + note).strip()[:300]
             record_event(self.s, "tool.downgraded", "call", str(self.call.id), {"tool": "end_call", "from": "booked", "to": "needs_review"})
         row = self.s.scalar(select(Disposition).where(Disposition.call_id == self.call.id))
         if row is None:

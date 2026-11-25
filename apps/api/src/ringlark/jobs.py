@@ -8,7 +8,7 @@ from datetime import UTC, datetime
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from ringlark import crmsync, demo, dialer, followups, metrics, model_tasks, retention
+from ringlark import crmsync, demo, dialer, followups, live, metrics, model_tasks, retention
 from ringlark.context import Ctx, set_state
 from ringlark.models import Call
 from ringlark.postcall import process_call
@@ -19,6 +19,8 @@ INTERVALS = {"dial_tick": 60, "postcall": 30, "followups": 60, "crm_sync": 600, 
 
 
 def job_dial_tick(session: Session, ctx: Ctx) -> dict:
+    if not ctx.settings.demo_mode:
+        live.settle_voicemail_waits(session, ctx, ctx.now(session))  # a voicemail that never finished is closed before anything new is dialled
     r = dialer.dial_tick(session, ctx.effective(session), ctx.adapters, ctx.now(session))
     set_state(session, "last_dial_at", datetime.now(UTC).isoformat())
     set_state(session, "last_dial", json.dumps({"placed": r.placed, "drafted": r.drafted, "reasons": r.reasons}))

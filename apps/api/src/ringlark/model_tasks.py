@@ -11,7 +11,7 @@ and against recorded fixtures made from that fake server. It has never been run 
 
 Safety, in code and tested (see agent_live.py for the guards around the agent):
 - what the person on the call says goes in through `untrusted=`: it sits in a marked data block and the system prompt says never to follow it;
-- every answer must match a fixed schema with no extra fields, and the only tools it can name are the six the voice engine has. There is no
+- every answer must match a fixed schema with no extra fields, and the only tools it can name are the six acting tools the voice engine has (the seventh, `list_times`, only reads the calendar: this path is given the offered times in its request). There is no
   tool that places a call, sends a message to anyone but the person on the line, or touches a list. A bad answer ends the call and flags it for a person;
 - the model never writes the greeting or the AI disclosure: those come from `disclosure.build_greeting`;
 - the kill switch, the call budget and the spend budget of the wrapper apply to every call here.

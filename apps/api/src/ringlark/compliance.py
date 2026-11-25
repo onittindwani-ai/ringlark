@@ -26,10 +26,13 @@ def premium_rate(phone: str) -> bool:
     return phone.startswith(PREMIUM_PREFIXES)
 
 
-def country_allowed(phone: str, codes: tuple[str, ...]) -> bool:
-    """An empty list means no country limit (the pure rules are tested without one); the dialer always passes ALLOWED_CALLING_COUNTRIES."""
-    if not codes:
+def country_allowed(phone: str, codes: tuple[str, ...] | None) -> bool:
+    """An empty list allows no country: a setting that is empty or cannot be read must never open the dialer to the world. (`None` is "no limit" and exists only for the pure
+    rule tests, which have no setting; the dialer always passes ALLOWED_CALLING_COUNTRIES.)"""
+    if codes is None:
         return True
+    if not codes:
+        return False
     if not phone.startswith(codes):
         return False
     if phone.startswith(CARIBBEAN_NANP):
@@ -66,7 +69,7 @@ class DialRequest:
     last_attempt_utc: datetime | None = None
     in_flight: bool = False
     awaiting_review: bool = False  # the last call ended as needs_review and no person has read it yet, so nobody redials until they have
-    allowed_codes: tuple[str, ...] = ()
+    allowed_codes: tuple[str, ...] | None = None  # None: no country limit (pure rule tests only). The dialer always passes a tuple, and an empty one allows nobody.
 
 
 @dataclass(frozen=True)

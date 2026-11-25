@@ -15,7 +15,7 @@ Ringlark is an AI SDR setup system. It helps an implementer or a business set up
 State, Agent, PromptVersion, Flow, Number, Target, Campaign, Call, Turn, Disposition, QAScore, FollowUp, ConsentRecord, Suppression.
 
 ## Jobs
-dial_tick (place due calls), postcall (process ended calls), followups (queue and send approved follow ups), crm_sync (write the queued CRM notes, three tries), report, retention (daily: delete the transcripts, summaries and follow up messages of finished calls older than RETENTION_DAYS).
+dial_tick (place due calls), postcall (process ended calls), followups (queue and send approved follow ups), crm_sync (write the queued CRM notes: an outage never uses up a try, a refusal does, three of them or seven days move a note to the dead letter list), report, retention (daily: delete the transcripts, summaries and follow up messages of finished calls older than RETENTION_DAYS).
 
 ## Adapters
 Telnyx (A, calls and texts, against a mock written from the docs), Ultravox (A, against a mock), Cal.com (A), Twenty (A), email SMTP (B), offline seed adapters for every category.

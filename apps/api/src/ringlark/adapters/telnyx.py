@@ -17,7 +17,7 @@ import httpx
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
 
-from ringlark.adapters.base import InboundSms, PlacedCall, UnknownOutcome, safe_base_url
+from ringlark.adapters.base import InboundSms, PlacedCall, UnknownOutcome, dig, reply_json, safe_base_url
 from sendora_core.adapters import AdapterError
 from sendora_core.safety import write_action
 
@@ -70,7 +70,8 @@ def _fail(r: httpx.Response, what: str) -> None:
     if r.status_code >= 400:
         try:
             err = (r.json().get("errors") or [{}])[0]
-        except ValueError:
+            err = err if isinstance(err, dict) else {}
+        except (ValueError, AttributeError, IndexError, TypeError):
             err = {}
         raise AdapterError(f"Telnyx refused to {what}: {err.get('detail') or err.get('title') or r.status_code}")
 
@@ -83,7 +84,7 @@ class TelnyxSms:
     def send(self, *, to: str, text: str) -> str:
         r = self.client.post("/v2/messages", json={"from": self.settings.telnyx_from_number, "to": to, "text": text})
         _fail(r, "send the text")
-        return str(r.json()["data"]["id"])
+        return str(dig(reply_json(r, "Telnyx"), "data", "id", who="Telnyx"))  # a 2xx with no id: the text may have gone out (BadReply is an unknown outcome)
 
     def healthcheck(self) -> tuple[bool, str]:
         if not self.settings.telnyx_from_number:
@@ -108,8 +109,9 @@ class TelnyxCalls:
                 "webhook_url": f"{self.settings.public_base_url.rstrip('/')}/api/webhooks/telnyx", "answering_machine_detection": "detect_words" if amd else "disabled"}
         r = self.client.post("/v2/calls", json=body)
         _fail(r, "place the call")
-        d = r.json()["data"]
-        return PlacedCall(d["call_control_id"], d.get("call_session_id", ""))
+        d = dig(reply_json(r, "Telnyx"), "data", who="Telnyx")  # a 2xx with no call id: the phone may be ringing (BadReply is an unknown outcome)
+        cid = dig(d, "call_control_id", who="Telnyx")
+        return PlacedCall(str(cid), str(d.get("call_session_id", "")) if isinstance(d, dict) else "")
 
     def answer(self, call_control_id: str) -> None:
         self._action(call_control_id, "answer", {})

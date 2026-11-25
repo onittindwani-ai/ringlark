@@ -4,7 +4,7 @@ from __future__ import annotations
 import re
 
 DISCLOSURE_RE = re.compile(r"\b(ai|a\.i\.|artificial|virtual assistant|automated (assistant|agent|call))\b", re.I)
-RECORDING_RE = re.compile(r"\b(record(ed|ing)?|transcrib)", re.I)
+RECORDING_RE = re.compile(r"\b(record(ed|ing)?|transcrib(e|ed|ing))\b", re.I)  # whole words: "records" (as in "medical records") is not a recording notice
 HUMAN_CLAIM_RE = re.compile(r"\b(i am|i'm|this is) (a )?(real )?(human|person|live agent)\b|\bnot (a )?(robot|bot|ai)\b", re.I)
 
 

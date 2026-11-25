@@ -472,7 +472,7 @@
     "tags": [
      "data"
     ],
-    "summary": "Start a campaign (owner only)",
+    "summary": "Start a campaign (owner only). People whose time zone does not fit their area code need acknowledge_timezone_warnings.",
     "operationId": "campaign_start_api_campaigns__cid__start_post",
     "parameters": [
      {
@@ -485,6 +485,113 @@
       }
      }
     ],
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "anyOf": [
+         {
+          "$ref": "#/components/schemas/StartIn"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "B"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/campaigns/{cid}/timezone-warnings": {
+   "get": {
+    "tags": [
+     "data"
+    ],
+    "summary": "People whose time zone does not fit the area code of their number",
+    "operationId": "timezone_warnings_api_campaigns__cid__timezone_warnings_get",
+    "parameters": [
+     {
+      "name": "cid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Cid"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/campaigns/{cid}/targets/restore": {
+   "post": {
+    "tags": [
+     "data"
+    ],
+    "summary": "Put people who were held back by failed tries back in the list (owner only). Never anyone on the do not call list.",
+    "operationId": "restore_targets_api_campaigns__cid__targets_restore_post",
+    "parameters": [
+     {
+      "name": "cid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Cid"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/RestoreIn"
+       }
+      }
+     }
+    },
     "responses": {
      "200": {
       "description": "Successful Response",
@@ -1538,6 +1645,65 @@
     }
    }
   },
+  "/api/crm/dead-letters": {
+   "get": {
+    "tags": [
+     "operations"
+    ],
+    "summary": "CRM notes that could not be written and were given up on",
+    "operationId": "crm_dead_letters_api_crm_dead_letters_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/crm/dead-letters/{call_id}/retry": {
+   "post": {
+    "tags": [
+     "operations"
+    ],
+    "summary": "Put a dead CRM note back in the queue (owner only)",
+    "operationId": "crm_retry_api_crm_dead_letters__call_id__retry_post",
+    "parameters": [
+     {
+      "name": "call_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Call Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
   "/api/approvals": {
    "get": {
     "tags": [
@@ -2492,6 +2658,27 @@
     ],
     "title": "ResolveIn"
    },
+   "RestoreIn": {
+    "properties": {
+     "target_ids": {
+      "anyOf": [
+       {
+        "items": {
+         "type": "integer"
+        },
+        "type": "array",
+        "maxItems": 5000
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Target Ids"
+     }
+    },
+    "type": "object",
+    "title": "RestoreIn"
+   },
    "SettingsIn": {
     "properties": {
      "kill_switch": {
@@ -2567,6 +2754,17 @@
     },
     "type": "object",
     "title": "SplitIn"
+   },
+   "StartIn": {
+    "properties": {
+     "acknowledge_timezone_warnings": {
+      "type": "boolean",
+      "title": "Acknowledge Timezone Warnings",
+      "default": false
+     }
+    },
+    "type": "object",
+    "title": "StartIn"
    },
    "StressIn": {
     "properties": {

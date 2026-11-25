@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import logging
 from dataclasses import dataclass, field, replace
 from datetime import datetime, timedelta
@@ -9,10 +10,12 @@ from datetime import datetime, timedelta
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
-from ringlark import compliance
+from ringlark import compliance, times
+from ringlark.adapters.base import UNKNOWN_OUTCOME
 from ringlark.adapters.telnyx import encode_state
 from ringlark.adapters.ultravox import tool_definitions
 from ringlark.compliance import DialRequest, Rules
+from ringlark.context import set_state
 from ringlark.disclosure import build_greeting, has_disclosure, has_recording_notice
 from ringlark.live_prompt import live_system_prompt
 from ringlark.messages import appointment
@@ -30,6 +33,11 @@ log = logging.getLogger("ringlark.dialer")
 IN_FLIGHT = ("placing", "placed", "in_progress")
 REAL = ("placing", "placed", "in_progress", "completed", "failed")
 PERMANENT = {"do_not_call", "consent_revoked", "bad_number", "unknown_timezone", "max_attempts", "premium_rate_number"}
+# A call that failed before the phone could ring is not an attempt on the person: Telnyx was never asked (the voice engine failed first), or it refused at once, or the kill switch
+# came on. Counting these used up a person's tries during a vendor outage, and the daily cap with them.
+NOT_AN_ATTEMPT = ("place_failed", "place_stopped")
+PAUSE_AFTER_TROUBLE = timedelta(minutes=10)  # how long the dialer rests after DIAL_FAILURE_LIMIT calls in a row could not be placed
+NOT_LOADED = object()  # "the open times have not been fetched yet" (None means the calendar could not be reached)
 STALE_AFTER = timedelta(minutes=30)  # a call that has shown no sign of life this long after it was started is closed (a call lasts at most 10 minutes)
 
 
@@ -41,6 +49,7 @@ class DialResult:
     halted: bool = False
     reasons: dict[str, int] = field(default_factory=dict)
     call_ids: list[int] = field(default_factory=list)
+    trouble: str = ""  # set when the tick stopped early because the phone company or the voice engine kept failing
 
     def add(self, reason: str) -> None:
         self.reasons[reason] = self.reasons.get(reason, 0) + 1
@@ -59,9 +68,21 @@ def greeting_for(agent: Agent, settings=None) -> str:
     return agent.greeting or build_greeting(agent.name, company, purpose, True)
 
 
-def calls_today(session: Session, campaign_id: int, now: datetime) -> int:
-    start = aware(now).replace(hour=0, minute=0, second=0, microsecond=0)
-    return int(session.scalar(select(func.count()).select_from(Call).where(Call.campaign_id == campaign_id, Call.status.in_(REAL), Call.created_at >= start)) or 0)
+def counts_as_attempt():
+    """SQL: this call row is a real attempt on the person (not a call that failed before the phone could ring)."""
+    return or_(Call.status != "failed", func.coalesce(Call.blocked_reason, "").notin_(NOT_AN_ATTEMPT))
+
+
+def day_start(now: datetime, tz_name: str = "UTC") -> datetime:
+    """The start of today in the business time zone, as UTC. The daily cap resets at the owner's midnight (OFFICE_TIMEZONE), not at midnight in London."""
+    z = zone(tz_name) or zone("UTC")
+    local = aware(now).astimezone(z)
+    return local.replace(hour=0, minute=0, second=0, microsecond=0).astimezone(zone("UTC"))
+
+
+def calls_today(session: Session, campaign_id: int, now: datetime, tz_name: str = "UTC") -> int:
+    start = day_start(now, tz_name)
+    return int(session.scalar(select(func.count()).select_from(Call).where(Call.campaign_id == campaign_id, Call.status.in_(REAL), counts_as_attempt(), Call.created_at >= start)) or 0)
 
 
 def _calls_to(target: Target, outbound_only: bool = True):
@@ -72,7 +93,7 @@ def _calls_to(target: Target, outbound_only: bool = True):
 
 
 def history(session: Session, target: Target, tz: str):
-    rows = list(session.scalars(select(Call).where(_calls_to(target), Call.status.in_(REAL)).order_by(Call.created_at)))
+    rows = list(session.scalars(select(Call).where(_calls_to(target), Call.status.in_(REAL), counts_as_attempt()).order_by(Call.created_at)))
     z = zone(tz)
     dates = tuple(aware(r.created_at).astimezone(z).date().isoformat() for r in rows) if z else ()
     return len(rows), dates, (aware(rows[-1].created_at) if rows else None)
@@ -98,11 +119,14 @@ def decide(session: Session, settings, c: Campaign, agent: Agent, t: Target, now
         last_attempt_local_dates=dates, last_attempt_utc=last, in_flight=in_flight, awaiting_review=awaiting_review(session, t), allowed_codes=settings.calling_codes))
 
 
-def place(session: Session, settings, adapters, c: Campaign, agent: Agent, t: Target, number: Number | None, now: datetime, attempt: int) -> Call:
+def place(session: Session, settings, adapters, c: Campaign, agent: Agent, t: Target, number: Number | None, now: datetime, attempt: int, slots=NOT_LOADED) -> Call:
     """Record the call, then ring. The caller has already passed compliance.
 
     The row is saved (status placing) BEFORE the voice engine or the phone company hears of it, so every webhook that comes back finds it,
-    a crash cannot leave a ringing phone with no record (the next tick would dial the same person again), and a failure ends as a failed call, never an orphan."""
+    a crash cannot leave a ringing phone with no record (the next tick would dial the same person again), and a failure ends as a failed call, never an orphan.
+    `slots` are the open times for the prompt (None: the calendar could not be reached, so the prompt tells the model to ask for them with list_times).
+    A failure before the phone company was asked, or one it refused at once, ends as `place_failed` and is not an attempt on the person; an answer that leaves it unknown whether
+    the phone rang (a timeout, a 5xx, an unreadable reply) ends as `place_unconfirmed` and does count."""
     guard_write(settings, "call.place")  # nothing is recorded when the kill switch or draft mode forbids the call
     vid = choose_version(agent, f"{c.id}:{t.id}:{attempt}")
     version = session.get(PromptVersion, vid) if vid else None
@@ -112,8 +136,12 @@ def place(session: Session, settings, adapters, c: Campaign, agent: Agent, t: Ta
     session.flush()
     call_id = call.id
     session.commit()
+    stage = "voice"
     try:
-        vc = adapters.voice.create_call(system_prompt=live_system_prompt(version.body if version else "", t.first_name), voice=agent.voice, first_message=greeting_for(agent, settings),
+        if slots is NOT_LOADED:
+            slots = times.safe_slots(adapters, now)
+        offered = None if slots is None else times.offer(slots, t.timezone or settings.office_timezone)
+        vc = adapters.voice.create_call(system_prompt=live_system_prompt(version.body if version else "", t.first_name, offered), voice=agent.voice, first_message=greeting_for(agent, settings),
                                         tools=tool_definitions(tool_base_url(settings), call_id, tool_token(secret_for(settings), call_id)), max_seconds=600)
         call.external_id = vc.call_id
         session.commit()  # an event from the voice engine can now find this call by its id
@@ -122,6 +150,7 @@ def place(session: Session, settings, adapters, c: Campaign, agent: Agent, t: Ta
             enqueue(session, "postcall")
             session.commit()
             return call
+        stage = "phone"
         placed = adapters.telephony.place_call(to=call.peer_phone, from_number=number.e164 if number else settings.telnyx_from_number, client_state=encode_state({"call": call_id, "join": vc.join_url}), amd=True)
         call.telnyx_call_id, call.status = placed.call_control_id, "placed"
         t.status = "contacted"
@@ -129,7 +158,11 @@ def place(session: Session, settings, adapters, c: Campaign, agent: Agent, t: Ta
         session.commit()
     except Exception as exc:  # any failure at a vendor (a refused call, a network error, a bad answer) ends this call as failed and lets the tick go on
         session.rollback()
-        _mark_failed(session, call_id, "place_failed", type(exc).__name__)
+        if isinstance(exc, SafetyError):
+            reason = "place_stopped"
+        else:
+            reason = "place_unconfirmed" if stage == "phone" and isinstance(exc, UNKNOWN_OUTCOME) else "place_failed"
+        _mark_failed(session, call_id, reason, type(exc).__name__)
         log.warning("call %s could not be placed: %s", call_id, type(exc).__name__, exc_info=not isinstance(exc, (AdapterError, SafetyError, OSError)))
         return session.get(Call, call_id)
     return call
@@ -190,6 +223,52 @@ def halt_live_calls(session: Session, adapters) -> int:
     return n
 
 
+def _paused(session: Session, now: datetime) -> bool:
+    row = session.get(State, "dial_pause_until")
+    if row is None or not row.value:
+        return False
+    try:
+        return aware(now) < aware(datetime.fromisoformat(row.value))
+    except ValueError:
+        return False
+
+
+def _trip(session: Session, res: DialResult, now: datetime, failures: int, last_reason: str) -> None:
+    """Too many calls in a row could not be placed: stop this tick, rest for a while, and say so where the owner looks (the Overview and the held back list)."""
+    until = aware(now) + PAUSE_AFTER_TROUBLE
+    res.trouble = (f"{failures} calls in a row could not be placed ({last_reason}). The dialer stopped and will try again after {until:%H:%M} UTC. "
+                   "Check the Integrations page and press Test on the phone and voice rows.")
+    set_state(session, "dial_pause_until", until.isoformat())
+    set_state(session, "dial_trouble", json.dumps({"since": aware(now).isoformat(), "why": res.trouble}))
+    record_event(session, "dial.paused", None, None, {"failures": failures, "last": last_reason})
+    res.add("vendor_trouble")
+    session.commit()
+
+
+def _clear_trouble(session: Session) -> None:
+    row = session.get(State, "dial_trouble")
+    if row is not None and row.value:
+        row.value = ""
+        set_state(session, "dial_pause_until", "")
+
+
+def restore_problem(session: Session, c: Campaign, t: Target) -> str:
+    """Why a suppressed person must NOT be put back into the list, or "" when they may be. Only a person who was held back by failed tries (not by a request to stop, a bad
+    number or an unknown time zone) and who has used fewer real tries than the campaign allows can come back."""
+    phone = normalize_phone(t.phone)
+    if t.status != "suppressed":
+        return "not_held_back"
+    if not phone:
+        return "bad_number"
+    if is_suppressed(session, phone) or latest_consent(session, phone, "call") == "revoked":
+        return "do_not_call"
+    if zone(t.timezone) is None:
+        return "unknown_timezone"
+    if history(session, t, t.timezone)[0] >= c.max_attempts:
+        return "max_attempts"
+    return ""
+
+
 def dial_tick(session: Session, settings, adapters, now: datetime, limit: int = 40) -> DialResult:
     res = DialResult()
     if settings.kill_switch:
@@ -200,10 +279,14 @@ def dial_tick(session: Session, settings, adapters, now: datetime, limit: int = 
         return res
     if not settings.demo_mode:
         reap_stale_calls(session, now)
+    if _paused(session, now):
+        res.add("vendor_paused")  # a vendor failed DIAL_FAILURE_LIMIT times in a row a moment ago: no vendor is asked again until the rest is over
+        return res
+    failures, last_failure, slots = 0, "", NOT_LOADED
     for c in list(session.scalars(select(Campaign).where(Campaign.status == "running").order_by(Campaign.id))):
         agent = session.get(Agent, c.agent_id)
         number = session.get(Number, c.number_id) if c.number_id else None
-        today = calls_today(session, c.id, now)
+        today = calls_today(session, c.id, now, settings.office_timezone)
         for t in list(session.scalars(select(Target).where(Target.campaign_id == c.id, Target.status.in_(("new", "queued", "contacted"))).order_by(Target.id))):
             if res.placed + res.drafted >= limit:
                 break
@@ -222,17 +305,29 @@ def dial_tick(session: Session, settings, adapters, now: datetime, limit: int = 
                     session.add(Call(campaign_id=c.id, target_id=t.id, agent_id=agent.id, direction="outbound", peer_phone=t.phone, status="blocked", blocked_reason=d.reason, created_at=now))
                 continue
             attempt = history(session, t, t.timezone)[0] + 1
+            if slots is NOT_LOADED:
+                slots = times.safe_slots(adapters, now)  # once per tick: one calendar request, not one per call
             try:
-                call = place(session, settings, adapters, c, agent, t, number, now, attempt)
+                call = place(session, settings, adapters, c, agent, t, number, now, attempt, slots)
             except SafetyError:  # the kill switch or draft mode came on while the tick ran: stop, nothing was recorded
                 res.halted = True
                 res.add("stopped_by_safety")
                 return res
-            today += 1
             res.call_ids.append(call.id)
             if call.status == "failed":
                 res.blocked += 1
-                res.add("place_failed")
+                res.add(call.blocked_reason or "place_failed")
+                if call.blocked_reason == "place_stopped":
+                    continue
+                failures, last_failure = failures + 1, call.blocked_reason or "place_failed"
+                if failures >= settings.dial_failure_limit:
+                    _trip(session, res, now, failures, last_failure)
+                    return res
+                if call.blocked_reason == "place_unconfirmed":
+                    today += 1  # it may have rung, so it counts against the cap
                 continue
+            failures = 0
+            _clear_trouble(session)
+            today += 1
             res.placed += 1
     return res
