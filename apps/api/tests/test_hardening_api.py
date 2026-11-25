@@ -255,6 +255,18 @@ def test_a_call_consent_column_never_overrides_a_refusal(session, seeded):
     assert rep.consents == 0 and rep.flagged == {"consent_not_recorded_refused_before": 1} and latest_consent(session, "+12065550141", "call") != "granted"
 
 
+def test_the_share_of_a_split_test_survives_a_save_and_a_read_back(client):
+    o = {**login(client), "x-ringlark": "1"}
+    agent = client.get("/api/agents", headers=o).json()[0]
+    other = next(v for v in agent["versions"] if v["id"] != agent["active_version_id"])
+    for share in (0.2, 0.3, 0.5, 0.1):
+        r = client.post(f"/api/agents/{agent['id']}/split", headers=o, json={"candidate_id": other["id"], "share_b": share})
+        assert r.status_code == 200, r.text
+        back = next(a for a in client.get("/api/agents", headers=o).json() if a["id"] == agent["id"])
+        assert back["candidate_version_id"] == other["id"] and back["ab_share_b"] == share
+    assert client.post(f"/api/agents/{agent['id']}/split", headers=o, json={"candidate_id": other["id"], "share_b": 0.9}).status_code == 422
+
+
 def test_agents_and_numbers_are_owner_only(client):
     a = login(client, "approver@example.test")
     body = "x" * 60

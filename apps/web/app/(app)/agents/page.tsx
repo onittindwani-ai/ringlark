@@ -26,6 +26,8 @@ function Editor({ agent, me }: { agent: Agent; me: Me | undefined }) {
   const [conf, setConf] = useState<number | null>(null);
   // The share shown is the one saved on the agent; the picker only holds a value of its own until a candidate exists.
   const [pickedShare, setPickedShare] = useState("0.2");
+  // The candidate that was just saved. The agent is read again after a save, and until that read arrives the share picker must still know a candidate exists.
+  const [savedCandidate, setSavedCandidate] = useState<number | null>(null);
   const share = agent.candidate_version_id ? String(agent.ab_share_b) : pickedShare;
   useEffect(() => { setBody(active.body); }, [agent.id, active.id, active.body]);
   useEffect(() => { setA(String(before.id)); setB(String(newest.id)); }, [agent.id, newest.id, before.id]);
@@ -33,7 +35,7 @@ function Editor({ agent, me }: { agent: Agent; me: Me | undefined }) {
   const diff = useQuery({ queryKey: ["diff", agent.id, a, b], queryFn: () => get<DiffResult>(`/agents/${agent.id}/diff?a=${a}&b=${b}`), enabled: a !== b });
   const save = useMutation({ mutationFn: () => post<{ version: number }>(`/agents/${agent.id}/versions`, { body, note }), onSuccess: (r) => { notify.success(`Saved as version ${r.version}. It is not live until you activate it.`); setNote(""); refresh(); }, onError: (e: Error) => notify.error("Could not save", e.message) });
   const activate = useMutation({ mutationFn: (id: number) => post(`/agents/${agent.id}/activate`, { version_id: id }), onSuccess: () => { notify.success("Activated. New calls use this version."); refresh(); }, onError: (e: Error) => notify.error("Only the owner can activate", e.message) });
-  const split = useMutation({ mutationFn: (v: { id: number | null; share: number }) => post(`/agents/${agent.id}/split`, { candidate_id: v.id, share_b: v.share }), onSuccess: () => { notify.success("Split test updated."); refresh(); }, onError: (e: Error) => notify.error("Could not set the split", e.message) });
+  const split = useMutation({ mutationFn: (v: { id: number | null; share: number }) => post(`/agents/${agent.id}/split`, { candidate_id: v.id, share_b: v.share }), onSuccess: (_d, v) => { setSavedCandidate(v.id); notify.success("Split test updated."); refresh(); }, onError: (e: Error) => notify.error("Could not set the split", e.message) });
   const words = body.trim().split(/\s+/).filter(Boolean).length;
   const short = body.trim().length < 40;
   const owner = me?.role === "owner";
@@ -75,7 +77,7 @@ function Editor({ agent, me }: { agent: Agent; me: Me | undefined }) {
       <Card title="Split test (A and B)">
         <div className="rm-seg">
           <label className="sx-label">Candidate <select className="rm-select" value={agent.candidate_version_id ?? ""} onChange={(e) => split.mutate({ id: e.target.value ? Number(e.target.value) : null, share: Number(share) })} disabled={!owner}><option value="">No split test</option>{agent.versions.filter((v) => v.id !== agent.active_version_id).map((v) => <option key={v.id} value={v.id}>Version {v.version}</option>)}</select></label>
-          <label className="sx-label">Share of calls <select className="rm-select" value={share} onChange={(e) => { setPickedShare(e.target.value); if (agent.candidate_version_id) split.mutate({ id: agent.candidate_version_id, share: Number(e.target.value) }); }} disabled={!owner}>{["0.1", "0.2", "0.3", "0.5"].map((s) => <option key={s} value={s}>{Number(s) * 100}%</option>)}</select></label>
+          <label className="sx-label">Share of calls <select className="rm-select" value={share} onChange={(e) => { setPickedShare(e.target.value); const candidate = agent.candidate_version_id ?? savedCandidate; if (candidate) split.mutate({ id: candidate, share: Number(e.target.value) }); }} disabled={!owner}>{["0.1", "0.2", "0.3", "0.5"].map((s) => <option key={s} value={s}>{Number(s) * 100}%</option>)}</select></label>
           <span className="rm-mini">Each call gets A or B by a stable hash. Results are on the Metrics page. {owner ? "" : "Only the owner can change this."}</span>
         </div>
       </Card>

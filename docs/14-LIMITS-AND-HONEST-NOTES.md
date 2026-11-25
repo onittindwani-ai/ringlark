@@ -4,7 +4,7 @@ Read this before you trust Ringlark with real people. Everything here was run on
 
 ## What was run
 
-- <!--n:tests.passed-->313<!--/n--> Python tests pass and <!--n:tests.skipped-->1<!--/n--> is skipped (the Postgres cycle, which needs `TEST_POSTGRES_URL`). Line coverage of the `ringlark` package is <!--n:tests.coverage_percent-->91<!--/n--> percent (`pytest --cov=ringlark`). The weakest files are `worker.py` (49 percent) and `adapters/smtp_imap.py` (57 percent). <!--n:contract_tests-->12<!--/n--> contract tests check the adapters against saved excerpts of the vendors' public docs.
+- <!--n:tests.passed-->314<!--/n--> Python tests pass and <!--n:tests.skipped-->1<!--/n--> is skipped (the Postgres cycle, which needs `TEST_POSTGRES_URL`). Line coverage of the `ringlark` package is <!--n:tests.coverage_percent-->91<!--/n--> percent (`pytest --cov=ringlark`). The weakest files are `worker.py` (49 percent) and `adapters/smtp_imap.py` (57 percent). <!--n:contract_tests-->12<!--/n--> contract tests check the adapters against saved excerpts of the vendors' public docs.
 - Compliance property tests make thousands of random worlds and check that the dialer never calls outside the person's hours, never calls a do not call or revoked consent number, never goes over the cap, and never places a call without the AI disclosure. They run on the pure rules and on the real database path.
 - Browser tests (Playwright, Chrome) run the whole demo path, axe accessibility checks on all 11 pages in light and dark with zero serious or critical findings, keyboard use, reduced motion, 5,000 call rows, layout shift, console errors, and 8 screenshots states at 1440 by 900 and 390 by 844.
 - `tools/score_seed.py`: all 7 planted problem types are held back (19 rows).
