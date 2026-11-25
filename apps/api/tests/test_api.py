@@ -389,7 +389,7 @@ def test_a_first_run_in_demo_mode_loads_the_practice_and_never_touches_existing_
         n = len(list(s.scalars(select(Target))))
     assert n > 0
     assert seed_empty_demo(app) is False  # data exists now: left alone
-    live = create_app(make_settings(tmp_path, demo_mode=False, session_secret="Rt7Kq2Vw9Xm4Zc8Lb3Nf6Hy1Js5Dp0Ga2Ue7Tq4Wi9"), ctx)
+    live = create_app(make_settings(tmp_path, demo_mode=False, session_secret="test-only-Rt7Kq2Vw9Xm4Zc8Lb3Nf6Hy1Js5Dp0Ga2Ue7Tq4Wi9"), ctx)
     assert seed_empty_demo(live) is False
 
 
