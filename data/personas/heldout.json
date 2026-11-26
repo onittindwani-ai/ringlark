@@ -1,5 +1,5 @@
 {
-  "note": "Held out persona set. Written before the offline agent's rules, in different wording from the development set. First run saved in data/eval/persona_heldout_first_run.json. All callers are fictional.",
+  "note": "Held out persona set. Written before the offline agent's rules, in different wording from the development set. First run saved in data/eval/persona_heldout_first_run.json. All callers are sample callers.",
   "personas": [
     {"id": "H01", "category": "hostile", "title": "Furious, no removal request",
      "caller": ["Oh brilliant, another one of you vultures.", "Unbelievable. Don't you people have anything better to do with your day?", "I'm putting the phone down."],

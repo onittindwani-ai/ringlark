@@ -149,7 +149,7 @@ class ToolService:
 
     def t_lookup_crm(self, a: dict) -> dict:
         if self.call.direction == "inbound":
-            # An inbound caller is whoever the caller ID says, and caller ID can be faked: no name is read back to them.
+            # An inbound caller is whoever the caller ID says, and caller ID can be spoofed: no name is read back to them.
             return {"ok": True, "found": False, "first_name": "", "last_name": ""}
         p = self.ctx.adapters.crm.find_by_phone(self.call.peer_phone)
         if p is None and self.target is not None:

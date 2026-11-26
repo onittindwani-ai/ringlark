@@ -2,7 +2,7 @@
  "openapi": "3.1.0",
  "info": {
   "title": "Ringlark API",
-  "version": "1.0.1"
+  "version": "1.0.2"
  },
  "paths": {
   "/health": {
@@ -2261,7 +2261,7 @@
     "tags": [
      "demo"
     ],
-    "summary": "Add many fictional finished calls, to check that long tables stay fast",
+    "summary": "Add many sample finished calls, to check that long tables stay fast",
     "operationId": "stress_api_demo_stress_calls_post",
     "requestBody": {
      "content": {

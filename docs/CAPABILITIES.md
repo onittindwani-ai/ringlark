@@ -1,6 +1,6 @@
 # What Ringlark does (with pictures)
 
-All screens show fictional demo data (a made up dental practice and invented people). Desktop (1440 by 900) and phone (390 by 844) versions of each are in `docs/screenshots/`.
+All screens show demo data (a sample dental practice and example people). Desktop (1440 by 900) and phone (390 by 844) versions of each are in `docs/screenshots/`.
 
 ## Overview: is anything being called that should not be
 ![Overview](screenshots/desktop-01-overview-default.png)

@@ -1,6 +1,6 @@
 # Ringlark
 
-Ringlark helps you set up an AI phone caller that books meetings, for inbound and outbound calls, with follow ups after each call. It starts in a safe draft mode where no call or text is made, so you can try it on invented data in about 10 minutes. It is a setup system, not a hosted voice platform: the voice engine is Ultravox and the phone numbers are Telnyx.
+Ringlark helps you set up an AI phone caller that books meetings, for inbound and outbound calls, with follow ups after each call. It starts in a safe draft mode where no call or text is made, so you can try it on sample data in about 10 minutes. It is a setup system, not a hosted voice platform: the voice engine is Ultravox and the phone numbers are Telnyx.
 
 ![Overview](docs/screenshots/desktop-01-overview-default.png)
 
@@ -18,7 +18,7 @@ Ringlark helps you set up an AI phone caller that books meetings, for inbound an
 
 ## Try it
 
-Follow [docs/01-QUICK-DEMO.md](docs/01-QUICK-DEMO.md). Everything in the demo is fictional and nothing leaves your computer. The demo password only works while `DEMO_MODE=true`.
+Follow [docs/01-QUICK-DEMO.md](docs/01-QUICK-DEMO.md). Everything in the demo is sample data and nothing leaves your computer. The demo password only works while `DEMO_MODE=true`.
 
 ## Use it for real
 
@@ -34,7 +34,7 @@ Numbers come from `data/counts.json`, `data/measured.json` and the runs on 2026-
 - A fresh clone in a temporary folder is installed from nothing, built, tested and run through all the browser tests, then deleted (the last run is in `docs/14-LIMITS-AND-HONEST-NOTES.md`).
 - <!--n:browser_tests-->39<!--/n--> browser tests in Chrome: the whole demo path, a CSV upload, accessibility scans of all 11 pages in light and dark (0 serious or critical problems), keyboard use, reduced motion, 5,000 call rows, no layout shift, no console errors.
 - The seed check (`python tools/score_seed.py`): 7 kinds of planted problems (19 rows), all held back.
-- How well it reads callers it has never seen, on two independent test sets written by authors who never saw the code (rules, not a language model): first run on set A <!--n:reader.set_a_first.strict-->65<!--/n--> of <!--n:reader.set_a_first.lines-->135<!--/n--> lines, first run on set B <!--n:reader.set_b_first.strict-->83<!--/n--> of <!--n:reader.set_b_first.lines-->137<!--/n-->. A stop request is the number that matters most: see [docs/CALLER-READER-EVAL.md](docs/CALLER-READER-EVAL.md).
+- How well it reads callers it has never seen, on two independent test sets written by separate AI test authors who never saw the code (rules, not a language model): first run on set A <!--n:reader.set_a_first.strict-->65<!--/n--> of <!--n:reader.set_a_first.lines-->135<!--/n--> lines, first run on set B <!--n:reader.set_b_first.strict-->83<!--/n--> of <!--n:reader.set_b_first.lines-->137<!--/n-->. A stop request is the number that matters most: see [docs/CALLER-READER-EVAL.md](docs/CALLER-READER-EVAL.md).
 - The persona suite uses an offline rule based agent, not a language model. Held out set 2, first run: **7 of 14**. Held out set 1, first run: 12 of 14, then tuned. Dev set: 14 of 14 (tuned against). See [docs/PERSONA-SUITE-EVAL.md](docs/PERSONA-SUITE-EVAL.md).
 
 ## Honest limits
@@ -43,7 +43,7 @@ No adapter has been run against a real service. The way a Telnyx call joins an U
 
 ## Layout
 
-`apps/api` API and worker, `apps/web` dashboard, `mock` fake vendor servers, `data` demo data and test sets, `tools` helper commands, `docs` guides, `packages` shared frozen base, `deploy` hosting files, `prompts` and `templates` for Claude Code, Codex, ChatGPT and Claude.
+`apps/api` API and worker, `apps/web` dashboard, `mock` mock vendor servers, `data` demo data and test sets, `tools` helper commands, `docs` guides, `packages` shared frozen base, `deploy` hosting files, `prompts` and `templates` for Claude Code, Codex, ChatGPT and Claude.
 
 ## Licence
 

@@ -1,6 +1,6 @@
 # Ringlark held out test sets (A and B)
 
-Written by an independent test author from three docs only: `docs/SPEC.md`, `docs/00-START-HERE.md`, `docs/CAPABILITIES.md`. No code, tests, data folder or other docs were opened. Author model: claude-sonnet-5-5.
+Written by a separate AI test author from three docs only: `docs/SPEC.md`, `docs/00-START-HERE.md`, `docs/CAPABILITIES.md`. No code, tests, data folder or other docs were opened. Author model: claude-sonnet-5-5.
 
 ## Read this first: the spec has no label list
 
@@ -74,7 +74,7 @@ Text channel utterances: A 18, B 22. Script expected outcomes, A: booked 6, do_n
 
 Hand written by the author from the spec terms, one entry at a time, then shuffled with a fixed seed (A 11, B 23) before ids were assigned, so ids and order carry no label information. A generator script and a validator ran over the output (kept outside this folder). The validator asserted: at least 120 utterances and 25 scripts per set, every input id has a key and the reverse, the primary label is always in `acceptable_labels`, ambiguity share 13 to 17 percent for utterances and 3 to 5 scripts, no U+2014 or U+2013 anywhere, every phone like number matches `555 01xx`, and inputs hold no label, tag, outcome or note.
 
-Set A: dental, solar, roofing, insurance, real estate, gym, HVAC and a medical office, mostly polite American phrasing. Set B: freight, restaurant software, accounting, auto dealer service, veterinary and staffing, with terser, British, Indian English, elderly, sarcastic and text speak tones, more indirect refusals ("we're all set"), fragments and mixed requests. Company names are invented. People are fictional. Phone numbers are 555 01xx only.
+Set A: dental, solar, roofing, insurance, real estate, gym, HVAC and a medical office, mostly polite American phrasing. Set B: freight, restaurant software, accounting, auto dealer service, veterinary and staffing, with terser, British, Indian English, elderly, sarcastic and text speak tones, more indirect refusals ("we're all set"), fragments and mixed requests. Company names are examples. People are sample names. Phone numbers are 555 01xx only.
 
 ## Caveats
 

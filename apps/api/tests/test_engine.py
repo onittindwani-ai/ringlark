@@ -86,7 +86,7 @@ def test_end_call_with_do_not_call_suppresses_and_stops_the_target(session, ctx,
     out = ToolService(session, ctx, c).run("end_call", {"disposition": "do_not_call"})
     assert out["ok"] and c.disposition == "do_not_call" and t.status == "suppressed"
     assert session.scalars(select(Suppression).where(Suppression.phone == c.peer_phone)).first()
-    assert ToolService(session, ctx, c).run("end_call", {"disposition": "made up"})["disposition"] == "needs_review"
+    assert ToolService(session, ctx, c).run("end_call", {"disposition": "not a real value"})["disposition"] == "needs_review"
 
 
 def test_text_only_goes_to_the_person_on_the_call_and_only_with_consent(session, ctx, seeded):
@@ -191,7 +191,7 @@ def test_qa_scores_are_code(session):
     assert qa.score_call(good, "booked")["score"] == 100
     bad = [{"speaker": "agent", "text": "Hi, I am a real person from the practice and it costs $80."}]
     s = qa.score_call(bad, "needs_review")
-    assert s["flagged"] and not s["checks"]["disclosed_ai"] and not s["checks"]["no_invented_price"] and not s["checks"]["no_human_claim"]
+    assert s["flagged"] and not s["checks"]["disclosed_ai"] and not s["checks"]["no_price_quoted"] and not s["checks"]["no_human_claim"]
     assert rule_disposition([{"speaker": "caller", "text": "remove me from your list"}]) == "do_not_call" and rule_disposition([]) == "no_answer"
     assert sum(qa.sampled(i) for i in range(1000)) in range(150, 260)
 

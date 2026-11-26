@@ -36,7 +36,7 @@ def create_app(settings: Settings | None = None, ctx: Ctx | None = None) -> Fast
         if not settings.seed_dir and datadir.CHECKOUT_DATA.exists():
             ctx.settings.seed_dir = str(datadir.CHECKOUT_DATA)  # a checkout: the data folder next to the source. An installed copy must set SEED_DIR.
     app = create_base_app(ctx.settings, ctx.factory)
-    app.title, app.version = "Ringlark API", "1.0.1"
+    app.title, app.version = "Ringlark API", "1.0.2"
     app.add_middleware(PerRouteBodyLimit)
     app.state.ctx = ctx
     # A dashboard page makes several calls at once. This bucket is per client address (set uvicorn --proxy-headers so that is the real visitor, not the web server).
@@ -65,10 +65,10 @@ def create_app(settings: Settings | None = None, ctx: Ctx | None = None) -> Fast
 
 
 def seed_empty_demo(app: FastAPI) -> bool:
-    """A first run in demo mode starts with the fictional practice already loaded, so no screen is empty and Run now has someone to call.
+    """A first run in demo mode starts with the sample practice already loaded, so no screen is empty and Run now has someone to call.
     Only when demo mode is on and the database has no agent yet. A database that already has data is never touched."""
     ctx: Ctx = app.state.ctx
-    if not ctx.settings.demo_shortcuts:  # never put the fictional practice into a database whose owner set a password
+    if not ctx.settings.demo_shortcuts:  # never put the sample practice into a database whose owner set a password
         return False
     from sqlalchemy import func, select
 

@@ -24,9 +24,9 @@ PATTERNS = {
 }
 SKIP_SUFFIX = {".png", ".jpg", ".pdf", ".ico", ".woff", ".woff2"}
 SKIP_NAMES = {"pnpm-lock.yaml", "scan_secrets.py"}
-# Test fixtures use obviously fake values. A match is allowed only when the matched text itself carries one of these markers (the value of the
+# Test fixtures use obviously dummy values. A match is allowed only when the matched text itself carries one of these markers (the value of the
 # assignment), never because some other word on the same line says "example", which used to hide a real key sitting next to an example address.
-ALLOW = ("example", "not-for-real", "e2e-only", "dev-only", "fake", "demo-secret", "test-only", "change-me")
+ALLOW = ("example", "not-for-real", "e2e-only", "dev-only", "stub", "demo-secret", "test-only", "change-me")
 
 
 def kinds_in(line: str) -> list[str]:

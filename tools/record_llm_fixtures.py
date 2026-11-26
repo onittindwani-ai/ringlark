@@ -1,7 +1,7 @@
 """Record the model answers for the persona sets into data/llm_fixtures/, so the demo can replay them with LLM_BACKEND=fixture.
 
 IMPORTANT: these are NOT answers of a real model. The recording goes through the real anthropic code path (request building, schema,
-response parsing, the guards around the agent) against a local fake server that answers with the offline stand in. So the fixtures prove the
+response parsing, the guards around the agent) against a local mock server that answers with the offline stand in. So the fixtures prove the
 replay path and the request shape, not model quality. Replace them with a recording from a real key (LLM_RECORD=true) when you have one.
 
 Run: python tools/record_llm_fixtures.py
@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "apps" / "api" / "src"))
 sys.path.insert(0, str(ROOT))
 
-from mock.anthropic_mock import FakeAnthropic  # noqa: E402
+from mock.anthropic_mock import StubAnthropic  # noqa: E402
 from ringlark.agent_live import LiveModelAgent  # noqa: E402
 from ringlark.config import Settings  # noqa: E402
 from ringlark.offline_llm import OfflineBackend  # noqa: E402
@@ -41,8 +41,8 @@ def record() -> dict:
     if OUT.exists():
         shutil.rmtree(OUT)
     prompt, runs = strong_prompt(), 0
-    with FakeAnthropic(answer_like_the_offline_agent) as fake:
-        settings = Settings(_env_file=None, llm_backend="anthropic", anthropic_api_key="fake-key-for-local-server", anthropic_base_url=fake.url, llm_record=True,
+    with StubAnthropic(answer_like_the_offline_agent) as stub:
+        settings = Settings(_env_file=None, llm_backend="anthropic", anthropic_api_key="stub-key-for-local-server", anthropic_base_url=stub.url, llm_record=True,
                             llm_fixtures_dir=str(OUT), database_url="sqlite://")
         reset_budgets()
         llm = build_llm(settings, None)
@@ -52,9 +52,9 @@ def record() -> dict:
                 runs += 1
     files = len(list(OUT.glob("*.json")))
     (OUT / "README.txt").write_text(
-        "Recorded from a LOCAL FAKE server that answers with the offline stand in. Not answers of a real model.\n"
+        "Recorded from a LOCAL MOCK server that answers with the offline stand in. Not answers of a real model.\n"
         "They prove the replay path and the request shape only. Regenerate: python tools/record_llm_fixtures.py\n", encoding="utf-8")
-    return {"personas_played": runs, "files": files, "requests_to_fake_server": len(fake.requests)}
+    return {"personas_played": runs, "files": files, "requests_to_mock_server": len(stub.requests)}
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-"""Score the offline caller reader and agent on an independent test set (written by someone who never saw the code).
+"""Score the offline caller reader and agent on an independent test set (written by a separate AI test author who never saw the code).
 
 Each set folder holds `input.json` (utterances and scripts) and `key.json` (answers keyed by id). Two kinds of item:
 

@@ -17,7 +17,7 @@ export const WHY: Record<string, string> = {
 export const why = (r: string) => WHY[r] ?? r.replace(/_/g, " ");
 
 export const QA_LABEL: Record<string, string> = {
-  disclosed_ai: "Said it is an AI", recording_notice: "Gave the recording notice", no_human_claim: "Never claimed to be human", honoured_stop: "Honoured a request to stop", no_invented_price: "Did not make up a price",
+  disclosed_ai: "Said it is an AI", recording_notice: "Gave the recording notice", no_human_claim: "Never claimed to be human", honoured_stop: "Honoured a request to stop", no_price_quoted: "Did not make up a price",
   short_turns: "Kept replies short", ended_cleanly: "Ended with an outcome", no_prompt_leak: "Kept its instructions private",
 };
 

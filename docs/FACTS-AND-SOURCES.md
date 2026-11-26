@@ -39,7 +39,7 @@ Ringlark reaches a model only through the shared wrapper in `packages/core-py`, 
 
 | Fact | Status | How it was checked |
 |---|---|---|
-| The call agent, the caller reader and the summaries send the same request shape as the shared wrapper (path, `x-api-key`, `anthropic-version`, JSON schema in `output_config`, no `temperature`, `top_p`, `top_k`, `tools` or `tool_choice`) | VERIFIED against a local fake server that asserts each field | `apps/api/tests/test_model_path.py` |
+| The call agent, the caller reader and the summaries send the same request shape as the shared wrapper (path, `x-api-key`, `anthropic-version`, JSON schema in `output_config`, no `temperature`, `top_p`, `top_k`, `tools` or `tool_choice`) | VERIFIED against a local mock server that asserts each field | `apps/api/tests/test_model_path.py` |
 | The agent model is `claude-sonnet-5-5` and the reader and summaries use `claude-haiku-5-5` (settings `LLM_HARD_MODEL` and `LLM_BULK_MODEL`) | VERIFIED as settings defaults; model ids and prices on the vendor's page change | `apps/api/src/ringlark/config.py` and `packages/core-py/src/sendora_core/settings.py`, 2026-11-23 |
 | A real model follows the schema and the agent rules on a real call, within the time a voice call allows | UNVERIFIED live | never run with a real key. Run `python tools/eval_independent.py` with a model reader first |
-| Recorded answers in `data/llm_fixtures` | They are NOT model answers | made from a local fake server that answers with the offline rules (`tools/record_llm_fixtures.py`) |
+| Recorded answers in `data/llm_fixtures` | They are NOT model answers | made from a local mock server that answers with the offline rules (`tools/record_llm_fixtures.py`) |

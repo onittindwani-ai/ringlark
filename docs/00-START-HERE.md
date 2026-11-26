@@ -18,7 +18,7 @@ Ringlark helps you set up an AI phone caller that books meetings, and the follow
 - A versioned prompt library with a compare view, a split test, a text simulator and a persona suite (14 scripted callers with an answer key).
 - Tools the agent can use during a call: book a meeting, look up the CRM, transfer to a person, send a text, press a key in a phone menu, end the call with a result.
 - After each call: transcript, summary, result code, a QA score, follow ups that wait for your approval, and a CRM note.
-- A fictional practice's worth of data with planted problems, so you can see the rules stop calls they should stop.
+- A sample practice's worth of data with planted problems, so you can see the rules stop calls they should stop.
 
 ## What it is not
 

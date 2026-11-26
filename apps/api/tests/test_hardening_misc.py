@@ -40,7 +40,7 @@ def test_a_follow_up_to_something_that_is_not_one_address_or_number_is_blocked(s
     assert bad_mail.blocked_reason == bad_sms.blocked_reason == "bad_recipient"
 
 
-def fake_docker(tmp_path: Path, body: str) -> dict:
+def stub_docker(tmp_path: Path, body: str) -> dict:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     exe = bin_dir / "docker"
@@ -50,7 +50,7 @@ def fake_docker(tmp_path: Path, body: str) -> dict:
 
 
 def test_the_backup_script_runs_from_any_folder_and_writes_a_private_file(tmp_path):
-    env = fake_docker(tmp_path, "echo dump-bytes")
+    env = stub_docker(tmp_path, "echo dump-bytes")
     r = subprocess.run(["sh", str(ROOT / "deploy" / "hetzner" / "backup.sh")], cwd=tmp_path, env=env, capture_output=True, text=True)
     assert r.returncode == 0, r.stderr
     (dump,) = list((tmp_path / "out").glob("ringlark-*.dump"))
@@ -62,7 +62,7 @@ def test_a_failed_dump_leaves_no_empty_file_and_keeps_the_old_ones(tmp_path):
     out.mkdir()
     for i in range(14):
         (out / f"ringlark-2026010{i % 10}-000{i}.dump").write_text("old")
-    env = fake_docker(tmp_path, "exit 1")
+    env = stub_docker(tmp_path, "exit 1")
     r = subprocess.run(["sh", str(ROOT / "deploy" / "hetzner" / "backup.sh")], cwd=tmp_path, env=env, capture_output=True, text=True)
     assert r.returncode != 0
     assert len(list(out.glob("ringlark-*"))) == 14 and not list(out.glob("*.part"))

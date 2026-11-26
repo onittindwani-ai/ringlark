@@ -14,7 +14,7 @@
 - **Held out set:** test callers written after the agent was tuned, and scored once, so the score is honest. After you tune against them they are no longer held out.
 - **IVR / phone menu:** the "press 1 for sales" menu. The agent hangs up or presses one key once.
 - **Kill switch:** one button that stops everything.
-- **Persona suite:** scripted fake callers (hostile, rushed, wrong number, asks if it is a robot, and more) with an answer key.
+- **Persona suite:** scripted sample callers (hostile, rushed, wrong number, asks if it is a robot, and more) with an answer key.
 - **Prompt:** the written instructions that tell the agent who it is and what it may do. Each change is a new version.
 - **QA score:** a score for each call from checks like "said it was an AI" and "honored stop".
 - **STIR/SHAKEN:** a system where your carrier signs your calls so other carriers can trust the caller id.

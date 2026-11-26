@@ -106,7 +106,7 @@ These are set when you create a campaign (on the Campaigns page or through the A
 | Calling hours | 09:00 to 17:00 | The person's local time, weekdays only. A person with an unknown time zone is never called. |
 | Daily cap | 50 (25 in the demo) | Most calls the campaign places in one day. |
 | Transfers to a person | 09:00 to 17:00 New York time, weekdays | Outside those hours the agent offers a call back instead. Set by `HUMAN_TRANSFER_HOURS` and `OFFICE_TIMEZONE`. |
-| Demo phone numbers | `+1 415 555 0100` to `0199` | The fictional range reserved for stories and examples. Never use real numbers in the demo. |
+| Demo phone numbers | `+1 415 555 0100` to `0199` | The range reserved for stories and examples. Never use real numbers in the demo. |
 
 ## Reply and summary model
 

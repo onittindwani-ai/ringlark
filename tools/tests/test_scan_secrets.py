@@ -12,9 +12,9 @@ def test_a_real_looking_key_is_found_even_when_the_line_also_says_example():
     assert scan_secrets.kinds_in(f"ANTHROPIC_API_KEY={REAL}  # see https://example.test/docs") == ["Anthropic key"]
 
 
-def test_a_fixture_value_that_is_marked_as_fake_is_let_through():
+def test_a_fixture_value_that_is_marked_as_stub_is_let_through():
     assert scan_secrets.kinds_in('secret = "test-only-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"') == []
-    assert scan_secrets.kinds_in("key: sk-ant-fake-aaaaaaaaaaaaaaaaaaaaaaaa") == []
+    assert scan_secrets.kinds_in("key: sk-ant-stub-aaaaaaaaaaaaaaaaaaaaaaaa") == []
 
 
 def test_the_shared_packages_are_scanned_but_not_their_test_fixtures():

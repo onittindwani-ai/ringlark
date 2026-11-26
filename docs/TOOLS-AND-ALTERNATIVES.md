@@ -268,7 +268,7 @@ What Ringlark has for each: HubSpot: Adapter written from the docs (contacts onl
 | InboxKit | paid | 40 | 75 | 60 | 55 | 40 | 20 | **48.5** | 57 percent of SendKit |
 | Your own mailboxes over SMTP and IMAP (Google Workspace, Gmail, Outlook) | open source | 78 | 55 | 60 | 85 | 90 | 80 | **74.3** | 111 percent of SendKit |
 
-What Ringlark has for each: SendKit: Recipe prompt only (not run); InboxKit: Not integrated (a mailbox supplier) (not run); Your own mailboxes over SMTP and IMAP (Google Workspace, Gmail, Outlook): Adapter tested on a fake mail server (run on a fake server only).
+What Ringlark has for each: SendKit: Recipe prompt only (not run); InboxKit: Not integrated (a mailbox supplier) (not run); Your own mailboxes over SMTP and IMAP (Google Workspace, Gmail, Outlook): Adapter tested on a mock mail server (run on a mock server only).
 
 **Evidence, SendKit**
 
@@ -297,7 +297,7 @@ What Ringlark has for each: SendKit: Recipe prompt only (not run); InboxKit: Not
 - Reliability and upkeep (60): Deliverability and mailbox health are on you; Google's sending limit page says 2,000 messages a day per user (fetched 2026-11-23) and limits can change.
 - Cost (85): You pay only for mailboxes and domains.
 - Data control (90): Mail stays with your mail provider and the call list stays in your own database.
-- Integration depth (80): Tested against a fake SMTP and IMAP server; never a real mail host.
+- Integration depth (80): Tested against a mock SMTP and IMAP server; never a real mail host.
 - Sources: https://knowledge.workspace.google.com/admin/gmail/gmail-sending-limits-in-google-workspace (checked 2026-11-23), https://support.google.com/mail (checked 2026-11-23)
 
 **Recommendation by user type**

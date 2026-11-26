@@ -81,19 +81,19 @@ def test_outcome_table_covers_every_agent_ending_that_has_a_reading():
     assert ev.OUTCOME_OF_DISPOSITION["transferred"] == "transferred_to_human" and ev.OUTCOME_OF_DISPOSITION["ivr_no_human"] == "phone_menu_navigated"
 
 
-def test_a_model_run_works_against_a_local_fake_and_a_stop_request_is_never_left_to_the_model(tmp_path, monkeypatch):
+def test_a_model_run_works_against_a_local_mock_server_and_a_stop_request_is_never_left_to_the_model(tmp_path, monkeypatch):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-    from mock.anthropic_mock import FakeAnthropic
+    from mock.anthropic_mock import StubAnthropic
     from sendora_core.llm import build_llm, reset_budgets
     from sendora_core.settings import BaseAppSettings
 
     folder = make_set(tmp_path)
     answers = {"agent": json.dumps({"say": "Sure.", "tool_calls": []}), "read": json.dumps({"label": "interest", "confidence": 0.5, "reason": "x"})}
-    with FakeAnthropic(lambda b: answers["read"] if "[task:read_caller]" in b["messages"][0]["content"] else answers["agent"]) as fake:
+    with StubAnthropic(lambda b: answers["read"] if "[task:read_caller]" in b["messages"][0]["content"] else answers["agent"]) as stub:
         reset_budgets()
-        cfg = BaseAppSettings(_env_file=None, llm_backend="anthropic", anthropic_api_key="fake-key-for-local-server", anthropic_base_url=fake.url)
+        cfg = BaseAppSettings(_env_file=None, llm_backend="anthropic", anthropic_api_key="stub-key-for-local-server", anthropic_base_url=stub.url)
         monkeypatch.setattr(ev, "LLM_OBJ", build_llm(cfg, None))
         r = ev.evaluate(folder, "t")
     u = r["utterances"]
     assert u["compliance"]["stop_at_once_stopped"] == 1  # the stop line was handled by the rules, whatever the model said
-    assert r["engine"].startswith("language model") and fake.requests
+    assert r["engine"].startswith("language model") and stub.requests

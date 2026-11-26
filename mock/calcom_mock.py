@@ -1,4 +1,4 @@
-"""Fake Cal.com v2 API for slots and bookings, written from the public docs (UNVERIFIED against the real service).
+"""A local mock of the Cal.com v2 API for slots and bookings, written from the public docs (UNVERIFIED against the real service).
 
 GET /v2/slots?eventTypeId&start&end and POST /v2/bookings need `Authorization: Bearer` and a `cal-api-version` header.
 """

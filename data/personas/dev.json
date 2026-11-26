@@ -1,5 +1,5 @@
 {
- "note": "Development persona set. The offline agent rules were tuned against these. Fictional callers.",
+ "note": "Development persona set. The offline agent rules were tuned against these. Sample callers.",
  "personas": [
   {
    "id": "D01",

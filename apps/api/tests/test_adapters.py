@@ -1,4 +1,4 @@
-"""Each real adapter against the fake vendor server written from the public docs. This proves our requests and our reading of the replies agree, NOT that the real vendor behaves the same."""
+"""Each real adapter against the mock vendor server written from the public docs. This proves our requests and our reading of the replies agree, NOT that the real vendor behaves the same."""
 
 import base64
 import json

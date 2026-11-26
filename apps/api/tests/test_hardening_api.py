@@ -117,7 +117,7 @@ def test_an_owner_password_switches_every_demo_shortcut_off(tmp_path):
     assert c.get("/api/auth/me", headers=h).json()["demo_mode"] is False
     assert seed_empty_demo(app) is False
     with ctx.factory() as s:
-        assert s.scalar(select(Campaign.id)) is None  # nothing fictional was written into this database
+        assert s.scalar(select(Campaign.id)) is None  # nothing sample was written into this database
 
 
 def test_the_demo_still_works_without_an_owner_password(client):
@@ -341,7 +341,7 @@ def test_a_follow_up_that_still_names_the_demo_practice_is_never_sent_to_a_real_
     t = session.scalars(select(Target).where(Target.sms_consent.is_(True), Target.timezone == "America/New_York")).first()
     c = Call(campaign_id=camp.id, target_id=t.id, agent_id=camp.agent_id, peer_phone=t.phone, status="completed")
     session.add(c); session.flush()
-    fu = FollowUp(call_id=c.id, channel="sms", to=t.phone, body="Hi. Here: https://example.test/book (fictional demo link). Reply STOP to opt out.", status="pending")
+    fu = FollowUp(call_id=c.id, channel="sms", to=t.phone, body="Hi. Here: https://example.test/book (demo link). Reply STOP to opt out.", status="pending")
     session.add(fu); session.flush()
     sms = SpySms()
     followups.send_due(session, ctx.settings, type("A", (), {"sms": sms, "email": None})(), NOW)
@@ -352,7 +352,7 @@ def test_a_follow_up_that_still_names_the_demo_practice_is_never_sent_to_a_real_
 def test_mail_connections_check_certificates(tmp_path, monkeypatch):
     seen = {}
 
-    class FakeSmtp:
+    class StubSmtp:
         def __init__(self, host, port, timeout=None, context=None):
             seen["ssl_ctx"] = context
 
@@ -371,8 +371,8 @@ def test_mail_connections_check_certificates(tmp_path, monkeypatch):
         def send_message(self, m, to_addrs=None):
             seen["to"] = to_addrs
 
-    monkeypatch.setattr(smtplib, "SMTP", FakeSmtp)
-    monkeypatch.setattr(smtplib, "SMTP_SSL", FakeSmtp)
+    monkeypatch.setattr(smtplib, "SMTP", StubSmtp)
+    monkeypatch.setattr(smtplib, "SMTP_SSL", StubSmtp)
     s = make_settings(tmp_path, smtp_host="smtp.example.test", smtp_port=587, smtp_user="u", smtp_password="test-only-pw", imap_host="imap.example.test")
     a = SmtpImapEmail(s)
     a.send(from_addr="calls@example.test", to="ava@example.test", subject="Hi", body="x")
@@ -383,7 +383,7 @@ def test_mail_connections_check_certificates(tmp_path, monkeypatch):
     assert seen["ssl_ctx"].verify_mode == ssl.CERT_REQUIRED
     captured = {}
 
-    class FakeImap:
+    class StubImap:
         def __init__(self, host, port, ssl_context=None):
             captured["ctx"] = ssl_context
 
@@ -395,7 +395,7 @@ def test_mail_connections_check_certificates(tmp_path, monkeypatch):
 
     import imaplib
 
-    monkeypatch.setattr(imaplib, "IMAP4_SSL", FakeImap)
+    monkeypatch.setattr(imaplib, "IMAP4_SSL", StubImap)
     a._imap()
     assert captured["ctx"].verify_mode == ssl.CERT_REQUIRED
 
@@ -472,7 +472,7 @@ def test_the_version_is_one_number_everywhere(tmp_path):
 
     root = Path(__file__).resolve().parents[3]
     py = tomllib.loads((root / "apps" / "api" / "pyproject.toml").read_text())["project"]["version"]
-    assert py == json.loads((root / "package.json").read_text())["version"] == json.loads((root / "apps" / "web" / "package.json").read_text())["version"] == "1.0.1"
+    assert py == json.loads((root / "package.json").read_text())["version"] == json.loads((root / "apps" / "web" / "package.json").read_text())["version"] == "1.0.2"
     from ringlark.api.app import create_app as ca
 
     assert ca(Settings(_env_file=None, database_url=f"sqlite:///{tmp_path / 'version.sqlite3'}")).version == py

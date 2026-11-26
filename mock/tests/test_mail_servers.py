@@ -3,11 +3,11 @@ import imaplib
 import smtplib
 from email.message import EmailMessage
 
-from mock.mail_servers import FakeMailServers
+from mock.mail_servers import StubMailServers
 
 
 def test_smtp_accepts_and_stores_message():
-    with FakeMailServers() as srv:
+    with StubMailServers() as srv:
         m = EmailMessage()
         m["From"], m["To"], m["Subject"] = "a@x.example.test", "b@y.example.test", "Hello"
         m.set_content("Body text")
@@ -19,7 +19,7 @@ def test_smtp_accepts_and_stores_message():
 
 
 def test_imap_search_fetch_and_mark_seen():
-    with FakeMailServers() as srv:
+    with StubMailServers() as srv:
         raw = b"From: lead@x.example.test\r\nTo: a@y.example.test\r\nSubject: Re: Hi\r\n\r\nYes please\r\n"
         uid = srv.store.deliver(raw)
         c = imaplib.IMAP4(srv.host, srv.imap_port)
@@ -37,7 +37,7 @@ def test_imap_search_fetch_and_mark_seen():
 
 
 def test_imap_rejects_bad_login():
-    with FakeMailServers() as srv:
+    with StubMailServers() as srv:
         c = imaplib.IMAP4(srv.host, srv.imap_port)
         try:
             c.login("demo", "wrong")

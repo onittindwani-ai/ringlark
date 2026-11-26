@@ -42,7 +42,7 @@ class StressIn(BaseModel):
     n: int = Field(ge=1, le=20000)
 
 
-@router.post("/stress-calls", summary="Add many fictional finished calls, to check that long tables stay fast")
+@router.post("/stress-calls", summary="Add many sample finished calls, to check that long tables stay fast")
 def stress(b: StressIn, s: Session = Depends(db, scope="function"), ctx: Ctx = Depends(get_ctx), u: dict = Depends(owner)):
     from datetime import timedelta
 

@@ -1,6 +1,6 @@
 """Demo mode: fill the history, play the conversations of placed calls offline, move the clock, replay a call as a live stream.
 
-Everything here uses fictional people and the offline stand in agent. It places no real call.
+Everything here uses sample people and the offline stand in agent. It places no real call.
 """
 
 from __future__ import annotations
@@ -83,7 +83,7 @@ def play_call(session: Session, ctx, call: Call, persona: dict) -> None:
 
 
 def simulate_placed(session: Session, ctx) -> int:
-    """After the dialer placed calls, let the fictional people answer. Each target has a persona that decides how the call goes."""
+    """After the dialer placed calls, let the sample people answer. Each target has a persona that decides how the call goes."""
     personas = {p["id"]: p for p in load_personas("dev", persona_dir(ctx.settings))}
     n = 0
     for call in session.scalars(select(Call).where(Call.status == "placed", Call.direction == "outbound").order_by(Call.id)):

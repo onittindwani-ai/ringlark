@@ -35,4 +35,4 @@ Every action button shows the processing state and then a tick. Prompt save show
 
 ## Honest labels
 
-Anything produced by the offline stand in is labelled: the persona suite says "offline rules, not a language model", the waveform says "synthetic", the demo bar says "fictional data, nothing leaves this machine".
+Anything produced by the offline stand in is labelled: the persona suite says "offline rules, not a language model", the waveform says "synthetic", the demo bar says "demo data, nothing leaves this machine".

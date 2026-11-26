@@ -1,6 +1,6 @@
 """Reading one thing a caller said and giving it a label, with plain rules. No model.
 
-The labels are the ones the independent test authors used (see docs/CALLER-READER-EVAL.md): interest, objection, hostile, rushed, do_not_call,
+The labels are the ones the separate AI test authors used (see docs/CALLER-READER-EVAL.md): interest, objection, hostile, rushed, do_not_call,
 wrong_person, callback_request, transfer_request, consent_opt_out, robot_question, recording_question, voicemail, phone_menu, unclear.
 
 The reader is a set of rules written by the build, so any score measured with it is a score for these rules, not for a language model.

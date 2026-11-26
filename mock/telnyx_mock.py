@@ -1,4 +1,4 @@
-"""Fake Telnyx messaging API, written from the public docs (UNVERIFIED against the real service).
+"""A local mock of the Telnyx messaging API, written from the public docs (UNVERIFIED against the real service).
 
 POST /v2/messages with Bearer auth and {from, to, text}. Inbound texts are simulated with `signed_inbound`,
 which builds a webhook body and Ed25519 headers exactly as the docs describe: signature over `timestamp|body`.

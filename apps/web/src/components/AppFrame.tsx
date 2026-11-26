@@ -96,7 +96,7 @@ export function AppFrame({ children }: { children: ReactNode }) {
       ) : s?.effective_mode === "draft" ? (
         <div className="rm-banner" role="status"><strong>Draft mode.</strong> <span className="rm-hide-sm">No call is placed and no text is sent. Drafts are saved.</span></div>
       ) : s && demo ? (
-        <div className="rm-banner rm-banner--info" role="status"><strong>Demo mode.</strong> <span className="rm-grow rm-hide-sm">Fictional people and an offline stand in agent. No call is placed.</span><span className="rm-grow show-sm-only" />
+        <div className="rm-banner rm-banner--info" role="status"><strong>Demo mode.</strong> <span className="rm-grow rm-hide-sm">Sample people and an offline stand in agent. No call is placed.</span><span className="rm-grow show-sm-only" />
           <Button size="sm" variant="primary" disabled={!canWrite} disabledReason="Viewers cannot run jobs" onClick={async () => { await run.mutateAsync(); }}>Run now</Button>
           <Button size="sm" disabled={!canWrite} disabledReason="Viewers cannot move the clock" onClick={async () => { await advance.mutateAsync(24); }}>+1 day</Button></div>
       ) : s ? (
@@ -123,7 +123,7 @@ export function AppFrame({ children }: { children: ReactNode }) {
       </AppShell>
       <CommandPalette items={items} open={palette} onOpenChange={setPalette} />
       <ConfirmDialog open={confirmKill} onOpenChange={setConfirmKill} title="Pause everything?" description="The kill switch stops every call and every message at once. You can turn it off again from the banner or the top bar." confirmLabel="Pause all" destructive onConfirm={() => void toggleKill.mutateAsync(true)} />
-      <ConfirmDialog open={confirmReset} onOpenChange={setConfirmReset} title="Reset the demo?" description="This puts the fictional seed data back and clears everything you did in the demo." confirmLabel="Reset" destructive onConfirm={() => void reset.mutateAsync()} />
+      <ConfirmDialog open={confirmReset} onOpenChange={setConfirmReset} title="Reset the demo?" description="This puts the sample seed data back and clears everything you did in the demo." confirmLabel="Reset" destructive onConfirm={() => void reset.mutateAsync()} />
     </>
   );
 }

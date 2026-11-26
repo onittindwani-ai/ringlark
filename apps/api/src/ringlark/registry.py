@@ -39,7 +39,7 @@ def build_registry(settings) -> AdapterRegistry:
     add("crm", "seed", "A", seed.SeedCrm, "Offline. The Ringlark database is the CRM.")
     add("crm", "twenty", "A", TwentyCrm, "Tested against a mock. The real field names are unverified.")
     add("email", "seed", "A", seed.SeedEmail, "Offline. Nothing leaves this machine.")
-    add("email", "smtp_imap", "B", SmtpImapEmail, "Tested against a fake SMTP and IMAP server, not a real mail host.")
+    add("email", "smtp_imap", "B", SmtpImapEmail, "Tested against a mock SMTP and IMAP server, not a real mail host.")
     add("email", "sendkit", "C", recipe("SendKit"), "Recipe prompt, not built.")
     return reg
 

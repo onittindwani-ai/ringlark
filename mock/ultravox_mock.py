@@ -1,4 +1,4 @@
-"""Fake Ultravox API, written from the public API reference (UNVERIFIED against the real service).
+"""A local mock of the Ultravox API, written from the public API reference (UNVERIFIED against the real service).
 
 POST /api/calls with `X-API-Key` makes a call and returns callId and joinUrl. GET /api/calls/{id}/messages returns what was said
 (the real path and field names are UNVERIFIED). `signed_webhook` builds a webhook with the documented headers: HMAC SHA256 hex of body plus timestamp.

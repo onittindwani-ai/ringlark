@@ -22,7 +22,7 @@ export default function IntegrationsPage() {
   if (!q.data) return <div className="rm-page"><PageHead title="Integrations" /><ListSkeleton /></div>;
   return (
     <div className="rm-page">
-      <PageHead title="Integrations" sub="Which tool does each job, and whether it answers. No adapter here has been run against the real service. 'Tested' means a fake server written from the vendor's public docs." />
+      <PageHead title="Integrations" sub="Which tool does each job, and whether it answers. No adapter here has been run against the real service. 'Tested' means a mock server written from the vendor's public docs." />
       <p className="rm-mini" data-testid="tier-legend">{Object.entries(TIER).map(([k, v]) => `Tier ${k}: ${v.charAt(0).toLowerCase()}${v.slice(1)}.`).join(" ")}</p>
       <Card title="Test each connection">
         <ConnectionWizard

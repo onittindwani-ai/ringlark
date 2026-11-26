@@ -121,7 +121,7 @@ def campaigns(s: Session = Depends(db, scope="function"), ctx: Ctx = Depends(get
     for c in s.scalars(select(Campaign).order_by(Campaign.id)):
         counts = {k: v for k, v in s.execute(select(Target.status, __import__("sqlalchemy").func.count()).where(Target.campaign_id == c.id).group_by(Target.status)).all()}
         out.append({**campaign_row(c), "agent": s.get(Agent, c.agent_id).name, "targets": counts, "calls_today": dialer.calls_today(s, c.id, ctx.now(s), ctx.settings.office_timezone),
-                    "timezone_warnings": 0 if ctx.settings.demo_mode else len(intake.timezone_mismatches(s, c.id))})  # the made up demo list is not checked, as at start
+                    "timezone_warnings": 0 if ctx.settings.demo_mode else len(intake.timezone_mismatches(s, c.id))})  # the sample demo list is not checked, as at start
     return out
 
 
@@ -185,7 +185,7 @@ def _campaign_action(s: Session, u: dict, cid: int, action: str, ctx: Ctx | None
             raise HTTPException(403, "Only the owner can start a campaign.")
         if not s.get(Agent, c.agent_id).active_version_id:
             raise HTTPException(409, "The agent has no active prompt version.")
-        odd = intake.timezone_mismatches(s, c.id) if ctx is not None and not ctx.settings.demo_mode else []  # the fictional demo list is not checked
+        odd = intake.timezone_mismatches(s, c.id) if ctx is not None and not ctx.settings.demo_mode else []  # the sample demo list is not checked
         if odd and not ack:
             raise HTTPException(409, f"{len(odd)} people have a time zone that does not fit the area code of their number (for example {odd[0]['phone']} with {odd[0]['timezone']}). A wrong zone means "
                                      "a call at the wrong hour. Look at them under 'Time zone warnings' (GET /api/campaigns/{id}/timezone-warnings), fix the zones in your list, or start again "

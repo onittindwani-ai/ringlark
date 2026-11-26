@@ -34,7 +34,7 @@ This guide gives no price figures. It gives the shape of the offer, so you can p
 - **Setup, once.** Business basics check (`02`), the calling rules check (`US-CALLING-CHECKLIST.md`), accounts and phone numbers, install and hosting, writing and testing the agent prompt, list cleaning, a week in draft mode with the client reading every call plan. Charge for the hours and the care, not for the software, which is free.
 - **Running it, monthly.** Reading the follow up approvals on the days they need a person, listening to flagged calls, tuning the prompt, keeping the do not call list current, a short report. State plainly how many hours a month that includes.
 - **Costs that pass through, at cost.** Hosting, phone numbers and calling minutes, texting and carrier fees, the voice engine, the calendar and CRM seats, and any model usage. Show the client these as their own accounts, not as your markup.
-- **Never charge for** a promised number of meetings or deals. This system places calls inside safety limits, books meetings and drafts follow ups. It cannot promise results, and the demo numbers are fictional.
+- **Never charge for** a promised number of meetings or deals. This system places calls inside safety limits, books meetings and drafts follow ups. It cannot promise results, and the demo numbers are sample data.
 
 ## Onboarding checklist
 
@@ -58,7 +58,7 @@ Plain wording, checked by your own lawyer: what is included in setup and in the 
 
 ## Reporting
 
-The Overview and Metrics pages show counts from the database, not promises. Do not quote results to a client from the demo data. It is fictional. Do not quote the persona suite as a measure of how a language model agent will do on real calls: the suite here runs an offline rule based agent.
+The Overview and Metrics pages show counts from the database, not promises. Do not quote results to a client from the demo data. It is sample data. Do not quote the persona suite as a measure of how a language model agent will do on real calls: the suite here runs an offline rule based agent.
 
 ## When the client leaves
 

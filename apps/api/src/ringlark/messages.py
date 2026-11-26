@@ -6,9 +6,9 @@ from __future__ import annotations
 from ringlark.models import Agent
 
 STOP_LINE = "Reply STOP to opt out."
-DEMO_LINK = "https://example.test/book (fictional demo link)"
+DEMO_LINK = "https://example.test/book (demo link)"
 SMS_KINDS = ("booking_link", "confirmation", "callback")
-DEMO_MARKERS = ("fictional", "example.test")
+DEMO_MARKERS = ("sample practice", "example.test")
 
 
 def company_of(settings, agent: Agent | None) -> str:
@@ -61,7 +61,7 @@ def booked_email(settings, agent: Agent | None) -> tuple[str, str]:
     company, what = company_of(settings, agent), appointment(settings)
     body = f"Hello,\n\nYour {what} is booked. Reply to this email if you need to change it.\n\n{company}"
     if settings.demo_mode:
-        body += " (a fictional practice)"
+        body += " (a sample practice)"
     return f"Your {what} at {company}", f"{body}\n\n--\n{email_footer(settings, company)}"
 
 

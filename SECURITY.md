@@ -17,7 +17,7 @@ Please do not post security problems in a public issue. Open the repository's **
 - Server side request forgery guard on adapter addresses (private, local, non http and credential bearing addresses are refused).
 - Login rate limits (per address and account, per address, per account; one cleaned spelling of the email), signed httpOnly session cookie, CSRF header on writes, owner only settings (the approver login cannot change them). The public demo password, demo accounts and reset exist only without an owner password hash. Request bodies are refused by size before they are read (sign in, webhooks, tool calls each have their own limit).
 - Texts: a person who said stop (on a call, by text or on the do not call list) is checked again at the moment of sending, on every path. The kill switch and draft setting stored in the app are read before every write that leaves the system and the kill switch hangs up live calls. Mail connections verify certificates.
-- Secret scan of tracked files (`python tools/scan_secrets.py`): nothing found, with a test that it does catch fake looking keys.
+- Secret scan of tracked files (`python tools/scan_secrets.py`): nothing found, with a test that it does catch placeholder keys.
 - Dependency audit on 2026-11-23: `pip-audit` over the installed Python packages and `pnpm audit` over all JavaScript packages both reported no known vulnerabilities. This only covers known, published problems on that date. `ringlark` and `sendora-core` are local packages and cannot be audited this way.
 - Compliance property tests (see `docs/14-LIMITS-AND-HONEST-NOTES.md`) check that the dialer never calls outside hours, a do not call number or a revoked consent number.
 

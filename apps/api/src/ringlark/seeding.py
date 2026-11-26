@@ -42,7 +42,7 @@ def load_seed(session: Session, seed: dict, now: datetime, with_targets: bool = 
     session.flush()
     c = seed["campaign"]
     camp = Campaign(name=c["name"], agent_id=agents[c["agent"]].id, number_id=numbers[c["number"]].id, status=c["status"], window_start_hour=c["window_start_hour"], window_end_hour=c["window_end_hour"],
-                    daily_cap=c["daily_cap"], max_attempts=c["max_attempts"], retry_gap_days=c["retry_gap_days"], allow_voicemail=c["allow_voicemail"], voicemail_text=c["voicemail_text"], require_prior_consent=bool(c.get("require_prior_consent", False)),  # the fictional demo practice has no consent column to import
+                    daily_cap=c["daily_cap"], max_attempts=c["max_attempts"], retry_gap_days=c["retry_gap_days"], allow_voicemail=c["allow_voicemail"], voicemail_text=c["voicemail_text"], require_prior_consent=bool(c.get("require_prior_consent", False)),  # the sample demo practice has no consent column to import
                     created_at=now - timedelta(days=10))
     session.add(camp)
     session.flush()

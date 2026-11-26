@@ -41,7 +41,7 @@ def check_token(secret: str, call_id: int, token: str | None, now: float | None 
 
 
 def tool_base_url(settings) -> str:
-    """Where the voice engine reaches the tool endpoints. Outside demo mode an empty PUBLIC_BASE_URL is an error, never a made up address."""
+    """Where the voice engine reaches the tool endpoints. Outside demo mode an empty PUBLIC_BASE_URL is an error, never a guessed address."""
     if settings.public_base_url:
         return settings.public_base_url
     if settings.demo_mode:

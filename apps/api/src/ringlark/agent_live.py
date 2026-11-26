@@ -1,4 +1,4 @@
-"""A language model behind the same `AgentBackend` protocol as the offline stand in. LIVE USE IS UNVERIFIED: it has only run against a local fake server and recorded fixtures.
+"""A language model behind the same `AgentBackend` protocol as the offline stand in. LIVE USE IS UNVERIFIED: it has only run against a local mock server and recorded fixtures.
 
 It is used when LLM_BACKEND=anthropic (or fixture, to replay recordings). The model decides what to say next, but the rules that protect the person
 on the call are code that runs around it, and no word the person says can switch them off:
@@ -8,7 +8,7 @@ on the call are code that runs around it, and no word the person says can switch
    the rule agent with no model call at all, so a stop request always wins and a model that has been talked round cannot argue with it;
 3. whatever the model answers is checked: it must match the schema, may only name the six acting tools (`list_times` only reads the calendar and is not one of them here), a booking must use an offered time, a text goes only
    when the person has not withdrawn consent, a key press must be the configured key and only once, and a disposition must be one of the allowed codes;
-4. what it says is checked: no claim to be a person (replaced by the disclosure), an honest admission when asked if it is a machine, no invented price,
+4. what it says is checked: no claim to be a person (replaced by the disclosure), an honest admission when asked if it is a machine, no price that was not given to it,
    no leaking of the instructions, no link, at most 40 words;
 5. anything wrong (a bad answer, the kill switch, the budget, an error) ends the call politely and marks it "needs review". It never keeps talking unguarded.
 

@@ -1,5 +1,5 @@
 {
- "note": "Second held out set, written after the first set was used for tuning. First run saved in data/eval/persona_heldout2_first_run.json. Fictional callers.",
+ "note": "Second held out set, written after the first set was used for tuning. First run saved in data/eval/persona_heldout2_first_run.json. Sample callers.",
  "personas": [
   {
    "id": "K01",

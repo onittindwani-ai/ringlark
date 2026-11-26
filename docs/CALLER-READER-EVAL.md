@@ -4,7 +4,7 @@
 
 ## What was measured
 
-Two independent test sets, A and B, were written by agents that never saw this code. They read only the spec, the start here guide and the capabilities page. Each set has about 135 things a caller says (one line each, with a label) and 25 whole calls (only the caller's turns, with an expected outcome and the compliance behaviour required). The authors' own notes are in `data/eval/independent/README-heldout-authors.md`, including the labels they chose, the ambiguous items and the codes they used.
+Two independent test sets, A and B, were written by separate AI test authors who never saw this code. They read only the spec, the start here guide and the capabilities page. Each set has about 135 things a caller says (one line each, with a label) and 25 whole calls (only the caller's turns, with an expected outcome and the compliance behaviour required). The authors' own notes are in `data/eval/independent/README-heldout-authors.md`, including the labels they chose, the ambiguous items and the codes they used.
 
 `tools/eval_independent.py` runs both sets. For one line it measures two things:
 
