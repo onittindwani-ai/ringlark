@@ -9,16 +9,16 @@ from pathlib import Path
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from ringlark import intake
+from ringlark import datadir, intake
 from ringlark.models import Agent, Call, Campaign, ConsentRecord, Flow, Number, PromptVersion, Target
 from ringlark.suppression import add_suppression
 from ringlark.util import normalize_phone
 
-DEFAULT_DATA = Path(__file__).resolve().parents[4] / "data"
+DEFAULT_DATA = datadir.CHECKOUT_DATA  # kept for tools/score_seed.py; the code below asks datadir each time
 
 
 def read_seed(data_dir: Path | None = None) -> dict:
-    return json.loads(((data_dir or DEFAULT_DATA) / "seed.json").read_text())
+    return json.loads(((data_dir or datadir.CHECKOUT_DATA) / "seed.json").read_text())
 
 
 def load_seed(session: Session, seed: dict, now: datetime, with_targets: bool = True) -> dict:
@@ -42,7 +42,8 @@ def load_seed(session: Session, seed: dict, now: datetime, with_targets: bool = 
     session.flush()
     c = seed["campaign"]
     camp = Campaign(name=c["name"], agent_id=agents[c["agent"]].id, number_id=numbers[c["number"]].id, status=c["status"], window_start_hour=c["window_start_hour"], window_end_hour=c["window_end_hour"],
-                    daily_cap=c["daily_cap"], max_attempts=c["max_attempts"], retry_gap_days=c["retry_gap_days"], allow_voicemail=c["allow_voicemail"], voicemail_text=c["voicemail_text"], created_at=now - timedelta(days=10))
+                    daily_cap=c["daily_cap"], max_attempts=c["max_attempts"], retry_gap_days=c["retry_gap_days"], allow_voicemail=c["allow_voicemail"], voicemail_text=c["voicemail_text"], require_prior_consent=bool(c.get("require_prior_consent", False)),  # the fictional demo practice has no consent column to import
+                    created_at=now - timedelta(days=10))
     session.add(camp)
     session.flush()
     for s in seed["suppressions"]:

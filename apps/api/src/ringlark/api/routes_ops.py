@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from ringlark import metrics
+from ringlark import crmsync, metrics
 from ringlark.api.deps import db, get_ctx, owner, writer
 from ringlark.api.serializers import iso
 from ringlark.context import Ctx, set_state
@@ -19,12 +19,25 @@ router = APIRouter(prefix="/api", tags=["operations"])
 
 
 @router.get("/overview", summary="Numbers for the overview page")
-def overview(s: Session = Depends(db), ctx: Ctx = Depends(get_ctx)):
-    return metrics.overview(s, ctx.now(s))
+def overview(s: Session = Depends(db, scope="function"), ctx: Ctx = Depends(get_ctx)):
+    return metrics.overview(s, ctx.now(s), ctx.settings.office_timezone)
+
+
+@router.get("/crm/dead-letters", summary="CRM notes that could not be written and were given up on")
+def crm_dead_letters(s: Session = Depends(db, scope="function")):
+    return crmsync.dead_letters(s)
+
+
+@router.post("/crm/dead-letters/{call_id}/retry", summary="Put a dead CRM note back in the queue (owner only)")
+def crm_retry(call_id: int, s: Session = Depends(db, scope="function"), u: dict = Depends(owner)):
+    if not crmsync.retry_dead(s, call_id):
+        raise HTTPException(404, "There is no dead CRM note for that call.")
+    record_audit(s, u["user"], "crm.note_requeued", f"call:{call_id}", {})
+    return {"ok": True}
 
 
 @router.get("/approvals", summary="Pending and recent approvals")
-def approvals(s: Session = Depends(db)):
+def approvals(s: Session = Depends(db, scope="function")):
     rows = list(s.scalars(select(Approval).order_by(Approval.id.desc()).limit(100)))
     return [{"id": a.id, "action": a.action, "summary": a.summary, "risk": a.risk, "status": a.status, "requested_by": a.requested_by, "decided_by": a.decided_by, "note": a.decision_note, "created_at": iso(a.created_at), "payload": a.payload} for a in rows]
 
@@ -35,26 +48,26 @@ class DecideIn(BaseModel):
 
 
 @router.post("/approvals/{approval_id}/decide", summary="Approve or reject")
-def decide_approval(approval_id: int, body: DecideIn, s: Session = Depends(db), u: dict = Depends(writer)):
+def decide_approval(approval_id: int, body: DecideIn, s: Session = Depends(db, scope="function"), u: dict = Depends(writer)):
     try:
         a = decide(s, approval_id, body.approve, u["user"], u["role"], body.note or None)
     except ApprovalError as exc:
         raise HTTPException(409, str(exc)) from exc
-    if a.action == "followup.send" and not body.approve and a.payload.get("followup_id"):
-        fu = s.get(FollowUp, int(a.payload["followup_id"]))
-        if fu:
+    if a.action == "followup.send" and a.status == "rejected" and a.payload.get("followup_id"):
+        fu = s.get(FollowUp, int(a.payload["followup_id"]))  # follows the decision that was really saved, not the request
+        if fu and fu.status == "pending":
             fu.status = "rejected"
     return {"status": a.status}
 
 
 @router.get("/audit", summary="Audit log, newest first")
-def audit(limit: int = Query(100, ge=1, le=1000), s: Session = Depends(db)):
+def audit(limit: int = Query(100, ge=1, le=1000), s: Session = Depends(db, scope="function")):
     rows = s.scalars(select(AuditEntry).order_by(AuditEntry.id.desc()).limit(limit))
     return [{"id": e.id, "actor": e.actor, "action": e.action, "target": e.target, "detail": e.detail, "at": e.created_at} for e in rows]
 
 
 @router.get("/audit/verify", summary="Check the audit chain has not been edited")
-def audit_verify(s: Session = Depends(db)):
+def audit_verify(s: Session = Depends(db, scope="function")):
     ok, bad = verify_audit_chain(s)
     return {"ok": ok, "first_bad_id": bad}
 
@@ -67,7 +80,7 @@ def integrations(ctx: Ctx = Depends(get_ctx)):
     for row in ctx.registry.describe():
         env = ENV_VARS.get((row["category"], row["name"]), [])
         out.append({**row, "selected": chosen.get(row["category"]) == row["name"], "env_vars": env, "configured": all(bool(getattr(st, v.lower(), "")) for v in env) if env else True})
-    return {"categories": list(CATEGORIES), "adapters": out, "demo_mode": st.demo_mode}
+    return {"categories": list(CATEGORIES), "adapters": out, "demo_mode": st.demo_shortcuts}
 
 
 @router.post("/integrations/{category}/test", summary="Test the selected adapter in a category")
@@ -79,9 +92,9 @@ def test_integration(category: str, ctx: Ctx = Depends(get_ctx), u: dict = Depen
 
 
 @router.get("/settings", summary="Mode, kill switch and config problems")
-def get_settings(s: Session = Depends(db), ctx: Ctx = Depends(get_ctx)):
+def get_settings(s: Session = Depends(db, scope="function"), ctx: Ctx = Depends(get_ctx)):
     eff = ctx.effective(s)
-    return {"mode": ctx.settings.mode.value, "effective_mode": eff.mode.value, "kill_switch": eff.kill_switch, "demo_mode": ctx.settings.demo_mode, "problems": ctx.settings.problems(),
+    return {"mode": ctx.settings.mode.value, "effective_mode": eff.mode.value, "kill_switch": eff.kill_switch, "demo_mode": ctx.settings.demo_shortcuts, "problems": ctx.settings.problems(),
             "window": f"{ctx.settings.default_window_start:02d}:00 to {ctx.settings.default_window_end:02d}:00 callee local time", "follow_ups_need_approval": ctx.settings.follow_ups_need_approval,
             "llm": {"offline": "offline stand in", "fixture": "recorded answers"}.get(ctx.settings.effective_llm_backend.value, "live (UNVERIFIED)")}
 
@@ -92,7 +105,7 @@ class SettingsIn(BaseModel):
 
 
 @router.post("/settings", summary="Turn the kill switch or draft mode on or off (owner only). The app can never switch live calling on.")
-def post_settings(body: SettingsIn, s: Session = Depends(db), ctx: Ctx = Depends(get_ctx), u: dict = Depends(owner)):
+def post_settings(body: SettingsIn, s: Session = Depends(db, scope="function"), ctx: Ctx = Depends(get_ctx), u: dict = Depends(owner)):
     if body.kill_switch is not None:
         set_state(s, "kill_switch", "1" if body.kill_switch else "0")
         record_audit(s, u["user"], "settings.kill_switch", None, {"on": body.kill_switch})
@@ -104,7 +117,7 @@ def post_settings(body: SettingsIn, s: Session = Depends(db), ctx: Ctx = Depends
 
 
 @router.get("/metrics/versions", summary="How each prompt version did: calls, booked share and average QA score")
-def version_metrics(s: Session = Depends(db)):
+def version_metrics(s: Session = Depends(db, scope="function")):
     from sqlalchemy import func
 
     from ringlark.models import Agent, Call, PromptVersion, QAScore

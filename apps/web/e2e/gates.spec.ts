@@ -124,7 +124,8 @@ test.describe("accessibility and behaviour", () => {
     await page.keyboard.press("Escape");
     await expect(page.getByRole("dialog")).toHaveCount(0);
     await page.goto("/live");
-    for (let i = 0; i < 30; i++) await page.keyboard.press("Tab");
+    await expect(page.locator("main")).toBeVisible();
+    for (let i = 0; i < 4; i++) await page.keyboard.press("Tab"); // a few presses always land on something; many presses leave the page on a short screen
     expect(await page.evaluate(() => document.activeElement?.tagName)).not.toBe("BODY");
   });
 

@@ -4,7 +4,8 @@ The labels are the ones the independent test authors used (see docs/CALLER-READE
 wrong_person, callback_request, transfer_request, consent_opt_out, robot_question, recording_question, voicemail, phone_menu, unclear.
 
 The reader is a set of rules written by the build, so any score measured with it is a score for these rules, not for a language model.
-`OfflineAgent` decides from this reading, and the live model path runs the same reading first as a guard (a stop request wins, always).
+`OfflineAgent` decides from this reading, and the live model path runs the same reading first as a guard (a stop request wins, always). Neither runs inside a real
+Ultravox phone call: there the rules are in the voice model's prompt and the transcript is read afterwards (see `live_prompt.py`).
 
 Precedence, on purpose: a request to stop is read before everything else, even before an injection attempt or a sign of interest.
 """

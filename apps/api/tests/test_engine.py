@@ -6,13 +6,13 @@ from sqlalchemy import select
 
 from ringlark import demo, dialer, followups, intake, jobs, metrics, prompts, qa, waveform
 from ringlark.agent_offline import prompt_flags
-from ringlark.models import Agent, Call, Campaign, Disposition, FollowUp, PromptVersion, QAScore, Suppression, Target
+from ringlark.models import Agent, Call, CallAction, Campaign, Disposition, FollowUp, PromptVersion, QAScore, Suppression, Target
 from ringlark.personas import load_personas, run_suite
 from ringlark.postcall import process_call, rule_disposition, store_turns
 from ringlark.toolauth import check_token, tool_token
 from ringlark.tools import ToolService
 from sendora_core.models import Approval
-from conftest import DATA, NOW
+from testkit import DATA, NOW
 
 STRONG = next(a for a in json.loads((DATA / "seed.json").read_text())["agents"] if a["name"] == "Casey")["versions"][1]["body"]
 WEAK = next(a for a in json.loads((DATA / "seed.json").read_text())["agents"] if a["name"] == "Casey")["versions"][0]["body"]
@@ -116,6 +116,9 @@ def test_transfer_goes_only_to_the_configured_number_and_only_in_office_hours(se
         svc.now = closed
         assert not svc.run("transfer_to_human", {})["ok"]
     svc.now = datetime(2026, 12, 1, 14, 0, tzinfo=UTC)  # 09:00 in New York, open
+    assert not svc.run("transfer_to_human", {})["ok"]  # one hand over per call: the first one already happened
+    c.taken_over = False  # a new call for the rest of this check (the one time right of the first hand over is cleared too)
+    session.query(CallAction).delete()
     assert svc.run("transfer_to_human", {})["ok"]
 
 
@@ -140,11 +143,32 @@ def test_booking_needs_a_name_and_an_email_and_is_blocked_in_draft_mode(session,
     assert out["ok"] is False and out["blocked"] is True
 
 
+def test_end_call_booked_without_a_booking_is_sent_to_a_person_instead(session, ctx, seeded):
+    c, t = a_call(session, seeded)
+    t.sms_consent = True
+    out = ToolService(session, ctx, c).run("end_call", {"disposition": "booked", "note": "caller pushed"})
+    assert out["ok"] and out["disposition"] == "needs_review" and c.disposition == "needs_review"
+    row = session.scalars(select(Disposition).where(Disposition.call_id == c.id)).one()
+    assert row.code == "needs_review" and "no booking" in row.note
+    store_turns(session, c, [("agent", "Hi, this is Casey, an AI assistant. This call may be recorded."), ("caller", "Yes"), ("agent", "Booked.")])
+    r = process_call(session, ctx, c)
+    assert r["disposition"] == "needs_review" and r["followups"] == 0  # no "your appointment is booked" text or email is queued
+    assert t.status != "booked" and not session.scalars(select(FollowUp).where(FollowUp.call_id == c.id)).first()
+
+
+def test_postcall_does_not_trust_an_old_booked_row_with_no_booking_behind_it(session, ctx, seeded):
+    c, t = a_call(session, seeded)
+    session.add(Disposition(call_id=c.id, code="booked", set_by="agent"))
+    store_turns(session, c, [("agent", "Hi, this is Casey, an AI assistant. This call may be recorded."), ("caller", "Yes")])
+    assert process_call(session, ctx, c)["disposition"] == "needs_review" and t.status != "booked"
+
+
 # ---- post call, QA, follow ups
 def test_postcall_sets_disposition_qa_followups_and_approval(session, ctx, seeded):
     c, t = a_call(session, seeded)
     t.sms_consent = True
     store_turns(session, c, [("agent", "Hi, this is Casey, an AI assistant calling for Harbor Light Dental. This call may be recorded and transcribed. Is now okay?"), ("caller", "Yes please"), ("agent", "Great, booked.")])
+    ToolService(session, ctx, c, {"Tuesday at 3 pm": NOW + timedelta(days=1)}).run("book_meeting", {"slot": "Tuesday at 3 pm", "name": "Ava Alder"})  # "booked" needs a real booking first
     ToolService(session, ctx, c).run("end_call", {"disposition": "booked"})
     r = process_call(session, ctx, c)
     assert r["disposition"] == "booked" and r["qa"] == 100 and r["followups"] >= 1
@@ -198,7 +222,7 @@ def test_waveform_is_labelled_synthetic_and_follows_the_turns():
 def test_import_flags_bad_rows_and_drops_duplicates(session, seeded):
     camp = seeded["info"]["campaign_id"]
     rep = intake.import_targets(session, camp, [{"phone": "+14155550100"}, {"phone": "+14155550188", "timezone": "Europe/London"}, {"phone": "12", "timezone": "x"}])
-    assert rep.duplicates == 1 and rep.created == 2 and rep.flagged == {"bad_number": 1, "unknown_timezone": 1}
+    assert rep.duplicates == 1 and rep.created == 2 and rep.flagged == {"bad_number": 1, "unknown_timezone": 1, "timezone_area_code_mismatch": 1}  # a 415 (San Francisco) number with a London zone
 
 
 def test_demo_cycle_places_answers_and_processes(session, ctx):

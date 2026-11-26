@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import logging
+import os
 import signal
 import time
 
 from ringlark.config import Settings
 from ringlark.context import Ctx
+from ringlark.dbupgrade import upgrade_sqlite
 from ringlark.jobs import make_handlers, schedule_due
 from sendora_core.db import Base, make_engine, make_session_factory, session_scope
 from sendora_core.jobs import Worker
@@ -23,13 +25,15 @@ def run_once(ctx: Ctx, worker: Worker) -> int:
 
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
-    settings = Settings()
+    settings = Settings(_env_file=os.environ.get("ENV_FILE", ".env"))  # the same file the API reads
+    settings.check_runtime()  # the worker refuses an unsafe configuration too, not only the API
     engine = make_engine(settings.database_url)
     import ringlark.models  # noqa: F401
     from sendora_core import models as _c  # noqa: F401
 
     if settings.database_url.startswith("sqlite"):
         Base.metadata.create_all(engine)
+        upgrade_sqlite(engine)
     ctx = Ctx(settings, make_session_factory(engine))
     worker = Worker(ctx.factory, make_handlers(ctx))
     stop = {"now": False}

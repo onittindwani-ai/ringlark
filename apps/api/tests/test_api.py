@@ -14,7 +14,7 @@ from ringlark.context import Ctx
 from ringlark.models import Agent, Call, Campaign, ConsentRecord, Disposition, Number, Suppression, Target
 from ringlark.toolauth import tool_token
 from sendora_core.db import utcnow  # noqa: F401
-from conftest import make_settings
+from testkit import make_settings
 
 TX, UV = TelnyxMock(), UltravoxMock()
 
@@ -195,13 +195,24 @@ def test_machine_answer_with_voicemail_off_hangs_up_and_leaves_nothing(client):
     assert again["result"] == "already_handled"
 
 
-def test_machine_answer_with_voicemail_on_speaks_the_disclosing_message(client):
+def test_machine_answer_with_voicemail_on_waits_for_the_beep_before_speaking_and_records_the_message_only_when_it_finished(client):
     cid, _ = a_live_call(client)
     with client.ctx.factory() as s:
         c = s.get(Call, cid); c.status = "placed"
         camp = s.get(Campaign, c.campaign_id); camp.allow_voicemail = True; s.commit()
-    r = telnyx_post(client, "call.machine.detection.ended", {"result": "machine", "client_state": encode_state({"call": cid})}).json()
-    assert r["result"] == "voicemail_left" and any(a == "speak" for a, _ in client.ctx.adapters.telephony.log)
+    state = encode_state({"call": cid})
+    r = telnyx_post(client, "call.machine.detection.ended", {"result": "machine", "client_state": state}).json()
+    log = client.ctx.adapters.telephony.log
+    assert r["result"] == "voicemail_waiting_for_beep" and not any(a in ("speak", "hangup") for a, _ in log)  # the machine's own greeting is still playing
+    assert telnyx_post(client, "call.speak.ended", {"client_state": state}).json()["result"] == "ignored"  # nothing was said yet, so there is nothing that ended
+    assert telnyx_post(client, "call.machine.greeting.ended", {"client_state": state}).json()["result"] == "voicemail_speaking"
+    assert any(a == "speak" for a, _ in log) and not any(a == "hangup" for a, _ in log)  # speaking, not yet hung up and not yet "left"
+    with client.ctx.factory() as s:
+        assert s.get(Call, cid).disposition in (None, "")
+    assert telnyx_post(client, "call.speak.ended", {"client_state": state}).json()["result"] == "voicemail_left"
+    assert any(a == "hangup" for a, _ in log)
+    with client.ctx.factory() as s:
+        assert s.get(Call, cid).disposition == "voicemail_left"
 
 
 def test_inbound_text_stop_revokes_texting_consent(client):
@@ -389,7 +400,7 @@ def test_a_first_run_in_demo_mode_loads_the_practice_and_never_touches_existing_
         n = len(list(s.scalars(select(Target))))
     assert n > 0
     assert seed_empty_demo(app) is False  # data exists now: left alone
-    live = create_app(make_settings(tmp_path, demo_mode=False), ctx)
+    live = create_app(make_settings(tmp_path, demo_mode=False, session_secret="test-only-Rt7Kq2Vw9Xm4Zc8Lb3Nf6Hy1Js5Dp0Ga2Ue7Tq4Wi9"), ctx)
     assert seed_empty_demo(live) is False
 
 

@@ -13,6 +13,33 @@ from datetime import datetime
 from ringlark.util import aware, is_e164, zone
 
 
+# Number ranges that cost the caller or the callee money or are never a person to sell to (not complete, see docs/13): US 900 and 976, UK 09, and the
+# shared international ranges. They are refused whatever countries are allowed.
+PREMIUM_PREFIXES = ("+1900", "+1976", "+449", "+882", "+883", "+979", "+870")
+# Caribbean numbers share the +1 country code with the US and Canada, but they are other countries, and several are known for one ring and call back toll fraud. Because
+# "+1" would allow them all, they are refused unless ALLOWED_CALLING_COUNTRIES names the exact area code (for example "+1,+1876" or "+1242"). Puerto Rico, Guam and the other
+# US territories are not on this list.
+CARIBBEAN_NANP = tuple(f"+1{n}" for n in (242, 246, 264, 268, 284, 345, 441, 473, 649, 664, 721, 758, 767, 784, 809, 829, 849, 868, 869, 876))
+
+
+def premium_rate(phone: str) -> bool:
+    return phone.startswith(PREMIUM_PREFIXES)
+
+
+def country_allowed(phone: str, codes: tuple[str, ...] | None) -> bool:
+    """An empty list allows no country: a setting that is empty or cannot be read must never open the dialer to the world. (`None` is "no limit" and exists only for the pure
+    rule tests, which have no setting; the dialer always passes ALLOWED_CALLING_COUNTRIES.)"""
+    if codes is None:
+        return True
+    if not codes:
+        return False
+    if not phone.startswith(codes):
+        return False
+    if phone.startswith(CARIBBEAN_NANP):
+        return any(len(c) > 2 and phone.startswith(c) for c in codes)  # only an entry as exact as the area code lets a Caribbean number through
+    return True
+
+
 @dataclass(frozen=True)
 class Rules:
     window_start_hour: int = 9
@@ -21,7 +48,7 @@ class Rules:
     daily_cap: int = 50
     max_attempts: int = 3
     retry_gap_days: int = 1
-    require_prior_consent: bool = False
+    require_prior_consent: bool = False  # the pure rules start open; every campaign passes its own value, and a new campaign defaults to True
 
 
 @dataclass(frozen=True)
@@ -33,6 +60,7 @@ class DialRequest:
     kill_switch: bool = False
     draft_mode: bool = False
     greeting_has_disclosure: bool = True
+    greeting_has_recording_notice: bool = True  # False when recording notices are required and the greeting has none
     on_dnc_list: bool = False
     call_consent: str | None = None  # granted, revoked or None
     calls_today: int = 0
@@ -40,6 +68,8 @@ class DialRequest:
     last_attempt_local_dates: tuple[str, ...] = field(default_factory=tuple)  # callee local dates of earlier attempts, YYYY-MM-DD
     last_attempt_utc: datetime | None = None
     in_flight: bool = False
+    awaiting_review: bool = False  # the last call ended as needs_review and no person has read it yet, so nobody redials until they have
+    allowed_codes: tuple[str, ...] | None = None  # None: no country limit (pure rule tests only). The dialer always passes a tuple, and an empty one allows nobody.
 
 
 @dataclass(frozen=True)
@@ -71,8 +101,14 @@ def evaluate(req: DialRequest) -> Decision:
         return Decision(False, "kill_switch")
     if not req.greeting_has_disclosure:
         return Decision(False, "no_ai_disclosure")
+    if not req.greeting_has_recording_notice:
+        return Decision(False, "no_recording_notice")
     if not is_e164(req.phone):
         return Decision(False, "bad_number")
+    if premium_rate(req.phone):
+        return Decision(False, "premium_rate_number")
+    if not country_allowed(req.phone, req.allowed_codes):
+        return Decision(False, "country_not_allowed")
     if req.on_dnc_list:
         return Decision(False, "do_not_call")
     if req.call_consent == "revoked":
@@ -85,6 +121,8 @@ def evaluate(req: DialRequest) -> Decision:
         return Decision(False, "outside_hours")
     if req.in_flight:
         return Decision(False, "call_in_progress")
+    if req.awaiting_review:
+        return Decision(False, "awaiting_review")
     if req.calls_today >= r.daily_cap:
         return Decision(False, "daily_cap")
     if req.attempts_before >= r.max_attempts:

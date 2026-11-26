@@ -1,11 +1,12 @@
 {
- "measured_on": "2026-11-24",
+ "measured_on": "2026-11-26",
  "tests": {
-  "passed": 236,
+  "passed": 530,
   "skipped": 1,
   "failed": 0,
-  "coverage_percent": 87
+  "coverage_percent": 91
  },
+ "core_tests": 87,
  "browser_tests": 39,
  "screenshots": 38,
  "adapters_registered": 14,
@@ -34,7 +35,7 @@
    "heldout_2": "7 of 14"
   },
   "ui_pages": 11,
-  "api_paths": 46,
+  "api_paths": 47,
   "tools_scored": 22,
   "tool_groups": 7,
   "tests": {

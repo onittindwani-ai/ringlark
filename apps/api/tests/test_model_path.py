@@ -11,7 +11,7 @@ from pathlib import Path
 import pytest
 from sqlalchemy import func, select
 
-from conftest import DATA, make_settings
+from testkit import DATA, make_settings
 from mock.anthropic_mock import FakeAnthropic
 from ringlark import model_tasks
 from ringlark.agent_live import FAIL_SAFE, LiveModelAgent

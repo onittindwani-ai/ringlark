@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import httpx
 
-from ringlark.adapters.base import PersonRecord, safe_base_url
+from ringlark.adapters.base import BadReply, PersonRecord, UnknownOutcome, dig, safe_base_url
 from sendora_core.adapters import AdapterError
 from sendora_core.safety import write_action
 
@@ -21,23 +21,34 @@ class TwentyCrm:
         else:
             if not settings.twenty_base_url or not settings.twenty_api_key:
                 raise AdapterError("TWENTY_BASE_URL and TWENTY_API_KEY must both be set.")
-            self.client = httpx.Client(base_url=safe_base_url(settings.twenty_base_url), timeout=15, headers={"Authorization": f"Bearer {settings.twenty_api_key}"})
+            self.client = httpx.Client(base_url=safe_base_url(settings.twenty_base_url), timeout=httpx.Timeout(8.0, connect=4.0),  # short on purpose: a hung CRM must not hold up post call work (crmsync.py)
+                                        headers={"Authorization": f"Bearer {settings.twenty_api_key}"})
 
     def _gql(self, op: str, query: str, variables: dict) -> dict:
         r = self.client.post("/graphql", json={"operationName": op, "query": query, "variables": variables})
         if r.status_code == 401:
             raise AdapterError("Twenty rejected the API key.")
-        body = r.json()
+        if r.status_code >= 500:
+            raise UnknownOutcome(f"Twenty answered {r.status_code}, so it is not known whether the write was saved.")
+        try:
+            body = r.json()
+        except ValueError as exc:
+            raise BadReply("Twenty sent an answer that is not JSON, so it is not known whether the write was saved.") from exc
+        if not isinstance(body, dict):
+            raise BadReply("Twenty sent an answer in a shape that could not be read, so it is not known whether the write was saved.")
         if body.get("errors"):
-            raise AdapterError(f"Twenty said: {body['errors'][0].get('message', 'unknown error')}")
-        return body["data"]
+            first = body["errors"][0] if isinstance(body["errors"], list) and body["errors"] else {}
+            raise AdapterError(f"Twenty said: {first.get('message', 'unknown error') if isinstance(first, dict) else 'unknown error'}")
+        return dig(body, "data", who="Twenty")
 
     def find_by_phone(self, phone: str) -> PersonRecord | None:
-        edges = self._gql("FindByPhone", FIND_BY_PHONE, {"phone": phone})["people"]["edges"]
+        edges = dig(self._gql("FindByPhone", FIND_BY_PHONE, {"phone": phone}), "people", "edges", who="Twenty")
         if not edges:
             return None
-        n = edges[0]["node"]
-        return PersonRecord(first_name=n["name"]["firstName"], last_name=n["name"]["lastName"], title=n.get("jobTitle") or "", phone=phone, extra={"id": n["id"]})
+        n = dig(edges, 0, "node", who="Twenty")
+        if not isinstance(n, dict):
+            raise BadReply("Twenty sent a person in a shape that could not be read.")
+        return PersonRecord(first_name=str(dig(n, "name", "firstName", who="Twenty")), last_name=str(dig(n, "name", "lastName", who="Twenty")), title=str(n.get("jobTitle") or ""), phone=phone, extra={"id": dig(n, "id", who="Twenty")})
 
     @write_action("crm.upsert")
     def upsert_person(self, person: PersonRecord) -> str:
@@ -46,7 +57,7 @@ class TwentyCrm:
             pid = str(found.extra["id"])
         else:
             data = {"name": {"firstName": person.first_name, "lastName": person.last_name}, "phones": {"primaryPhoneNumber": person.phone}, "jobTitle": person.title}
-            pid = str(self._gql("CreatePerson", CREATE_PERSON, {"data": data})["createPerson"]["id"])
+            pid = str(dig(self._gql("CreatePerson", CREATE_PERSON, {"data": data}), "createPerson", "id", who="Twenty"))
         note = person.extra.get("note")
         if note:
             self._gql("CreateNote", CREATE_NOTE, {"data": {"title": "Call summary", "bodyV2": {"markdown": note}, "personId": pid}})

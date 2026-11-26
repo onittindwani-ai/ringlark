@@ -24,8 +24,14 @@ PATTERNS = {
 }
 SKIP_SUFFIX = {".png", ".jpg", ".pdf", ".ico", ".woff", ".woff2"}
 SKIP_NAMES = {"pnpm-lock.yaml", "scan_secrets.py"}
-# Test fixtures use obviously fake values; a line carrying one of these markers is allowed.
+# Test fixtures use obviously fake values. A match is allowed only when the matched text itself carries one of these markers (the value of the
+# assignment), never because some other word on the same line says "example", which used to hide a real key sitting next to an example address.
 ALLOW = ("example", "not-for-real", "e2e-only", "dev-only", "fake", "demo-secret", "test-only", "change-me")
+
+
+def kinds_in(line: str) -> list[str]:
+    """The kinds of secret a line holds. A match is let through only when the matched text itself carries an ALLOW marker."""
+    return [kind for kind, rx in PATTERNS.items() for m in rx.finditer(line) if not any(a in m.group(0).lower() for a in ALLOW)]
 
 
 def tracked() -> list[Path]:
@@ -36,19 +42,17 @@ def tracked() -> list[Path]:
 def main() -> int:
     hits = 0
     for f in tracked():
-        if f.suffix in SKIP_SUFFIX or f.name in SKIP_NAMES or "packages/" in f.as_posix() or not f.is_file():
+        rel = f.relative_to(ROOT).as_posix()
+        if f.suffix in SKIP_SUFFIX or f.name in SKIP_NAMES or not f.is_file() or (rel.startswith("packages/") and "/tests/" in rel):  # the shared packages are scanned too, except their test fixtures
             continue
         try:
             lines = f.read_text(errors="ignore").splitlines()
         except OSError:
             continue
         for i, line in enumerate(lines, 1):
-            if any(a in line.lower() for a in ALLOW):
-                continue
-            for kind, rx in PATTERNS.items():
-                if rx.search(line):
-                    print(f"{f.relative_to(ROOT)}:{i}: looks like {kind}")
-                    hits += 1
+            for kind in kinds_in(line):
+                print(f"{f.relative_to(ROOT)}:{i}: looks like {kind}")
+                hits += 1
     print("secret scan:", "nothing found" if not hits else f"{hits} possible secret(s)")
     return 1 if hits else 0
 

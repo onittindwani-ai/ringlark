@@ -6,13 +6,17 @@ on the call are code that runs around it, and no word the person says can switch
 1. the greeting, with the AI disclosure and the recording notice, is built by code (`build_greeting`), never by the model;
 2. every caller turn is read by the rules first (`caller_reader`). A request to stop, a withdrawn consent, a machine or a phone menu are handled by
    the rule agent with no model call at all, so a stop request always wins and a model that has been talked round cannot argue with it;
-3. whatever the model answers is checked: it must match the schema, may only name the six tools, a booking must use an offered time, a text goes only
+3. whatever the model answers is checked: it must match the schema, may only name the six acting tools (`list_times` only reads the calendar and is not one of them here), a booking must use an offered time, a text goes only
    when the person has not withdrawn consent, a key press must be the configured key and only once, and a disposition must be one of the allowed codes;
 4. what it says is checked: no claim to be a person (replaced by the disclosure), an honest admission when asked if it is a machine, no invented price,
    no leaking of the instructions, no link, at most 40 words;
 5. anything wrong (a bad answer, the kill switch, the budget, an error) ends the call politely and marks it "needs review". It never keeps talking unguarded.
 
 There is no tool for placing a call, so a caller cannot make the agent dial anyone: the schema has no such name.
+
+WHERE THIS RUNS: the text simulator, the persona suite and tests. It does NOT run inside a real Ultravox phone call, where the voice engine talks to the person
+directly. A real call is given the same rules as words in its prompt (`live_prompt.py`) and is guarded in code only by what its seven tools accept
+(`tools.py`) and by what is done with the transcript afterwards (`postcall.py`).
 """
 
 from __future__ import annotations

@@ -2,7 +2,7 @@
  "openapi": "3.1.0",
  "info": {
   "title": "Ringlark API",
-  "version": "1.0.0"
+  "version": "1.0.1"
  },
  "paths": {
   "/health": {
@@ -472,7 +472,7 @@
     "tags": [
      "data"
     ],
-    "summary": "Start a campaign (owner only)",
+    "summary": "Start a campaign (owner only). People whose time zone does not fit their area code need acknowledge_timezone_warnings.",
     "operationId": "campaign_start_api_campaigns__cid__start_post",
     "parameters": [
      {
@@ -485,6 +485,113 @@
       }
      }
     ],
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "anyOf": [
+         {
+          "$ref": "#/components/schemas/StartIn"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "B"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/campaigns/{cid}/timezone-warnings": {
+   "get": {
+    "tags": [
+     "data"
+    ],
+    "summary": "People whose time zone does not fit the area code of their number",
+    "operationId": "timezone_warnings_api_campaigns__cid__timezone_warnings_get",
+    "parameters": [
+     {
+      "name": "cid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Cid"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/campaigns/{cid}/targets/restore": {
+   "post": {
+    "tags": [
+     "data"
+    ],
+    "summary": "Put people who were held back by failed tries back in the list (owner only). Never anyone on the do not call list.",
+    "operationId": "restore_targets_api_campaigns__cid__targets_restore_post",
+    "parameters": [
+     {
+      "name": "cid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Cid"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/RestoreIn"
+       }
+      }
+     }
+    },
     "responses": {
      "200": {
       "description": "Successful Response",
@@ -660,6 +767,99 @@
       "content": {
        "application/json": {
         "schema": {}
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "data"
+    ],
+    "summary": "Create an agent with its first prompt version (owner only). The version is saved, not activated.",
+    "operationId": "create_agent_api_agents_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/AgentIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/numbers": {
+   "get": {
+    "tags": [
+     "data"
+    ],
+    "summary": "Numbers and their compliance checklist",
+    "operationId": "numbers_api_numbers_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "data"
+    ],
+    "summary": "Add a phone number you own (owner only). Its compliance checklist starts empty.",
+    "operationId": "create_number_api_numbers_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/NumberIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
        }
       }
      }
@@ -1016,25 +1216,6 @@
     }
    }
   },
-  "/api/numbers": {
-   "get": {
-    "tags": [
-     "data"
-    ],
-    "summary": "Numbers and their compliance checklist",
-    "operationId": "numbers_api_numbers_get",
-    "responses": {
-     "200": {
-      "description": "Successful Response",
-      "content": {
-       "application/json": {
-        "schema": {}
-       }
-      }
-     }
-    }
-   }
-  },
   "/api/numbers/{nid}/checklist": {
    "post": {
     "tags": [
@@ -1102,6 +1283,29 @@
        "pattern": "^(open|all)$",
        "default": "open",
        "title": "Show"
+      }
+     },
+     {
+      "name": "limit",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "maximum": 1000,
+       "minimum": 1,
+       "default": 200,
+       "title": "Limit"
+      }
+     },
+     {
+      "name": "offset",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "minimum": 0,
+       "default": 0,
+       "title": "Offset"
       }
      }
     ],
@@ -1186,6 +1390,57 @@
     }
    }
   },
+  "/api/followups/{fid}/resolve": {
+   "post": {
+    "tags": [
+     "data"
+    ],
+    "summary": "Say whether a follow up that may or may not have been sent really went out (owner or approver)",
+    "description": "A follow up whose send ended in a timeout or a server error is held as \"send unconfirmed\" and never sent again by itself. A person checks with the carrier or the mail\nserver and records what happened here. Nothing is sent by this route; it only closes the row (sent, or failed so that a person can write to them by hand).",
+    "operationId": "resolve_followup_api_followups__fid__resolve_post",
+    "parameters": [
+     {
+      "name": "fid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Fid"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ResolveIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
   "/api/suppressions": {
    "get": {
     "tags": [
@@ -1242,6 +1497,135 @@
     }
    }
   },
+  "/api/suppressions/import": {
+   "post": {
+    "tags": [
+     "data"
+    ],
+    "summary": "Import a do not call list: rows with a phone and an optional reason",
+    "operationId": "import_suppressions_api_suppressions_import_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/SuppImportIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/suppressions/{sid}/remove": {
+   "post": {
+    "tags": [
+     "data"
+    ],
+    "summary": "Take a number off the do not call list (owner only, with a reason that is written to the audit log)",
+    "description": "For a number that was put on the list by mistake, or by someone who spoofed the caller ID and said \"do not call\". The stop records of the number go too. This grants\nnothing: a campaign that requires prior consent still needs a consent on file before the number is called again.",
+    "operationId": "remove_suppression_api_suppressions__sid__remove_post",
+    "parameters": [
+     {
+      "name": "sid",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Sid"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/RemoveSuppIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/people/erase": {
+   "post": {
+    "tags": [
+     "data"
+    ],
+    "summary": "Erase one person: their calls, transcripts, summaries, follow ups and list entries (owner only)",
+    "operationId": "erase_person_api_people_erase_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/EraseIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
   "/api/overview": {
    "get": {
     "tags": [
@@ -1255,6 +1639,65 @@
       "content": {
        "application/json": {
         "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/crm/dead-letters": {
+   "get": {
+    "tags": [
+     "operations"
+    ],
+    "summary": "CRM notes that could not be written and were given up on",
+    "operationId": "crm_dead_letters_api_crm_dead_letters_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/crm/dead-letters/{call_id}/retry": {
+   "post": {
+    "tags": [
+     "operations"
+    ],
+    "summary": "Put a dead CRM note back in the queue (owner only)",
+    "operationId": "crm_retry_api_crm_dead_letters__call_id__retry_post",
+    "parameters": [
+     {
+      "name": "call_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Call Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
        }
       }
      }
@@ -1883,6 +2326,58 @@
     ],
     "title": "AdvanceIn"
    },
+   "AgentIn": {
+    "properties": {
+     "name": {
+      "type": "string",
+      "maxLength": 80,
+      "minLength": 2,
+      "title": "Name"
+     },
+     "kind": {
+      "type": "string",
+      "pattern": "^(outbound|inbound)$",
+      "title": "Kind",
+      "default": "outbound"
+     },
+     "company": {
+      "type": "string",
+      "maxLength": 120,
+      "title": "Company",
+      "default": ""
+     },
+     "voice": {
+      "type": "string",
+      "maxLength": 80,
+      "title": "Voice",
+      "default": ""
+     },
+     "greeting": {
+      "type": "string",
+      "maxLength": 600,
+      "title": "Greeting",
+      "default": ""
+     },
+     "transfer_number": {
+      "type": "string",
+      "maxLength": 32,
+      "title": "Transfer Number",
+      "default": ""
+     },
+     "prompt": {
+      "type": "string",
+      "maxLength": 20000,
+      "minLength": 40,
+      "title": "Prompt"
+     }
+    },
+    "type": "object",
+    "required": [
+     "name",
+     "prompt"
+    ],
+    "title": "AgentIn"
+   },
    "CampaignIn": {
     "properties": {
      "name": {
@@ -1981,6 +2476,11 @@
       "maxLength": 4,
       "title": "Ivr Extension",
       "default": ""
+     },
+     "require_prior_consent": {
+      "type": "boolean",
+      "title": "Require Prior Consent",
+      "default": true
      }
     },
     "type": "object",
@@ -2028,6 +2528,25 @@
     ],
     "title": "DecideIn"
    },
+   "EraseIn": {
+    "properties": {
+     "phone": {
+      "type": "string",
+      "maxLength": 32,
+      "title": "Phone"
+     },
+     "keep_do_not_call": {
+      "type": "boolean",
+      "title": "Keep Do Not Call",
+      "default": true
+     }
+    },
+    "type": "object",
+    "required": [
+     "phone"
+    ],
+    "title": "EraseIn"
+   },
    "HTTPValidationError": {
     "properties": {
      "detail": {
@@ -2045,10 +2564,12 @@
     "properties": {
      "email": {
       "type": "string",
+      "maxLength": 254,
       "title": "Email"
      },
      "password": {
       "type": "string",
+      "maxLength": 1024,
       "title": "Password"
      }
     },
@@ -2058,6 +2579,105 @@
      "password"
     ],
     "title": "Login"
+   },
+   "NumberIn": {
+    "properties": {
+     "e164": {
+      "type": "string",
+      "maxLength": 32,
+      "title": "E164"
+     },
+     "label": {
+      "type": "string",
+      "maxLength": 80,
+      "title": "Label",
+      "default": ""
+     },
+     "direction": {
+      "type": "string",
+      "pattern": "^(outbound|inbound|both)$",
+      "title": "Direction",
+      "default": "both"
+     },
+     "agent_id": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Agent Id"
+     },
+     "country": {
+      "type": "string",
+      "maxLength": 2,
+      "minLength": 2,
+      "title": "Country",
+      "default": "US"
+     }
+    },
+    "type": "object",
+    "required": [
+     "e164"
+    ],
+    "title": "NumberIn"
+   },
+   "RemoveSuppIn": {
+    "properties": {
+     "note": {
+      "type": "string",
+      "maxLength": 200,
+      "minLength": 5,
+      "title": "Note"
+     }
+    },
+    "type": "object",
+    "required": [
+     "note"
+    ],
+    "title": "RemoveSuppIn"
+   },
+   "ResolveIn": {
+    "properties": {
+     "sent": {
+      "type": "boolean",
+      "title": "Sent"
+     },
+     "note": {
+      "type": "string",
+      "maxLength": 200,
+      "title": "Note",
+      "default": ""
+     }
+    },
+    "type": "object",
+    "required": [
+     "sent"
+    ],
+    "title": "ResolveIn"
+   },
+   "RestoreIn": {
+    "properties": {
+     "target_ids": {
+      "anyOf": [
+       {
+        "items": {
+         "type": "integer"
+        },
+        "type": "array",
+        "maxItems": 5000
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Target Ids"
+     }
+    },
+    "type": "object",
+    "title": "RestoreIn"
    },
    "SettingsIn": {
     "properties": {
@@ -2135,6 +2755,17 @@
     "type": "object",
     "title": "SplitIn"
    },
+   "StartIn": {
+    "properties": {
+     "acknowledge_timezone_warnings": {
+      "type": "boolean",
+      "title": "Acknowledge Timezone Warnings",
+      "default": false
+     }
+    },
+    "type": "object",
+    "title": "StartIn"
+   },
    "StressIn": {
     "properties": {
      "n": {
@@ -2168,6 +2799,24 @@
      "version_id"
     ],
     "title": "SuiteIn"
+   },
+   "SuppImportIn": {
+    "properties": {
+     "rows": {
+      "items": {
+       "additionalProperties": true,
+       "type": "object"
+      },
+      "type": "array",
+      "maxItems": 5000,
+      "title": "Rows"
+     }
+    },
+    "type": "object",
+    "required": [
+     "rows"
+    ],
+    "title": "SuppImportIn"
    },
    "SuppIn": {
     "properties": {

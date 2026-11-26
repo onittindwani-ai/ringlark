@@ -8,4 +8,6 @@
 6. Never commit keys, real phone numbers, real customer data or `.env`.
 7. Do not tune the agent rules against the held out persona sets. Add a new set instead and save its first run.
 
-Issues: describe what you did, what you expected and what happened. Paste `python tools/doctor.py` output (it prints no secrets).
+Setup: `make install` (see `docs/05-RUN-LOCALLY.md`; on Windows use WSL 2 with Ubuntu). A test fails when a setting is missing from `.env.example` or `docs/04-ENVIRONMENT-VARIABLES.md`, so add it to both.
+
+Issues: describe what you did, what you expected and what happened. Paste `.venv/bin/python tools/doctor.py` output (it prints no secrets).

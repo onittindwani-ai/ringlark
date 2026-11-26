@@ -49,6 +49,8 @@ export default function OverviewPage() {
           ) : <EmptyState title="Nothing finished yet" body="Outcomes appear here as calls end." />}
         </Card>
       </div>
+      {o.dial_trouble ? <Card title="Calls are not being placed"><p className="rm-mini" role="alert">{o.dial_trouble}</p></Card> : null}
+      {o.crm_dead_letters ? <Card title="CRM notes that could not be written"><p className="rm-mini">{o.crm_dead_letters} call {o.crm_dead_letters === 1 ? "note was" : "notes were"} given up on after the CRM refused them or never answered. The list is at /api/crm/dead-letters on the server (see guide 14).</p></Card> : null}
       <Card title="Held back by the rules">
         {o.blocked.length ? <ul className="rm-list">{o.blocked.map((b) => <li key={b.reason} className="rm-item" style={{ cursor: "default" }}><span className="rm-item__top"><strong>{why(b.reason)}</strong><Badge tone="warning">{b.count}</Badge></span></li>)}</ul> : <p className="rm-mini">Nothing has been held back yet. Run the jobs and every skipped person will be listed here with the reason.</p>}
       </Card>

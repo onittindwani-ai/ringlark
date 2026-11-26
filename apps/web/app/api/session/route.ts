@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { visitorAddress } from "@/lib/proxy-path";
 
 const API = process.env.API_BASE_URL ?? "http://127.0.0.1:8000";
 
@@ -8,7 +9,7 @@ export async function POST(request: Request) {
   const body = await request.text();
   let upstream: Response;
   try {
-    upstream = await fetch(`${API}/api/auth/login`, { method: "POST", headers: { "content-type": "application/json", "x-forwarded-for": request.headers.get("x-forwarded-for") ?? "" }, body });
+    upstream = await fetch(`${API}/api/auth/login`, { method: "POST", headers: { "content-type": "application/json", "x-forwarded-for": visitorAddress(request.headers.get("x-forwarded-for")) }, body });
   } catch {
     return NextResponse.json({ error: { message: "The server is not reachable. Check that the API is running." } }, { status: 502 });
   }

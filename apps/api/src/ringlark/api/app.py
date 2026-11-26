@@ -3,14 +3,16 @@
 from __future__ import annotations
 
 import os
-from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
+from ringlark import datadir
+from ringlark.bodylimit import PerRouteBodyLimit
 from ringlark.api import routes_auth, routes_data, routes_demo, routes_ops, routes_tools, routes_webhooks
 from ringlark.config import Settings
 from ringlark.context import Ctx
+from ringlark.dbupgrade import upgrade_sqlite
 from sendora_core.app import SESSION_COOKIE, create_base_app
 from sendora_core.auth import read_session_token
 from sendora_core.ratelimit import TokenBucket
@@ -29,16 +31,22 @@ def create_app(settings: Settings | None = None, ctx: Ctx | None = None) -> Fast
 
         if settings.database_url.startswith("sqlite"):
             Base.metadata.create_all(engine)  # SQLite zero setup path. Postgres uses `alembic upgrade head`.
+            upgrade_sqlite(engine)  # an older database file gets the columns and indexes added since
         ctx = Ctx(settings, make_session_factory(engine))
-        if not settings.seed_dir and (Path(__file__).resolve().parents[5] / "data").exists():
-            ctx.settings.seed_dir = str(Path(__file__).resolve().parents[5] / "data")
+        if not settings.seed_dir and datadir.CHECKOUT_DATA.exists():
+            ctx.settings.seed_dir = str(datadir.CHECKOUT_DATA)  # a checkout: the data folder next to the source. An installed copy must set SEED_DIR.
     app = create_base_app(ctx.settings, ctx.factory)
-    app.title, app.version = "Ringlark API", "1.0.0"
+    app.title, app.version = "Ringlark API", "1.0.1"
+    app.add_middleware(PerRouteBodyLimit)
     app.state.ctx = ctx
     # A dashboard page makes several calls at once. This bucket is per client address (set uvicorn --proxy-headers so that is the real visitor, not the web server).
     app.state.limiter = TokenBucket(capacity=600, refill_per_sec=20.0)
     # Sign in attempts per address and email: a burst of LOGIN_BURST (default 5), then one more every 12 seconds.
     app.state.login_bucket = TokenBucket(capacity=settings.login_burst, refill_per_sec=1 / 12)
+    # Two more, so changing one part of the key never gives a fresh set of tries: one address trying many accounts, and many addresses trying one account.
+    app.state.login_ip_bucket = TokenBucket(capacity=settings.login_burst * 4, refill_per_sec=1 / 3)
+    app.state.login_account_bucket = TokenBucket(capacity=settings.login_burst * 2, refill_per_sec=1 / 12)
+    app.state.tool_bucket = TokenBucket(capacity=30, refill_per_sec=0.5)  # tool calls per call id
 
     @app.middleware("http")
     async def require_session(request: Request, call_next):
@@ -60,7 +68,7 @@ def seed_empty_demo(app: FastAPI) -> bool:
     """A first run in demo mode starts with the fictional practice already loaded, so no screen is empty and Run now has someone to call.
     Only when demo mode is on and the database has no agent yet. A database that already has data is never touched."""
     ctx: Ctx = app.state.ctx
-    if not ctx.settings.demo_mode:
+    if not ctx.settings.demo_shortcuts:  # never put the fictional practice into a database whose owner set a password
         return False
     from sqlalchemy import func, select
 

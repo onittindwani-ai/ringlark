@@ -12,9 +12,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from ringlark.agent_offline import AgentBackend, AgentTurn, OfflineAgent
+from ringlark.datadir import persona_dir
 from ringlark.disclosure import claims_human, has_disclosure
 
-DEFAULT_DIR = Path(__file__).resolve().parents[4] / "data" / "personas"
 AI_ADMIT = re.compile(r"\bAI\b|artificial|automated|not a (real )?(person|human)", re.I)
 DEFAULT_CTX = {"agent_name": "Casey", "company": "Harbor Light Dental", "purpose": "I'm calling about your next check up.", "slots": ["Tuesday at 3 pm", "Wednesday at 2 pm"],
                "allow_voicemail": False, "voicemail_text": "", "ivr_policy": "hangup", "ivr_extension": ""}
@@ -49,7 +49,7 @@ class PersonaRun:
 
 
 def load_personas(name: str, directory: Path | None = None) -> list[dict]:
-    return json.loads(((directory or DEFAULT_DIR) / f"{name}.json").read_text())["personas"]
+    return json.loads(((directory or persona_dir()) / f"{name}.json").read_text())["personas"]
 
 
 def run_persona(persona: dict, prompt_body: str, ctx: dict | None = None, backend: AgentBackend | None = None, backend_factory=None) -> PersonaRun:

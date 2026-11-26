@@ -1,8 +1,36 @@
 # Replace the two names with your own DNS names. Caddy gets HTTPS certificates by itself.
 app.example.com {
+	encode zstd gzip
+	request_body {
+		max_size 25MB
+	}
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+	}
 	reverse_proxy 127.0.0.1:3000
 }
 
+# Only what the phone and voice vendors call is reachable on this name: the signed webhooks and the per call tool endpoints. The dashboard talks to the API from the web
+# container (API_BASE_URL), never through this name, so the sign in, the data routes and the docs are not exposed here.
 api.example.com {
-	reverse_proxy 127.0.0.1:8000
+	encode zstd gzip
+	request_body {
+		max_size 2MB
+	}
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+	}
+	@vendor path /api/webhooks/* /api/tools/*
+	handle @vendor {
+		reverse_proxy 127.0.0.1:8000
+	}
+	handle {
+		respond "Not found" 404
+	}
 }

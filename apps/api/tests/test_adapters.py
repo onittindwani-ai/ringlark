@@ -17,7 +17,7 @@ from ringlark.adapters.calcom import CalcomCalendar
 from ringlark.adapters.crm import TwentyCrm
 from ringlark.adapters.telnyx import TelnyxCalls, TelnyxSms, decode_state, encode_state, parse_inbound_sms, verify_telnyx_webhook
 from ringlark.adapters.ultravox import UltravoxVoice, sign_ultravox, tool_definitions, verify_ultravox_webhook
-from conftest import make_settings
+from testkit import make_settings
 from sendora_core.adapters import AdapterError
 from sendora_core.safety import DraftModeError
 
@@ -79,7 +79,7 @@ def test_ultravox_create_call_with_tools_and_transcript(live):
     sent = u.calls[vc.call_id]["request"]
     assert sent["voice"] == "Mark" and sent["maxDuration"] == "600s" and sent["medium"] == {"telnyx": {}}
     names = [t["temporaryTool"]["modelToolName"] for t in sent["selectedTools"]]
-    assert names == ["book_meeting", "lookup_crm", "transfer_to_human", "send_sms", "press_digit", "end_call"]
+    assert names == ["book_meeting", "list_times", "lookup_crm", "transfer_to_human", "send_sms", "press_digit", "end_call"]  # list_times: the open times the agent may offer
     assert sent["selectedTools"][0]["temporaryTool"]["http"]["baseUrlPattern"] == "https://app.example.test/api/tools/12/book_meeting"
     assert sent["selectedTools"][0]["temporaryTool"]["staticParameters"][0]["value"] == "tok"
     vc2 = v.create_call(system_prompt="x" * 50, voice="", first_message="Hi", tools=[], max_seconds=60, external_voice={"elevenLabs": {"voiceId": "abc"}})

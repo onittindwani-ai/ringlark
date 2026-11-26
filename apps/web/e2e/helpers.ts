@@ -21,6 +21,8 @@ export async function login(page: Page, email = "owner@example.test") {
 export const call = (page: Page, path: string, json?: unknown) => page.request.post(`/api${path}`, { headers: { "x-ringlark": "1", "content-type": "application/json" }, data: json ?? {} });
 
 export async function resetDemo(page: Page) {
+  // A reset drops and recreates the tables. Let the page's own first requests finish, or one of them lands on a missing table and answers 500.
+  await page.waitForLoadState("networkidle");
   const r = await call(page, "/demo/reset");
   expect(r.ok()).toBeTruthy();
 }

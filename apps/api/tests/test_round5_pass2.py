@@ -31,7 +31,7 @@ def test_people_of_a_campaign_that_is_not_running_are_not_callable_yet(client):
     h = login(client)
     agent = client.get("/api/agents", headers=h).json()[0]
     c = client.post("/api/campaigns", headers=h, json={"name": "Not started", "agent_id": agent["id"]}).json()
-    client.post(f"/api/campaigns/{c['id']}/targets", headers=h, json={"rows": [{"phone": "+14155559901", "timezone": "America/New_York"}]})
+    client.post(f"/api/campaigns/{c['id']}/targets", headers=h, json={"rows": [{"phone": "+14155559901", "timezone": "America/New_York", "call_consent": "yes"}]})  # a new campaign requires a consent, so the person has one
     why = {t["why"] for t in client.get(f"/api/campaigns/{c['id']}/targets", headers=h).json()}
     assert "ok" not in why
     assert "campaign_not_running" in why or why <= {"outside_hours", "daily_cap", "retry_same_day"} | {"kill_switch", "draft_mode"}

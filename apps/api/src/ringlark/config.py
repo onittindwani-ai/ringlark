@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+
 from pydantic import Field
 
 from sendora_core.settings import BaseAppSettings, Mode
@@ -39,7 +41,6 @@ class Settings(BaseAppSettings):
 
     calcom_api_key: str = ""
     calcom_event_type_id: int = 0
-    calcom_webhook_secret: str = ""
     calcom_base_url: str = "https://api.cal.com"
     calcom_slots_version: str = "2024-09-04"
     calcom_bookings_version: str = "2026-02-25"
@@ -57,7 +58,6 @@ class Settings(BaseAppSettings):
     imap_use_ssl: bool = True
     email_from: str = "calls@example.test"
 
-    webhook_shared_secret: str = ""
     # Decided defaults: a safe starting point the implementer can change per client (docs 04 and 14).
     default_window_start: int = Field(default=9, ge=0, le=23)
     default_window_end: int = Field(default=17, ge=1, le=24)
@@ -70,8 +70,83 @@ class Settings(BaseAppSettings):
     handoff_dir: str = "./handoff"
     seed_dir: str = ""
 
+    # Who the messages come from. Every text and email the system writes names this business, so the placeholders below keep the system in draft mode (docs 04).
+    company_name: str = "Your Company"  # COMPANY_NAME: said in greetings, texts and emails
+    company_address: str = ""  # COMPANY_ADDRESS: the postal address printed under every email follow up
+    booking_url: str = ""  # BOOKING_URL: the page a "booking link" text points to. Empty means that text is not offered outside demo mode
+    appointment_name: str = ""  # APPOINTMENT_NAME: what the meeting is called in texts, for example "check up" or "consultation" (empty: "appointment")
+    tool_token_secret: str = ""  # TOOL_TOKEN_SECRET: key for the per call tool tokens. Empty means a key made from SESSION_SECRET
+    allowed_calling_countries: str = "+1"  # ALLOWED_CALLING_COUNTRIES: country calling codes the dialer may call, comma separated
+    allow_extended_hours: bool = False  # ALLOW_EXTENDED_HOURS: lets a campaign call before 08:00 or after 21:00 callee local time (off by default)
+    max_inbound_calls: int = Field(default=5, ge=1, le=100)  # MAX_INBOUND_CALLS: inbound calls answered at the same time
+    max_inbound_per_number_hour: int = Field(default=6, ge=1, le=100)  # MAX_INBOUND_PER_NUMBER_HOUR: inbound calls answered per caller number per hour
+    recording_notice_required: bool = True  # RECORDING_NOTICE_REQUIRED: a custom greeting must say the call may be recorded (transcripts are always stored). Turn off only if your counsel says no notice is needed
+    max_inbound_anonymous_hour: int = Field(default=30, ge=1, le=1000)  # MAX_INBOUND_ANONYMOUS_HOUR: inbound calls answered per hour in all from callers whose number is withheld (they share one limit, apart from the per number one)
+    dial_failure_limit: int = Field(default=3, ge=1, le=20)  # DIAL_FAILURE_LIMIT: calls in a row that fail at the phone company or voice engine before the dialer stops for ten minutes
+    retention_days: int = Field(default=365, ge=0, le=3650)  # RETENTION_DAYS: transcripts, summaries and follow up messages of finished calls older than this are deleted daily. 0 keeps them for ever
+
+    @property
+    def window_bounds(self) -> tuple[int, int]:
+        """The earliest start and latest end, in the callee's local hours, that a campaign may use."""
+        return (0, 24) if self.allow_extended_hours else (8, 21)
+
+    @property
+    def calling_codes(self) -> tuple[str, ...]:
+        """The country calling codes the dialer may call, each written like +1, +44 or +1876. An empty or unreadable list is NOT "no limit": it allows no country at all."""
+        return tuple(c for c in self.calling_entries()[0])
+
+    def calling_entries(self) -> tuple[list[str], list[str]]:
+        """(the entries that are valid, the entries that are not). An entry is a plus sign and one to four digits, for example +1 or +1876."""
+        good, bad = [], []
+        for raw in self.allowed_calling_countries.split(","):
+            c = raw.strip()
+            if not c:
+                continue
+            (good if re.fullmatch(r"\+[1-9][0-9]{0,3}", c) else bad).append(c)
+        return good, bad
+
+    @property
+    def real_calling(self) -> bool:
+        """True when a real phone or voice adapter is selected (not the offline seed ones)."""
+        return self.telephony_adapter != "seed" or self.voice_adapter != "seed"
+
+    def identity_problems(self) -> list[str]:
+        """Business facts and addresses the live path needs. While any is missing outside demo mode the system stays in draft mode (see Ctx.effective)."""
+        if self.demo_mode:
+            return []
+        out: list[str] = []
+        if self.company_name.strip() in ("", "Your Company"):
+            out.append("COMPANY_NAME is still the placeholder, so texts and emails would not say who they are from. Set it to your business name.")
+        if self.email_adapter != "seed":
+            if not self.company_address.strip():
+                out.append("COMPANY_ADDRESS is empty. Every email follow up must carry a postal address.")
+            if self.email_from.endswith("example.test"):
+                out.append("EMAIL_FROM is still the example address.")
+        if self.sms_adapter != "seed" and not self.telnyx_from_number:
+            out.append("TELNYX_FROM_NUMBER is empty, so a text could not say which number to reply STOP to.")
+        if self.mode is Mode.LIVE and self.real_calling:
+            # Without these a live call would carry tool addresses that point nowhere, and its webhooks would be refused: stay in draft until they are set.
+            if not self.telnyx_public_key:
+                out.append("TELNYX_PUBLIC_KEY is empty, so Telnyx webhooks are refused. Calls stay in draft mode until it is set.")
+            if not self.ultravox_webhook_secret:
+                out.append("ULTRAVOX_WEBHOOK_SECRET is empty, so Ultravox webhooks are refused. Calls stay in draft mode until it is set.")
+            if not self.public_base_url.startswith("https://"):
+                out.append("PUBLIC_BASE_URL is empty or not an https address, so Ultravox cannot reach the tool endpoints. Calls stay in draft mode until it is set.")
+        return out
+
+    def calling_problems(self) -> list[str]:
+        good, bad = self.calling_entries()
+        out: list[str] = []
+        if bad:
+            out.append(f"ALLOWED_CALLING_COUNTRIES has entries that are not a country calling code with a plus sign ({', '.join(bad)}). Write them like +1 or +44. They are ignored.")
+        if not good:
+            out.append("ALLOWED_CALLING_COUNTRIES has no usable entry, so the dialer will call nobody. Set it to +1 for the United States and Canada, or list the codes you may call.")
+        return out
+
     def problems(self) -> list[str]:
         out = [p for p in super().problems() if not (self.demo_mode and p.startswith("MODE is live while DEMO_MODE"))]
+        out.extend(self.identity_problems())
+        out.extend(self.calling_problems())
         if not self.demo_mode and not self.owner_password_hash:
             out.append("OWNER_PASSWORD_HASH is empty. Create one with tools/hash_password.py and set it before you run outside demo mode.")
         if self.mode is Mode.LIVE and not self.demo_mode:
@@ -79,10 +154,4 @@ class Settings(BaseAppSettings):
                 out.append("MODE is live but TELEPHONY_ADAPTER is seed, so no real call can be placed. Set TELEPHONY_ADAPTER=telnyx.")
             if self.voice_adapter == "seed":
                 out.append("MODE is live but VOICE_ADAPTER is seed. Set VOICE_ADAPTER=ultravox.")
-            if not self.telnyx_public_key:
-                out.append("TELNYX_PUBLIC_KEY is empty, so Telnyx webhooks are refused.")
-            if not self.ultravox_webhook_secret:
-                out.append("ULTRAVOX_WEBHOOK_SECRET is empty, so Ultravox webhooks are refused.")
-            if not self.public_base_url:
-                out.append("PUBLIC_BASE_URL is empty, so Ultravox cannot reach the tool endpoints.")
         return out

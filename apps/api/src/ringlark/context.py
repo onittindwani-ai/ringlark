@@ -35,7 +35,7 @@ class Ctx:
         upd: dict[str, Any] = {}
         if kill and kill.value == "1":
             upd["kill_switch"] = True
-        if force and force.value == "1":
+        if (force and force.value == "1") or self.settings.identity_problems():  # placeholders for the business name or address keep a real install in draft mode
             upd["mode"] = Mode.DRAFT
         return self.settings.model_copy(update=upd) if upd else self.settings
 

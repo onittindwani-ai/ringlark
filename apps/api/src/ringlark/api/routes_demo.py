@@ -15,17 +15,17 @@ router = APIRouter(prefix="/api/demo", tags=["demo"], dependencies=[Depends(demo
 
 
 @router.get("/state", summary="The demo clock")
-def state(s: Session = Depends(db), ctx: Ctx = Depends(get_ctx)):
+def state(s: Session = Depends(db, scope="function"), ctx: Ctx = Depends(get_ctx)):
     return {"now": ctx.now(s).isoformat()}
 
 
 @router.post("/reset", summary="Reset to the seed data and a fresh clock")
-def reset(s: Session = Depends(db), ctx: Ctx = Depends(get_ctx), u: dict = Depends(owner)):
+def reset(s: Session = Depends(db, scope="function"), ctx: Ctx = Depends(get_ctx), u: dict = Depends(owner)):
     return demo.reset(s, ctx)
 
 
 @router.post("/tick", summary="Run every job once, now")
-def tick(s: Session = Depends(db), ctx: Ctx = Depends(get_ctx), u: dict = Depends(writer)):
+def tick(s: Session = Depends(db, scope="function"), ctx: Ctx = Depends(get_ctx), u: dict = Depends(writer)):
     return run_cycle(s, ctx)
 
 
@@ -34,7 +34,7 @@ class AdvanceIn(BaseModel):
 
 
 @router.post("/advance", summary="Move the demo clock forward")
-def advance(b: AdvanceIn, s: Session = Depends(db), ctx: Ctx = Depends(get_ctx), u: dict = Depends(writer)):
+def advance(b: AdvanceIn, s: Session = Depends(db, scope="function"), ctx: Ctx = Depends(get_ctx), u: dict = Depends(writer)):
     return {"now": clock.advance(s, b.hours).isoformat()}
 
 
@@ -43,7 +43,7 @@ class StressIn(BaseModel):
 
 
 @router.post("/stress-calls", summary="Add many fictional finished calls, to check that long tables stay fast")
-def stress(b: StressIn, s: Session = Depends(db), ctx: Ctx = Depends(get_ctx), u: dict = Depends(owner)):
+def stress(b: StressIn, s: Session = Depends(db, scope="function"), ctx: Ctx = Depends(get_ctx), u: dict = Depends(owner)):
     from datetime import timedelta
 
     from ringlark.models import Agent, Call

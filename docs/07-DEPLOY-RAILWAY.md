@@ -11,6 +11,6 @@ You will make four things in one Railway project: a Postgres database, the API, 
 5. **Add service** again, named `worker`, same Dockerfile and same variables, start command `python -m ringlark.worker`. No public address needed.
 6. **Add service**, named `web`, Dockerfile path `apps/web/Dockerfile`. Variable `API_BASE_URL` set to the API's private address (Railway shows it as `api.railway.internal` plus port).
 7. Give `web` a public domain. Give `api` a public domain too, only so Telnyx and Ultravox can reach it (the webhooks and the agent tool endpoints).
-8. Sign in, run `python tools/doctor.py` in the `api` shell.
+8. Sign in, run `python /app/tools/doctor.py` in the `api` shell (the image carries the tools folder).
 
 Keep `MODE=draft` until `09-GO-LIVE-CHECKLIST.md` is finished.

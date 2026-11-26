@@ -2,22 +2,17 @@
 
 from __future__ import annotations
 
-import hashlib
-import hmac
 from datetime import UTC, datetime, timedelta
 
 import httpx
 
-from ringlark.adapters.base import Booking, safe_base_url
+from ringlark.adapters.base import BadReply, Booking, UnknownOutcome, dig, reply_json, safe_base_url
 from sendora_core.adapters import AdapterError
 from sendora_core.safety import write_action
 
 
-def verify_calcom_webhook(secret: str, body: bytes, header_value: str) -> bool:
-    """HMAC SHA256 of the raw body, hex. With no secret set Cal.com sends a placeholder, so an empty secret never verifies."""
-    if not secret or not header_value or header_value == "no-secret-provided":
-        return False
-    return hmac.compare_digest(hmac.new(secret.encode(), body, hashlib.sha256).hexdigest(), header_value.lower())
+def aware_utc(d: datetime) -> datetime:
+    return d.replace(tzinfo=UTC) if d.tzinfo is None else d.astimezone(UTC)
 
 
 def _iso(d: datetime) -> str:
@@ -37,26 +32,44 @@ class CalcomCalendar:
     def _check(self, r: httpx.Response, what: str) -> dict:
         if r.status_code == 401:
             raise AdapterError("Cal.com rejected the API key.")
+        if r.status_code >= 500:
+            raise UnknownOutcome(f"Cal.com could not {what}: it answered {r.status_code}, so the result is not known.")  # it may have saved the booking before it failed
         if r.status_code >= 400:
-            msg = (r.json().get("error") or {}).get("message", r.status_code) if r.headers.get("content-type", "").startswith("application/json") else r.status_code
-            raise AdapterError(f"Cal.com could not {what}: {msg}")
-        return r.json()
+            raise AdapterError(f"Cal.com could not {what}: {self._message(r)}")
+        return reply_json(r, "Cal.com")
+
+    @staticmethod
+    def _message(r: httpx.Response):
+        try:
+            err = r.json().get("error")
+            return err.get("message", r.status_code) if isinstance(err, dict) else r.status_code
+        except (ValueError, AttributeError):
+            return r.status_code
 
     def slots(self, start: datetime, end: datetime) -> list[datetime]:
         r = self.client.get("/v2/slots", params={"eventTypeId": self.settings.calcom_event_type_id, "start": _iso(start), "end": _iso(end)},
                             headers={"cal-api-version": self.settings.calcom_slots_version})
-        data = self._check(r, "list open times")["data"]
-        out = [datetime.fromisoformat(s["start"].replace("Z", "+00:00")) for day in data.values() for s in day]
-        return sorted(out)[:6]
+        data = dig(self._check(r, "list open times"), "data", who="Cal.com")
+        try:
+            out = [datetime.fromisoformat(s["start"].replace("Z", "+00:00")) for day in data.values() for s in day]
+            return sorted(aware_utc(x) for x in out)[:6]
+        except (KeyError, TypeError, ValueError, AttributeError) as exc:
+            raise BadReply("Cal.com sent open times in a shape that could not be read.") from exc
 
     @write_action("calendar.book")
     def book(self, *, start: datetime, name: str, email: str, timezone: str) -> Booking:
         body = {"start": _iso(start), "eventTypeId": self.settings.calcom_event_type_id, "attendee": {"name": name, "email": email, "timeZone": timezone}}
         r = self.client.post("/v2/bookings", json=body, headers={"cal-api-version": self.settings.calcom_bookings_version})
-        b = self._check(r, "book the call")["data"]
-        s = datetime.fromisoformat(b["start"].replace("Z", "+00:00"))
-        e = datetime.fromisoformat(b["end"].replace("Z", "+00:00")) if b.get("end") else s + timedelta(minutes=30)
-        return Booking(str(b.get("uid") or b.get("id")), s, e)
+        b = dig(self._check(r, "book the call"), "data", who="Cal.com")
+        try:
+            s = datetime.fromisoformat(b["start"].replace("Z", "+00:00"))
+            e = datetime.fromisoformat(b["end"].replace("Z", "+00:00")) if b.get("end") else s + timedelta(minutes=30)
+            ref = b.get("uid") or b.get("id")
+        except (KeyError, TypeError, ValueError, AttributeError) as exc:
+            raise BadReply("Cal.com answered the booking in a shape that could not be read, so it is not known whether the booking was made.") from exc
+        if not ref:
+            raise BadReply("Cal.com answered the booking without a booking reference, so it is not known whether the booking was made.")
+        return Booking(str(ref), s, e)
 
     def healthcheck(self) -> tuple[bool, str]:
         try:

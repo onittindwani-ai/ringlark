@@ -17,7 +17,7 @@ import pytest
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
-from conftest import make_settings
+from testkit import make_settings
 from ringlark.adapters.calcom import CalcomCalendar
 from ringlark.adapters.crm import TwentyCrm
 from ringlark.adapters.telnyx import TelnyxCalls, TelnyxSms, parse_inbound_sms, verify_telnyx_webhook

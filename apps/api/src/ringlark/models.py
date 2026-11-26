@@ -89,7 +89,7 @@ class Campaign(Base):
     voicemail_text: Mapped[str] = mapped_column(Text, default="")
     ivr_policy: Mapped[str] = mapped_column(String(10), default="hangup")  # hangup or press_once
     ivr_extension: Mapped[str] = mapped_column(String(8), default="")
-    require_prior_consent: Mapped[bool] = mapped_column(Boolean, default=False)
+    require_prior_consent: Mapped[bool] = mapped_column(Boolean, default=True)  # outbound AI calls need a granted call consent on file unless the owner turns this off
     created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
 
 
@@ -124,8 +124,8 @@ class Call(Base):
     attempt: Mapped[int] = mapped_column(Integer, default=1)
     disposition: Mapped[str] = mapped_column(String(24), default="")
     summary: Mapped[str] = mapped_column(Text, default="")
-    external_id: Mapped[str] = mapped_column(String(120), default="")  # Ultravox call id
-    telnyx_call_id: Mapped[str] = mapped_column(String(120), default="")
+    external_id: Mapped[str] = mapped_column(String(120), default="", index=True)  # Ultravox call id (looked up by every Ultravox event)
+    telnyx_call_id: Mapped[str] = mapped_column(String(120), default="", index=True)  # Telnyx call control id (looked up by every Telnyx event)
     started_at: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)
     duration_ms: Mapped[int] = mapped_column(Integer, default=0)
     disclosure_played: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -179,7 +179,7 @@ class FollowUp(Base):
     to: Mapped[str] = mapped_column(String(254))
     subject: Mapped[str] = mapped_column(String(200), default="")
     body: Mapped[str] = mapped_column(Text)
-    status: Mapped[str] = mapped_column(String(16), default="pending", index=True)  # pending, sent, drafted, rejected, blocked
+    status: Mapped[str] = mapped_column(String(16), default="pending", index=True)  # pending, sending, sent, drafted, rejected, blocked, failed
     blocked_reason: Mapped[str] = mapped_column(String(60), default="")
     approval_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
@@ -192,6 +192,7 @@ class ConsentRecord(Base):
     kind: Mapped[str] = mapped_column(String(8))  # call, sms
     status: Mapped[str] = mapped_column(String(8))  # granted, revoked
     source: Mapped[str] = mapped_column(String(60), default="")
+    note: Mapped[str] = mapped_column(String(300), default="", server_default="")  # where the person agreed, in words (an import's consent_note); created_at is the date it was given
     created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
 
 
@@ -202,3 +203,14 @@ class Suppression(Base):
     reason: Mapped[str] = mapped_column(String(80), default="")
     source: Mapped[str] = mapped_column(String(60), default="")
     created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
+
+
+class CallAction(Base):
+    """One row per one-time thing a call may do (book, transfer, press a key, send each kind of text). It is written and SAVED before the vendor is asked,
+    so two requests that arrive together cannot both pass the check and both act: the second one hits the unique key and is told it was already done."""
+    __tablename__ = "rm_call_action"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    call_id: Mapped[int] = mapped_column(ForeignKey("rm_call.id"))
+    kind: Mapped[str] = mapped_column(String(40))
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
+    __table_args__ = (UniqueConstraint("call_id", "kind"),)

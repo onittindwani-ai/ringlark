@@ -14,7 +14,7 @@ Ringlark helps you set up an AI phone caller that books meetings, and the follow
 ## What you get
 
 - A dashboard with eleven pages: Overview, Live console, Call log, Campaigns, Agents and prompts, Numbers and compliance, QA review, Follow ups and approvals, Metrics, Integrations, Audit log.
-- A dialer that checks the rules before every call: kill switch, AI disclosure, number format, do not call list, consent, calling hours in the person's own time zone, daily cap, tries per person, gap between tries.
+- A dialer that checks the rules before every call: kill switch, AI disclosure, number format, do not call list, consent (a new campaign calls only people with a granted call consent on file, unless the owner turns that check off for the campaign), calling hours in the person's own time zone, a call nobody has read yet, daily cap, tries per person, gap between tries.
 - A versioned prompt library with a compare view, a split test, a text simulator and a persona suite (14 scripted callers with an answer key).
 - Tools the agent can use during a call: book a meeting, look up the CRM, transfer to a person, send a text, press a key in a phone menu, end the call with a result.
 - After each call: transcript, summary, result code, a QA score, follow ups that wait for your approval, and a CRM note.
